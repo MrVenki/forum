@@ -1,0 +1,215 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum CityTier {
+  METRO
+  TIER1
+}
+
+enum PropertyType {
+  APARTMENT
+  VILLA
+  PLOT
+  COMMERCIAL
+  PENTHOUSE
+  INDEPENDENT_HOUSE
+  BUILDER_FLOOR
+}
+
+enum ReactionType {
+  LIKE
+  HELPFUL
+  INFORMATIVE
+  DISLIKE
+}
+
+enum UserRole {
+  USER
+  MODERATOR
+  ADMIN
+}
+
+// ─── Auth Models (NextAuth) ───────────────────────────────────────────────────
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// ─── Core Models ─────────────────────────────────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  emailVerified DateTime?
+  passwordHash  String?
+  image         String?
+  role          UserRole  @default(USER)
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts         Account[]
+  sessions         Session[]
+  topics           Topic[]
+  comments         Comment[]
+  ratings          Rating[]
+  commentReactions CommentReaction[]
+
+  @@map("users")
+}
+
+model City {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  tier      CityTier
+  state     String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  topics Topic[]
+
+  @@map("cities")
+}
+
+model Topic {
+  id           String       @id @default(cuid())
+  cityId       String
+  userId       String
+  title        String
+  slug         String
+  propertyName String
+  propertyType PropertyType
+  description  String       @db.Text
+  address      String?
+  priceMin     Decimal?     @db.Decimal(15, 2)
+  priceMax     Decimal?     @db.Decimal(15, 2)
+  image1Url    String?
+  image1PubId  String?
+  image2Url    String?
+  image2PubId  String?
+  avgRating    Decimal      @default(0) @db.Decimal(3, 2)
+  ratingCount  Int          @default(0)
+  commentCount Int          @default(0)
+  viewCount    Int          @default(0)
+  isPublished  Boolean      @default(true)
+  metaTitle    String?
+  metaDesc     String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  city     City      @relation(fields: [cityId], references: [id])
+  user     User      @relation(fields: [userId], references: [id])
+  comments Comment[]
+  ratings  Rating[]
+
+  @@unique([cityId, slug])
+  @@index([cityId, createdAt(sort: Desc)])
+  @@index([avgRating(sort: Desc)])
+  @@map("topics")
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  topicId   String
+  userId    String
+  parentId  String?
+  content   String   @db.Text
+  isDeleted Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  topic    Topic             @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  user     User              @relation(fields: [userId], references: [id])
+  parent   Comment?          @relation("CommentReplies", fields: [parentId], references: [id])
+  replies  Comment[]         @relation("CommentReplies")
+  reactions CommentReaction[]
+
+  @@index([topicId, createdAt(sort: Asc)])
+  @@map("comments")
+}
+
+model CommentReaction {
+  id           String       @id @default(cuid())
+  commentId    String
+  userId       String
+  reactionType ReactionType
+  createdAt    DateTime     @default(now())
+
+  comment Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id])
+
+  @@unique([commentId, userId])
+  @@map("comment_reactions")
+}
+
+model EmailOtp {
+  id        String   @id @default(cuid())
+  email     String
+  code      String
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  attempts  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([email, createdAt])
+  @@map("email_otps")
+}
+
+model Rating {
+  id        String   @id @default(cuid())
+  topicId   String
+  userId    String
+  score     Int
+  review    String?  @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  topic Topic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id])
+
+  @@unique([topicId, userId])
+  @@map("ratings")
+}

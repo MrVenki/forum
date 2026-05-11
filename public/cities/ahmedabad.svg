@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#92400E"/>
+      <stop offset="55%" stop-color="#D97706"/>
+      <stop offset="100%" stop-color="#FCD34D"/>
+    </linearGradient>
+    <linearGradient id="river" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0369A1"/>
+      <stop offset="100%" stop-color="#075985"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="450" fill="url(#bg)"/>
+  <circle cx="400" cy="150" r="48" fill="#FEF3C7" opacity="0.82"/>
+  <circle cx="400" cy="150" r="68" fill="#FDE68A" opacity="0.18"/>
+  <rect x="0" y="295" width="800" height="25" fill="url(#river)"/>
+  <rect x="0" y="320" width="800" height="130" fill="#7C4A1A"/>
+  <rect x="0" y="318" width="800" height="6" fill="#92400E" opacity="0.5"/>
+  <path d="M0 305 Q200 296 400 305 Q600 314 800 305 L800 318 Q600 327 400 318 Q200 309 0 318Z" fill="#38BDF8" opacity="0.2"/>
+  <rect x="280" y="205" width="240" height="90" fill="#1C0A00"/>
+  <rect x="290" y="195" width="60" height="12" fill="#1C0A00"/>
+  <rect x="450" y="195" width="60" height="12" fill="#1C0A00"/>
+  <ellipse cx="320" cy="240" rx="18" ry="22" fill="#D97706"/>
+  <rect x="302" y="240" width="36" height="24" fill="#D97706"/>
+  <ellipse cx="400" cy="240" rx="22" ry="27" fill="#D97706"/>
+  <rect x="378" y="240" width="44" height="28" fill="#D97706"/>
+  <ellipse cx="480" cy="240" rx="18" ry="22" fill="#D97706"/>
+  <rect x="462" y="240" width="36" height="24" fill="#D97706"/>
+  <rect x="295" y="172" width="16" height="35" fill="#1C0A00"/>
+  <ellipse cx="303" cy="170" rx="10" ry="8" fill="#D4AF37"/>
+  <rect x="489" y="172" width="16" height="35" fill="#1C0A00"/>
+  <ellipse cx="497" cy="170" rx="10" ry="8" fill="#D4AF37"/>
+  <polygon points="200,170 220,145 240,170" fill="#FCD34D" opacity="0.6"/>
+  <polygon points="560,155 575,132 590,155" fill="#FCD34D" opacity="0.5"/>
+  <polygon points="160,185 175,163 190,185" fill="#FCD34D" opacity="0.45"/>
+  <rect x="0" y="390" width="800" height="60" fill="#000000" opacity="0.48"/>
+  <text x="400" y="422" font-family="Georgia,serif" font-size="30" font-weight="bold" fill="white" text-anchor="middle" letter-spacing="8">AHMEDABAD</text>
+  <text x="400" y="441" font-family="Arial,sans-serif" font-size="12" fill="#FDE68A" text-anchor="middle" letter-spacing="3">Gujarat · Tier 1 City</text>
+</svg>

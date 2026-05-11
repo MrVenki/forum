@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#14532D"/>
+      <stop offset="50%" stop-color="#16A34A"/>
+      <stop offset="100%" stop-color="#86EFAC"/>
+    </linearGradient>
+    <linearGradient id="river" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0369A1"/>
+      <stop offset="100%" stop-color="#075985"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="450" fill="url(#bg)"/>
+  <circle cx="618" cy="105" r="36" fill="#FEF3C7" opacity="0.8"/>
+  <path d="M0 230 Q100 210 200 225 Q300 238 400 220 Q500 202 600 218 Q700 232 800 215 L800 310 L0 310Z" fill="#052E16"/>
+  <path d="M0 248 Q120 232 240 244 Q360 258 480 240 Q600 222 800 235 L800 310 L0 310Z" fill="#065F46" opacity="0.7"/>
+  <rect x="0" y="295" width="800" height="18" fill="url(#river)"/>
+  <path d="M0 305 Q200 297 400 305 Q600 313 800 305 L800 318 Q600 326 400 318 Q200 310 0 318Z" fill="#38BDF8" opacity="0.18"/>
+  <rect x="0" y="313" width="800" height="137" fill="#052E16"/>
+  <rect x="340" y="170" width="15" height="65" fill="#1C0A00"/>
+  <ellipse cx="347" cy="168" rx="9" ry="7" fill="#1C0A00"/>
+  <rect x="343" y="153" width="10" height="17" fill="#1C0A00"/>
+  <ellipse cx="348" cy="151" rx="6" ry="9" fill="#D4AF37"/>
+  <rect x="420" y="160" width="14" height="70" fill="#1C0A00"/>
+  <ellipse cx="427" cy="158" rx="9" ry="7" fill="#1C0A00"/>
+  <rect x="423" y="143" width="10" height="17" fill="#1C0A00"/>
+  <ellipse cx="428" cy="141" rx="6" ry="9" fill="#D4AF37"/>
+  <rect x="285" y="195" width="12" height="50" fill="#1C0A00"/>
+  <ellipse cx="291" cy="193" rx="7" ry="6" fill="#D4AF37"/>
+  <ellipse cx="148" cy="238" rx="55" ry="38" fill="#14532D"/>
+  <ellipse cx="120" cy="245" rx="45" ry="30" fill="#166534"/>
+  <ellipse cx="648" cy="232" rx="55" ry="38" fill="#14532D"/>
+  <ellipse cx="678" cy="240" rx="45" ry="30" fill="#166534"/>
+  <rect x="155" y="270" width="60" height="6" rx="3" fill="#6B21A8" opacity="0.5"/>
+  <rect x="580" y="268" width="65" height="6" rx="3" fill="#6B21A8" opacity="0.45"/>
+  <rect x="0" y="390" width="800" height="60" fill="#000000" opacity="0.48"/>
+  <text x="400" y="422" font-family="Georgia,serif" font-size="30" font-weight="bold" fill="white" text-anchor="middle" letter-spacing="8">NASHIK</text>
+  <text x="400" y="441" font-family="Arial,sans-serif" font-size="12" fill="#BBF7D0" text-anchor="middle" letter-spacing="3">Maharashtra · Tier 1 City</text>
+</svg>

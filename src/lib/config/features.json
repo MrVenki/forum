@@ -1,0 +1,8 @@
+{
+  "emailVerification": {
+    "enabled": false,
+    "otpExpiryMinutes": 10,
+    "maxResendPerHour": 3,
+    "maxVerifyAttempts": 5
+  }
+}

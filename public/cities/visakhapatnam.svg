@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0C4A6E"/>
+      <stop offset="48%" stop-color="#0284C7"/>
+      <stop offset="100%" stop-color="#7DD3FC"/>
+    </linearGradient>
+    <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#075985"/>
+      <stop offset="100%" stop-color="#0C4A6E"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="450" fill="url(#bg)"/>
+  <circle cx="580" cy="110" r="40" fill="#FEF3C7" opacity="0.82"/>
+  <rect x="0" y="298" width="800" height="152" fill="url(#sea)"/>
+  <path d="M0 308 Q150 300 300 308 Q450 316 600 308 Q700 303 800 308 L800 322 Q700 322 600 322 Q450 328 300 322 Q150 316 0 322Z" fill="#38BDF8" opacity="0.2"/>
+  <path d="M0 240 Q120 185 200 210 Q250 228 280 300 L0 300Z" fill="#064E3B"/>
+  <path d="M0 252 Q100 200 180 222 Q225 238 255 300 L0 300Z" fill="#065F46"/>
+  <ellipse cx="148" cy="210" rx="20" ry="15" fill="#166534" opacity="0.8"/>
+  <rect x="520" y="242" width="65" height="56" fill="#0F172A" opacity="0.75"/>
+  <rect x="590" y="252" width="55" height="46" fill="#0F172A" opacity="0.7"/>
+  <rect x="650" y="238" width="70" height="60" fill="#0F172A" opacity="0.65"/>
+  <rect x="720" y="248" width="80" height="50" fill="#0F172A" opacity="0.6"/>
+  <rect x="530" y="252" width="4" height="4" fill="#FEF08A" opacity="0.55"/>
+  <rect x="542" y="252" width="4" height="4" fill="#FEF08A" opacity="0.4"/>
+  <rect x="600" y="260" width="4" height="4" fill="#FEF08A" opacity="0.6"/>
+  <rect x="660" y="248" width="4" height="4" fill="#FEF08A" opacity="0.5"/>
+  <rect x="310" y="260" width="10" height="40" fill="#1C1917"/>
+  <ellipse cx="315" cy="258" rx="6" ry="5" fill="#FDE68A" opacity="0.85"/>
+  <rect x="0" y="390" width="800" height="60" fill="#000000" opacity="0.48"/>
+  <text x="400" y="422" font-family="Georgia,serif" font-size="26" font-weight="bold" fill="white" text-anchor="middle" letter-spacing="5">VISAKHAPATNAM</text>
+  <text x="400" y="441" font-family="Arial,sans-serif" font-size="12" fill="#BAE6FD" text-anchor="middle" letter-spacing="3">Andhra Pradesh · Tier 1 City</text>
+</svg>

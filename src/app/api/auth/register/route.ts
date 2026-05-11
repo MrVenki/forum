@@ -1,0 +1,44 @@
+import { NextRequest, NextResponse } from 'next/server'
+import bcrypt from 'bcryptjs'
+import { prisma } from '@/lib/prisma'
+import { registerSchema } from '@/lib/validations/auth'
+import { isEmailVerificationEnabled, getEmailVerificationConfig } from '@/lib/features'
+import { sendOtpEmail } from '@/lib/email'
+
+function generateOtp(): string {
+  return Math.floor(100000 + Math.random() * 900000).toString()
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json()
+    const parsed = registerSchema.safeParse(body)
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error.errors[0].message }, { status: 400 })
+    }
+
+    const { name, email, password } = parsed.data
+
+    const existing = await prisma.user.findUnique({ where: { email } })
+    if (existing) {
+      return NextResponse.json({ error: 'An account with this email already exists.' }, { status: 409 })
+    }
+
+    const passwordHash = await bcrypt.hash(password, 12)
+    await prisma.user.create({ data: { name, email, passwordHash } })
+
+    if (isEmailVerificationEnabled()) {
+      const config = getEmailVerificationConfig()
+      const code = generateOtp()
+      const expiresAt = new Date(Date.now() + config.otpExpiryMinutes * 60 * 1000)
+      await prisma.emailOtp.create({ data: { email, code, expiresAt } })
+      await sendOtpEmail(email, code)
+      return NextResponse.json({ success: true, requiresVerification: true }, { status: 201 })
+    }
+
+    return NextResponse.json({ success: true }, { status: 201 })
+  } catch (err) {
+    console.error('Register error:', err)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}

@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#F59E0B"/>
+      <stop offset="50%" stop-color="#FDE68A"/>
+      <stop offset="100%" stop-color="#FEF3C7"/>
+    </linearGradient>
+    <linearGradient id="ganga" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0369A1"/>
+      <stop offset="100%" stop-color="#075985"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="450" fill="url(#bg)"/>
+  <circle cx="400" cy="145" r="55" fill="#FEF3C7" opacity="0.9"/>
+  <circle cx="400" cy="145" r="80" fill="#FDE68A" opacity="0.2"/>
+  <rect x="0" y="300" width="800" height="25" fill="url(#ganga)"/>
+  <rect x="0" y="325" width="800" height="125" fill="#7C4A1A"/>
+  <rect x="200" y="262" width="60" height="38" fill="#1C0A00"/>
+  <rect x="220" y="252" width="20" height="12" fill="#1C0A00"/>
+  <rect x="215" y="240" width="30" height="14" fill="#1C0A00"/>
+  <rect x="227" y="224" width="6" height="18" fill="#1C0A00"/>
+  <polygon points="230,218 224,226 236,226" fill="#D4AF37"/>
+  <rect x="360" y="255" width="80" height="45" fill="#1C0A00"/>
+  <rect x="375" y="242" width="50" height="15" fill="#1C0A00"/>
+  <rect x="390" y="225" width="20" height="19" fill="#1C0A00"/>
+  <polygon points="400,215 390,227 410,227" fill="#D4AF37"/>
+  <rect x="540" y="265" width="60" height="35" fill="#1C0A00"/>
+  <rect x="558" y="255" width="24" height="12" fill="#1C0A00"/>
+  <rect x="552" y="240" width="36" height="17" fill="#1C0A00"/>
+  <rect x="567" y="224" width="6" height="18" fill="#1C0A00"/>
+  <polygon points="570,218 563,226 577,226" fill="#D4AF37"/>
+  <path d="M150 300 L155 285 L165 300Z M170 300 L175 282 L185 300Z M190 300 L195 278 L205 300Z" fill="#1C0A00" opacity="0.7"/>
+  <path d="M595 300 L600 284 L610 300Z M615 300 L620 281 L630 300Z M635 300 L640 285 L650 300Z" fill="#1C0A00" opacity="0.7"/>
+  <rect x="0" y="390" width="800" height="60" fill="#000000" opacity="0.45"/>
+  <text x="400" y="422" font-family="Georgia,serif" font-size="30" font-weight="bold" fill="#1C0A00" text-anchor="middle" letter-spacing="8">KANPUR</text>
+  <text x="400" y="441" font-family="Arial,sans-serif" font-size="12" fill="#78350F" text-anchor="middle" letter-spacing="3">Uttar Pradesh · Tier 1 City</text>
+</svg>

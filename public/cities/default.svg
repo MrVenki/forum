@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1E3A8A"/>
+      <stop offset="55%" stop-color="#3B82F6"/>
+      <stop offset="100%" stop-color="#BFDBFE"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="450" fill="url(#bg)"/>
+  <circle cx="400" cy="148" r="44" fill="#FEF3C7" opacity="0.78"/>
+  <rect x="0" y="312" width="800" height="138" fill="#052E16"/>
+  <rect x="0" y="310" width="800" height="6" fill="#166534" opacity="0.5"/>
+  <rect x="310" y="220" width="180" height="90" fill="#0F172A"/>
+  <rect x="290" y="215" width="220" height="8" fill="#0F172A"/>
+  <polygon points="400,180 290,215 510,215" fill="#0F172A"/>
+  <rect x="365" y="268" width="70" height="42" fill="#1E3A8A"/>
+  <rect x="320" y="240" width="38" height="35" fill="#1E3A8A" opacity="0.8"/>
+  <rect x="442" y="240" width="38" height="35" fill="#1E3A8A" opacity="0.8"/>
+  <rect x="328" y="248" width="5" height="5" fill="#FEF08A" opacity="0.7"/>
+  <rect x="340" y="248" width="5" height="5" fill="#FEF08A" opacity="0.55"/>
+  <rect x="452" y="248" width="5" height="5" fill="#FEF08A" opacity="0.7"/>
+  <rect x="464" y="248" width="5" height="5" fill="#FEF08A" opacity="0.55"/>
+  <rect x="150" y="245" width="48" height="67" fill="#0F172A" opacity="0.8"/>
+  <rect x="203" y="258" width="40" height="54" fill="#0F172A" opacity="0.72"/>
+  <rect x="248" y="270" width="35" height="42" fill="#0F172A" opacity="0.65"/>
+  <rect x="517" y="268" width="38" height="44" fill="#0F172A" opacity="0.65"/>
+  <rect x="560" y="255" width="42" height="57" fill="#0F172A" opacity="0.72"/>
+  <rect x="607" y="242" width="50" height="70" fill="#0F172A" opacity="0.8"/>
+  <rect x="157" y="255" width="4" height="4" fill="#FEF08A" opacity="0.5"/>
+  <rect x="167" y="255" width="4" height="4" fill="#FEF08A" opacity="0.4"/>
+  <rect x="568" y="263" width="4" height="4" fill="#FEF08A" opacity="0.5"/>
+  <rect x="578" y="263" width="4" height="4" fill="#FEF08A" opacity="0.4"/>
+  <rect x="615" y="252" width="4" height="4" fill="#FEF08A" opacity="0.55"/>
+  <rect x="0" y="390" width="800" height="60" fill="#000000" opacity="0.48"/>
+  <text x="400" y="422" font-family="Georgia,serif" font-size="30" font-weight="bold" fill="white" text-anchor="middle" letter-spacing="8">INDIA PROPERTY</text>
+  <text x="400" y="441" font-family="Arial,sans-serif" font-size="12" fill="#BFDBFE" text-anchor="middle" letter-spacing="3">Real Estate Forum</text>
+</svg>

@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1E3A8A"/>
+      <stop offset="55%" stop-color="#2563EB"/>
+      <stop offset="100%" stop-color="#BFDBFE"/>
+    </linearGradient>
+    <linearGradient id="river" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#075985"/>
+      <stop offset="100%" stop-color="#0C4A6E"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="450" fill="url(#bg)"/>
+  <circle cx="190" cy="105" r="36" fill="#FEF3C7" opacity="0.78"/>
+  <rect x="0" y="300" width="800" height="25" fill="url(#river)"/>
+  <path d="M0 310 Q200 302 400 310 Q600 318 800 310 L800 322 Q600 330 400 322 Q200 314 0 322Z" fill="#38BDF8" opacity="0.2"/>
+  <rect x="0" y="325" width="800" height="125" fill="#1C1917"/>
+  <rect x="300" y="248" width="200" height="52" fill="#0F172A"/>
+  <rect x="350" y="238" width="100" height="12" fill="#0F172A"/>
+  <polygon points="400,215 350,238 450,238" fill="#0F172A"/>
+  <rect x="390" y="195" width="20" height="22" fill="#0F172A"/>
+  <polygon points="400,185 390,197 410,197" fill="#0F172A"/>
+  <rect x="100" y="258" width="55" height="42" fill="#0F172A" opacity="0.85"/>
+  <rect x="160" y="248" width="40" height="52" fill="#0F172A" opacity="0.8"/>
+  <rect x="205" y="265" width="45" height="35" fill="#0F172A" opacity="0.75"/>
+  <rect x="555" y="255" width="55" height="45" fill="#0F172A" opacity="0.85"/>
+  <rect x="615" y="242" width="45" height="58" fill="#0F172A" opacity="0.8"/>
+  <rect x="665" y="260" width="50" height="40" fill="#0F172A" opacity="0.75"/>
+  <rect x="115" y="258" width="4" height="4" fill="#FEF08A" opacity="0.5"/>
+  <rect x="125" y="258" width="4" height="4" fill="#FEF08A" opacity="0.4"/>
+  <rect x="168" y="252" width="4" height="4" fill="#FEF08A" opacity="0.6"/>
+  <rect x="178" y="252" width="4" height="4" fill="#FEF08A" opacity="0.45"/>
+  <rect x="0" y="390" width="800" height="60" fill="#000000" opacity="0.48"/>
+  <text x="400" y="422" font-family="Georgia,serif" font-size="30" font-weight="bold" fill="white" text-anchor="middle" letter-spacing="8">SURAT</text>
+  <text x="400" y="441" font-family="Arial,sans-serif" font-size="12" fill="#BFDBFE" text-anchor="middle" letter-spacing="3">Gujarat · Tier 1 City</text>
+</svg>

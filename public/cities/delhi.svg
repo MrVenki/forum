@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1E1B4B"/>
+      <stop offset="58%" stop-color="#3730A3"/>
+      <stop offset="100%" stop-color="#A5B4FC"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="450" fill="url(#bg)"/>
+  <circle cx="150" cy="60" r="1.5" fill="white" opacity="0.7"/>
+  <circle cx="280" cy="38" r="1" fill="white" opacity="0.6"/>
+  <circle cx="520" cy="68" r="1.5" fill="white" opacity="0.8"/>
+  <circle cx="680" cy="42" r="1" fill="white" opacity="0.5"/>
+  <circle cx="740" cy="88" r="2" fill="white" opacity="0.55"/>
+  <circle cx="95" cy="118" r="1" fill="white" opacity="0.4"/>
+  <circle cx="605" cy="95" r="1.5" fill="white" opacity="0.65"/>
+  <circle cx="470" cy="32" r="1" fill="white" opacity="0.5"/>
+  <circle cx="650" cy="78" r="28" fill="#FEF3C7" opacity="0.85"/>
+  <rect x="0" y="315" width="800" height="135" fill="#14532D"/>
+  <rect x="0" y="315" width="800" height="10" fill="#166534" opacity="0.6"/>
+  <rect x="350" y="315" width="100" height="135" fill="#052E16" opacity="0.35"/>
+  <rect x="355" y="295" width="90" height="20" fill="#1C1917"/>
+  <rect x="365" y="283" width="70" height="14" fill="#1C1917"/>
+  <rect x="368" y="200" width="22" height="83" fill="#1C1917"/>
+  <rect x="410" y="200" width="22" height="83" fill="#1C1917"/>
+  <ellipse cx="400" cy="200" rx="32" ry="32" fill="#3730A3"/>
+  <rect x="368" y="200" width="64" height="20" fill="#3730A3"/>
+  <rect x="360" y="175" width="80" height="26" fill="#1C1917"/>
+  <rect x="390" y="153" width="20" height="24" fill="#1C1917"/>
+  <polygon points="400,138 391,155 409,155" fill="#1C1917"/>
+  <ellipse cx="400" cy="153" rx="6" ry="4" fill="#FB923C" opacity="0.9"/>
+  <rect x="0" y="390" width="800" height="60" fill="#000000" opacity="0.48"/>
+  <text x="400" y="422" font-family="Georgia,serif" font-size="30" font-weight="bold" fill="white" text-anchor="middle" letter-spacing="8">DELHI</text>
+  <text x="400" y="441" font-family="Arial,sans-serif" font-size="12" fill="#C7D2FE" text-anchor="middle" letter-spacing="3">Delhi · Metro City</text>
+</svg>

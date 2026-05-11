@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#92400E"/>
+      <stop offset="50%" stop-color="#D97706"/>
+      <stop offset="100%" stop-color="#FDE68A"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="450" fill="url(#bg)"/>
+  <circle cx="400" cy="138" r="50" fill="#FEF3C7" opacity="0.88"/>
+  <circle cx="400" cy="138" r="72" fill="#FDE68A" opacity="0.2"/>
+  <rect x="0" y="298" width="800" height="152" fill="#78350F"/>
+  <rect x="0" y="295" width="800" height="8" fill="#92400E" opacity="0.5"/>
+  <line x1="0" y1="315" x2="800" y2="315" stroke="#B45309" stroke-width="3" opacity="0.4"/>
+  <line x1="0" y1="332" x2="800" y2="332" stroke="#B45309" stroke-width="3" opacity="0.35"/>
+  <line x1="0" y1="349" x2="800" y2="349" stroke="#B45309" stroke-width="2" opacity="0.3"/>
+  <path d="M0 298 L40 272 L80 290 L120 268 L160 285 L200 265 L240 282 L280 262 L320 280 L360 260 L400 278 L440 258 L480 275 L520 255 L560 272 L600 252 L640 268 L680 248 L720 265 L760 245 L800 262 L800 298Z" fill="#A16207"/>
+  <path d="M0 275 L30 258 L60 272 L90 255 L120 268 L150 252 L180 265 L210 248 L240 262 L270 245 L300 258 L330 242 L360 255 L390 238 L420 252 L450 235 L480 248 L510 232 L540 245 L570 228 L600 242 L630 225 L660 238 L690 222 L720 235 L750 218 L780 232 L800 220 L800 275Z" fill="#CA8A04" opacity="0.7"/>
+  <rect x="0" y="390" width="800" height="60" fill="#000000" opacity="0.45"/>
+  <text x="400" y="422" font-family="Georgia,serif" font-size="30" font-weight="bold" fill="#1C0A00" text-anchor="middle" letter-spacing="8">LUDHIANA</text>
+  <text x="400" y="441" font-family="Arial,sans-serif" font-size="12" fill="#78350F" text-anchor="middle" letter-spacing="3">Punjab · Tier 1 City</text>
+</svg>
