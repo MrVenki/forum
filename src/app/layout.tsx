@@ -32,7 +32,7 @@ export const metadata: Metadata = {
   creator: SITE_CONFIG.name,
   openGraph: {
     type: 'website',
-    locale: 'en_IN',
+    locale: 'en_US',
     url: SITE_CONFIG.url,
     siteName: SITE_CONFIG.name,
     title: SITE_CONFIG.name,
@@ -57,7 +57,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en-IN" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <head>
         <script
           type="application/ld+json"

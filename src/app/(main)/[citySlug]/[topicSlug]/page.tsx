@@ -187,6 +187,9 @@ export default async function TopicPage({ params }: Props) {
 
               <h1 className="font-heading text-2xl sm:text-3xl font-bold text-navy-500 leading-snug">
                 {topic.propertyName}
+                <span className="block text-base sm:text-lg font-normal text-neutral-500 mt-1">
+                  Reviews &amp; Ratings — {topic.city.name}, {topic.city.state}
+                </span>
               </h1>
               {topic.address && (
                 <p className="mt-1.5 text-sm text-neutral-500 flex items-center gap-1">
@@ -266,7 +269,7 @@ export default async function TopicPage({ params }: Props) {
 
             {/* Description */}
             <div className="card-base p-6">
-              <h2 className="font-heading font-bold text-lg text-navy-500 mb-3">About This Property</h2>
+              <h2 className="font-heading font-bold text-lg text-navy-500 mb-3">About {topic.propertyName}</h2>
               {isOwner ? (
                 <EditDescriptionForm topicId={topic.id} initialDescription={topic.description} />
               ) : (
@@ -280,7 +283,7 @@ export default async function TopicPage({ params }: Props) {
             <div className="card-base p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="font-heading font-bold text-lg text-navy-500">
-                  Discussion
+                  {topic.propertyName} — Buyer Reviews &amp; Discussion
                   {comments.length > 0 && <span className="ml-2 text-sm font-normal text-neutral-400">({comments.length})</span>}
                 </h2>
                 <SubscriberCount count={subscriberCount} />
