@@ -38,7 +38,16 @@ export async function POST(req: NextRequest) {
     const expiresAt = new Date(Date.now() + config.otpExpiryMinutes * 60 * 1000)
 
     await prisma.emailOtp.create({ data: { email, code, expiresAt } })
-    await sendOtpEmail(email, code)
+
+    try {
+      await sendOtpEmail(email, code)
+    } catch (emailErr) {
+      console.error('send-otp email delivery failed:', emailErr)
+      return NextResponse.json(
+        { error: 'Failed to send verification email. Please check your inbox or try again in a moment.' },
+        { status: 503 }
+      )
+    }
 
     return NextResponse.json({ success: true })
   } catch (err) {

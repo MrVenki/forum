@@ -32,7 +32,12 @@ export async function POST(req: NextRequest) {
       const code = generateOtp()
       const expiresAt = new Date(Date.now() + config.otpExpiryMinutes * 60 * 1000)
       await prisma.emailOtp.create({ data: { email, code, expiresAt } })
-      await sendOtpEmail(email, code)
+      try {
+        await sendOtpEmail(email, code)
+      } catch (emailErr) {
+        console.error('register email delivery failed:', emailErr)
+        // Account created, OTP saved — user can resend from verify page
+      }
       return NextResponse.json({ success: true, requiresVerification: true }, { status: 201 })
     }
 
