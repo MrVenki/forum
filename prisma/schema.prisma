@@ -4,8 +4,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 enum CityTier {
@@ -97,6 +98,7 @@ model User {
   comments         Comment[]
   ratings          Rating[]
   commentReactions CommentReaction[]
+  subscriptions    TopicSubscription[]
 
   @@map("users")
 }
@@ -141,10 +143,11 @@ model Topic {
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
 
-  city     City      @relation(fields: [cityId], references: [id])
-  user     User      @relation(fields: [userId], references: [id])
-  comments Comment[]
-  ratings  Rating[]
+  city          City                @relation(fields: [cityId], references: [id])
+  user          User                @relation(fields: [userId], references: [id])
+  comments      Comment[]
+  ratings       Rating[]
+  subscriptions TopicSubscription[]
 
   @@unique([cityId, slug])
   @@index([cityId, createdAt(sort: Desc)])
@@ -197,6 +200,20 @@ model EmailOtp {
 
   @@index([email, createdAt])
   @@map("email_otps")
+}
+
+model TopicSubscription {
+  id        String   @id @default(cuid())
+  topicId   String
+  userId    String
+  createdAt DateTime @default(now())
+
+  topic Topic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([topicId, userId])
+  @@index([topicId])
+  @@map("topic_subscriptions")
 }
 
 model Rating {

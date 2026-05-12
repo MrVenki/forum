@@ -1043,9 +1043,9 @@ const PROPERTIES: PropertyData[] = [
   {
     citySlug: 'delhi',
     propertyName: 'Omaxe State',
-    propertyType: 'APARTMENT',
+    propertyType: 'COMMERCIAL',
     address: 'Sector 19B, Dwarka, New Delhi 110075',
-    description: `Omaxe State is a large mixed-use development in Dwarka Sector 19B Delhi by Omaxe Group, featuring residential apartments, a cricket stadium, an international convention center, and a retail mall – all within a single integrated campus. Offers a truly unique live-work-play urban destination in West Delhi.`,
+    description: `Omaxe State is a landmark commercial and sports development in Dwarka Sector 19B, Delhi by Omaxe Group. The project features a 40,000-seat international cricket and football stadium, a retail mall, high-street shops, food courts, entertainment zones, and Grade-A office spaces — all on a 50-acre integrated campus. It is the first privately-owned international sports city in India and is expected to host IPL matches and international events.`,
     priceMin: 1_50_00_000,
     priceMax: 2_80_00_000,
     topic: {
@@ -1836,15 +1836,15 @@ async function main() {
     {
       citySlug: 'bengaluru',
       propertyName: 'Brigade Oasis',
-      propertyType: 'APARTMENT',
+      propertyType: 'PLOT',
       address: 'Devanahalli, Bengaluru 562110',
-      description: `Brigade Oasis is a luxury apartment project in Devanahalli North Bengaluru by Brigade Group, offering 3 BHK apartments with private balcony gardens and Nandi Hills views. The project features a desert-oasis themed landscape with water features, palm promenade, and a private infinity pool for residents.`,
+      description: `Brigade Oasis is a premium plotted development in Devanahalli North Bengaluru by Brigade Group, spread across 70 acres. The project offers 987 villa plots ranging from 1,200 to 3,200 sq ft, letting buyers design and build their own home. Located near Kempegowda International Airport and the upcoming Aerospace SEZ, it benefits from rapid infrastructure development in North Bengaluru. RERA approved with clear titles and developed internal roads, drainage, and landscaping.`,
       priceMin: 60_00_000,
       priceMax: 1_00_00_000,
       topic: {
         userName: 'Rajiv Deshpande',
-        title: 'Brigade Oasis Devanahalli – Nandi Hills views in a luxury project near airport?',
-        content: `Nandi Hills visible from the complex on a clear day is a genuinely beautiful selling point. Brigade's oasis theme with palm promenade and water features is well-executed. 3BHK at 65L near the airport with Nandi Hills views from a reliable Brigade project is very attractive. North Bengaluru premium living at a fair price.`,
+        title: 'Brigade Oasis Devanahalli – plotted development near airport worth it?',
+        content: `Brigade Oasis is one of the few RERA-approved plotted developments in North Bengaluru from a Grade-A developer. The plot sizes from 1200 to 3200 sqft give flexibility to build your own home. Near the airport and Aerospace SEZ which is driving land price appreciation in Devanahalli. Brigade's track record on plotted developments is solid. Good long-term investment if you don't need immediate rental income.`,
         daysAgo: 42,
       },
       ratings: [

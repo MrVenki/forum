@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
+import { revalidatePath } from 'next/cache'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { createCommentSchema } from '@/lib/validations/comment'
 import { isEmailVerificationEnabled } from '@/lib/features'
+import { generateUnsubscribeToken, sendCommentNotification } from '@/lib/email'
 
 export async function GET(req: NextRequest, { params }: { params: { topicId: string } }) {
   const comments = await prisma.comment.findMany({
@@ -54,5 +56,49 @@ export async function POST(req: NextRequest, { params }: { params: { topicId: st
 
   await prisma.topic.update({ where: { id: params.topicId }, data: { commentCount: { increment: 1 } } })
 
-  return NextResponse.json(comment, { status: 201 })
+  // Auto-subscribe the commenter
+  await prisma.topicSubscription.upsert({
+    where: { topicId_userId: { topicId: params.topicId, userId: session.user.id } },
+    create: { topicId: params.topicId, userId: session.user.id },
+    update: {},
+  })
+
+  const full = await prisma.topic.findUnique({
+    where: { id: params.topicId },
+    select: {
+      slug: true,
+      propertyName: true,
+      city: { select: { slug: true, name: true } },
+    },
+  })
+
+  if (full) {
+    revalidatePath(`/${full.city.slug}/${full.slug}`)
+
+    // Notify all other subscribers (fire-and-forget)
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.indiapropertytalk.com'
+    const topicUrl = `${siteUrl}/${full.city.slug}/${full.slug}`
+
+    const subscribers = await prisma.topicSubscription.findMany({
+      where: { topicId: params.topicId, userId: { not: session.user.id } },
+      include: { user: { select: { id: true, name: true, email: true } } },
+    })
+
+    for (const sub of subscribers) {
+      const token = generateUnsubscribeToken(sub.user.id, params.topicId)
+      const unsubscribeUrl = `${siteUrl}/api/unsubscribe?u=${sub.user.id}&t=${params.topicId}&token=${token}`
+      sendCommentNotification({
+        subscriberEmail: sub.user.email,
+        subscriberName: sub.user.name,
+        commenterName: session.user.name || 'Someone',
+        commentContent: parsed.data.content,
+        propertyName: full.propertyName,
+        cityName: full.city.name,
+        topicUrl,
+        unsubscribeUrl,
+      }).catch(() => {})
+    }
+  }
+
+  return NextResponse.json({ ...comment, autoSubscribed: true }, { status: 201 })
 }

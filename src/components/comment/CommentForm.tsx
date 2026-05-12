@@ -36,7 +36,12 @@ export function CommentForm({ topicId, parentId, onSuccess, onCancel, placeholde
     if (res.ok) {
       setContent('')
       onSuccess(data)
-      toast({ title: 'Comment posted!' })
+      toast({
+        title: '✅ Comment posted',
+        description: data.autoSubscribed && !parentId
+          ? "🔔 You're now following this thread and will be notified of new replies."
+          : undefined,
+      })
     } else {
       toast({ title: data.error || 'Failed to post comment', variant: 'destructive' })
     }

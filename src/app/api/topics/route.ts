@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma'
 import { createTopicSchema } from '@/lib/validations/topic'
 import { generateTopicSlug } from '@/lib/utils/slugify'
 import { PAGINATION } from '@/lib/constants/config'
-import { isEmailVerificationEnabled } from '@/lib/features'
+import { isEmailVerificationEnabled, isNewTopicEnabled } from '@/lib/features'
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
@@ -13,6 +13,8 @@ export async function GET(req: NextRequest) {
   const page = Math.max(1, parseInt(searchParams.get('page') || '1'))
   const sort = searchParams.get('sort') || 'latest'
   const type = searchParams.get('type') || ''
+  const check = searchParams.get('check') === 'true'
+  const name = searchParams.get('name') || ''
   const limit = PAGINATION.TOPICS_PER_PAGE
 
   const where: Record<string, unknown> = { isPublished: true }
@@ -20,6 +22,17 @@ export async function GET(req: NextRequest) {
     const city = await prisma.city.findUnique({ where: { slug: citySlug }, select: { id: true } })
     if (city) where.cityId = city.id
   }
+
+  // Duplicate-check mode: only look for exact property name match in this city
+  if (check && name) {
+    const topics = await prisma.topic.findMany({
+      where: { ...where, propertyName: { equals: name, mode: 'insensitive' } },
+      select: { id: true, propertyName: true },
+      take: 1,
+    })
+    return NextResponse.json({ topics })
+  }
+
   if (type) where.propertyType = type
 
   const orderBy =
@@ -47,6 +60,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  if (!isNewTopicEnabled()) return NextResponse.json({ error: 'New topic creation is currently disabled.' }, { status: 403 })
+
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   if (isEmailVerificationEnabled() && !session.user.emailVerified) {
@@ -94,6 +109,9 @@ export async function POST(req: NextRequest) {
       },
       include: { city: true },
     })
+
+    // Auto-subscribe the creator
+    await prisma.topicSubscription.create({ data: { topicId: topic.id, userId: session.user.id } })
 
     return NextResponse.json({ topic, slug: `/${topic.city.slug}/${slug}` }, { status: 201 })
   } catch (err: unknown) {

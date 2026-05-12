@@ -6,12 +6,17 @@ interface PaginationProps {
   page: number
   totalPages: number
   basePath: string
+  preserveParams?: Record<string, string>
 }
 
-export function Pagination({ page, totalPages, basePath }: PaginationProps) {
+export function Pagination({ page, totalPages, basePath, preserveParams }: PaginationProps) {
   if (totalPages <= 1) return null
 
-  const makeHref = (p: number) => `${basePath}?page=${p}`
+  const makeHref = (p: number) => {
+    const entries = Object.entries({ ...preserveParams, page: String(p) }).filter(([, v]) => v !== '')
+    const qs = new URLSearchParams(entries).toString()
+    return `${basePath}?${qs}`
+  }
 
   const pages: (number | '...')[] = []
   if (totalPages <= 7) {

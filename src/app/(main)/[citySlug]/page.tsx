@@ -182,7 +182,7 @@ export default async function CityPage({ params, searchParams }: Props) {
                 />
               ))}
             </div>
-            <Pagination page={page} totalPages={totalPages} basePath={`/${city.slug}`} />
+            <Pagination page={page} totalPages={totalPages} basePath={`/${city.slug}`} preserveParams={{ sort, ...(type ? { type } : {}) }} />
           </>
         )}
       </div>

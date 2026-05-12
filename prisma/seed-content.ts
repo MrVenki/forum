@@ -185,9 +185,9 @@ const PROPERTIES: PropertyData[] = [
   {
     citySlug: 'delhi',
     propertyName: 'M3M Capital Walk',
-    propertyType: 'APARTMENT',
+    propertyType: 'COMMERCIAL',
     address: 'Sector 113, Dwarka Expressway, Gurugram 122017',
-    description: `M3M Capital Walk is a premium mixed-use project combining residential sky suites with a high-street retail boulevard on the Dwarka Expressway. The residential tower offers 2 and 3 BHK smart homes with pre-installed home automation, panoramic glazing, and direct lift access. The retail boulevard below creates a live-work-play environment with F&B brands, fitness studios, and business lounges.`,
+    description: `M3M Capital Walk is an iconic 1-km high-street retail development in Sector 113, Gurugram by M3M Group on Dwarka Expressway. The project features 876 boutique shops, double-height flagship showrooms, a hypermarket, food court, entertainment zone, and Grade-A offices. Designed as an open-air retail boulevard, it targets premium brands and draws heavy footfall from the densely populated Dwarka Expressway corridor.`,
     priceMin: 1_85_00_000,
     priceMax: 3_80_00_000,
     topic: {
@@ -285,7 +285,7 @@ const PROPERTIES: PropertyData[] = [
   {
     citySlug: 'bengaluru',
     propertyName: 'Sobha Neopolis',
-    propertyType: 'APARTMENT',
+    propertyType: 'VILLA',
     address: 'Panathur Road, Varthur, Bengaluru 560087',
     description: `Sobha Neopolis is a marquee luxury residential development on Panathur Road, one of Bengaluru's most sought-after IT corridors. Offering 3 and 4 BHK sky villas and duplexes, the project features a 1.5 lakh sq ft podium amenity deck, private theatre, sky gym, and curated landscaping by an international design firm. Its proximity to EPIP Zone, Whitefield IT parks, and the upcoming Whitefield metro makes it ideal for tech professionals.`,
     priceMin: 2_20_00_000,
@@ -405,7 +405,7 @@ const PROPERTIES: PropertyData[] = [
   {
     citySlug: 'hyderabad',
     propertyName: 'My Home Bhooja',
-    propertyType: 'APARTMENT',
+    propertyType: 'VILLA',
     address: 'Kokapet, Hyderabad 500075',
     description: `My Home Bhooja is the most anticipated ultra-luxury launch in Hyderabad, located in the premium Financial District-Kokapet corridor. Offering limited-edition 4 BHK sky villas with private pools and 5 BHK penthouses with stunning views of Gandipet lake. The project features a 3 lakh sq ft amenity club – the largest in Hyderabad – with an Olympic pool, squash courts, private wine room, and fine-dining restaurant.`,
     priceMin: 3_80_00_000,

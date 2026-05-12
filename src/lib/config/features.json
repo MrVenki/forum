@@ -4,5 +4,8 @@
     "otpExpiryMinutes": 10,
     "maxResendPerHour": 3,
     "maxVerifyAttempts": 5
+  },
+  "newTopic": {
+    "enabled": false
   }
 }

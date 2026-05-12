@@ -8,7 +8,7 @@ import { Home, Building2, PlusCircle, LogIn, LogOut, User, Menu, X, Search, Chev
 import { METRO_CITIES, TIER1_CITIES } from '@/lib/constants/cities'
 import { cn } from '@/lib/utils/cn'
 
-export function Header() {
+export function Header({ newTopicEnabled = false }: { newTopicEnabled?: boolean }) {
   const { data: session } = useSession()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [citiesOpen, setCitiesOpen] = useState(false)
@@ -87,9 +87,11 @@ export function Header() {
           <div className="hidden md:flex items-center gap-2">
             {session ? (
               <>
-                <Link href="/new-topic" className="btn-primary text-sm">
-                  <PlusCircle className="h-4 w-4" /> New Topic
-                </Link>
+                {newTopicEnabled && (
+                  <Link href="/new-topic" className="btn-primary text-sm">
+                    <PlusCircle className="h-4 w-4" /> New Topic
+                  </Link>
+                )}
                 <div className="relative group">
                   <button className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-100 transition-colors">
                     <div className="h-7 w-7 rounded-full bg-saffron-100 flex items-center justify-center text-saffron-700 text-xs font-bold">
@@ -146,9 +148,11 @@ export function Header() {
             <div className="pt-2 border-t border-neutral-100">
               {session ? (
                 <>
-                  <Link href="/new-topic" onClick={() => setMobileOpen(false)} className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-saffron-600 hover:bg-saffron-50">
-                    <PlusCircle className="h-4 w-4" /> New Topic
-                  </Link>
+                  {newTopicEnabled && (
+                    <Link href="/new-topic" onClick={() => setMobileOpen(false)} className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-saffron-600 hover:bg-saffron-50">
+                      <PlusCircle className="h-4 w-4" /> New Topic
+                    </Link>
+                  )}
                   <Link href="/profile" onClick={() => setMobileOpen(false)} className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-neutral-700 hover:bg-neutral-100">
                     <User className="h-4 w-4" /> Profile
                   </Link>

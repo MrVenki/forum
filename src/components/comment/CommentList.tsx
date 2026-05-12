@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
+import Link from 'next/link'
 import { CommentItem } from './CommentItem'
 import { CommentForm } from './CommentForm'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -59,19 +60,12 @@ export function CommentList({ topicId, initialComments }: CommentListProps) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-2">
-        <MessageSquare className="h-5 w-5 text-saffron-500" />
-        <h2 className="font-heading font-bold text-lg text-navy-500">
-          {comments.length} Comment{comments.length !== 1 ? 's' : ''}
-        </h2>
-      </div>
-
       {session ? (
         <CommentForm topicId={topicId} onSuccess={handleNewComment} />
       ) : (
         <div className="rounded-xl border border-dashed border-neutral-300 p-5 text-center">
           <p className="text-sm text-neutral-500">
-            <a href="/login" className="font-semibold text-saffron-500 hover:text-saffron-600">Sign in</a> to join the discussion
+            <Link href="/login" className="font-semibold text-saffron-500 hover:text-saffron-600">Sign in</Link> to join the discussion
           </p>
         </div>
       )}

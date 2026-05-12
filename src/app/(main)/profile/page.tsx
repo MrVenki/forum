@@ -8,6 +8,7 @@ import { Breadcrumbs } from '@/components/layout/Breadcrumbs'
 import { formatAbsoluteDate } from '@/lib/utils/format'
 import { User, MessageSquare, Star, Calendar } from 'lucide-react'
 import type { TopicWithRelations } from '@/types'
+import { EditNameForm } from '@/components/profile/EditNameForm'
 
 export default async function ProfilePage() {
   const session = await getServerSession(authOptions)
@@ -41,7 +42,7 @@ export default async function ProfilePage() {
             <div className="h-20 w-20 rounded-full bg-saffron-100 flex items-center justify-center text-saffron-700 text-3xl font-bold mx-auto">
               {user.name.charAt(0).toUpperCase()}
             </div>
-            <h1 className="font-heading font-bold text-lg text-navy-500 mt-3">{user.name}</h1>
+            <EditNameForm initialName={user.name} />
             <p className="text-sm text-neutral-500">{user.email}</p>
             <p className="text-xs text-neutral-400 mt-2 flex items-center justify-center gap-1">
               <Calendar className="h-3.5 w-3.5" /> Joined {formatAbsoluteDate(user.createdAt)}

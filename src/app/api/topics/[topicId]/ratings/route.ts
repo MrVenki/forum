@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
+import { revalidatePath } from 'next/cache'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { upsertRatingSchema } from '@/lib/validations/rating'
@@ -42,6 +43,12 @@ export async function POST(req: NextRequest, { params }: { params: { topicId: st
       ratingCount: agg._count.score,
     },
   })
+
+  const full = await prisma.topic.findUnique({
+    where: { id: params.topicId },
+    select: { slug: true, city: { select: { slug: true } } },
+  })
+  if (full) revalidatePath(`/${full.city.slug}/${full.slug}`)
 
   return NextResponse.json({ success: true, avgRating: agg._avg.score, ratingCount: agg._count.score })
 }

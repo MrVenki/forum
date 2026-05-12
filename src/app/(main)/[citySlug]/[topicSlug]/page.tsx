@@ -14,8 +14,9 @@ import { CommentList } from '@/components/comment/CommentList'
 import { Badge } from '@/components/ui/badge'
 import { MapPin, Eye, MessageSquare, User, Calendar, Home, IndianRupee } from 'lucide-react'
 import type { CommentWithRelations } from '@/types'
+import { SubscribeButton, SubscriberCount } from '@/components/topic/SubscribeButton'
 
-export const revalidate = 3600
+export const revalidate = 60
 
 interface Props {
   params: { citySlug: string; topicSlug: string }
@@ -75,29 +76,31 @@ export default async function TopicPage({ params }: Props) {
   // Increment view count (fire and forget)
   prisma.topic.update({ where: { id: topic.id }, data: { viewCount: { increment: 1 } } }).catch(() => {})
 
-  const comments = await prisma.comment.findMany({
-    where: { topicId: topic.id, parentId: null, isDeleted: false },
-    orderBy: { createdAt: 'asc' },
-    include: {
-      user: { select: { id: true, name: true, image: true } },
-      reactions: true,
-      replies: {
-        where: { isDeleted: false },
-        orderBy: { createdAt: 'asc' },
-        include: {
-          user: { select: { id: true, name: true, image: true } },
-          reactions: true,
+  const [comments, relatedTopics, subscriberCount] = await Promise.all([
+    prisma.comment.findMany({
+      where: { topicId: topic.id, parentId: null, isDeleted: false },
+      orderBy: { createdAt: 'asc' },
+      include: {
+        user: { select: { id: true, name: true, image: true } },
+        reactions: true,
+        replies: {
+          where: { isDeleted: false },
+          orderBy: { createdAt: 'asc' },
+          include: {
+            user: { select: { id: true, name: true, image: true } },
+            reactions: true,
+          },
         },
       },
-    },
-  }) as CommentWithRelations[]
-
-  const relatedTopics = await prisma.topic.findMany({
-    where: { cityId: topic.cityId, isPublished: true, id: { not: topic.id } },
-    orderBy: { avgRating: 'desc' },
-    take: 4,
-    select: { id: true, propertyName: true, slug: true, avgRating: true, ratingCount: true },
-  })
+    }) as Promise<CommentWithRelations[]>,
+    prisma.topic.findMany({
+      where: { cityId: topic.cityId, isPublished: true, id: { not: topic.id } },
+      orderBy: { avgRating: 'desc' },
+      take: 4,
+      select: { id: true, propertyName: true, slug: true, avgRating: true, ratingCount: true },
+    }),
+    prisma.topicSubscription.count({ where: { topicId: topic.id } }),
+  ])
 
   const avgRating = Number(topic.avgRating)
   const propTypeLabel = PROPERTY_TYPES.find((p) => p.value === topic.propertyType)?.label || topic.propertyType
@@ -149,11 +152,14 @@ export default async function TopicPage({ params }: Props) {
           <div className="lg:col-span-2 space-y-6">
             {/* Topic Header */}
             <div className="card-base p-6">
-              <div className="flex items-center gap-2 mb-3 flex-wrap">
-                <Badge variant={topic.city.tier === 'METRO' ? 'metro' : 'tier1'}>
-                  <MapPin className="h-3 w-3 mr-1" />{topic.city.name}
-                </Badge>
-                <Badge variant="outline">{propTypeLabel}</Badge>
+              <div className="flex items-start justify-between gap-3 mb-3">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Badge variant={topic.city.tier === 'METRO' ? 'metro' : 'tier1'}>
+                    <MapPin className="h-3 w-3 mr-1" />{topic.city.name}
+                  </Badge>
+                  <Badge variant="outline">{propTypeLabel}</Badge>
+                </div>
+                <SubscribeButton topicId={topic.id} initialCount={subscriberCount} />
               </div>
 
               <h1 className="font-heading text-2xl sm:text-3xl font-bold text-navy-500 leading-snug">
@@ -245,6 +251,13 @@ export default async function TopicPage({ params }: Props) {
 
             {/* Comments */}
             <div className="card-base p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-heading font-bold text-lg text-navy-500">
+                  Discussion
+                  {comments.length > 0 && <span className="ml-2 text-sm font-normal text-neutral-400">({comments.length})</span>}
+                </h2>
+                <SubscriberCount count={subscriberCount} />
+              </div>
               <CommentList topicId={topic.id} initialComments={comments} />
             </div>
           </div>

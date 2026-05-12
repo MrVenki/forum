@@ -1,10 +1,9 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import { TopicCard } from '@/components/topic/TopicCard'
 import { Pagination } from '@/components/shared/Pagination'
 import { EmptyState } from '@/components/shared/EmptyState'
-import { Search } from 'lucide-react'
+import { SearchForm } from '@/components/search/SearchForm'
 import type { TopicWithRelations } from '@/types'
 
 export const metadata: Metadata = {
@@ -54,6 +53,10 @@ export default async function SearchPage({ searchParams }: Props) {
     ? await searchTopics(q, page, searchParams.city)
     : { topics: [], total: 0, totalPages: 0 }
 
+  const paginationParams: Record<string, string> = {}
+  if (q) paginationParams.q = q
+  if (searchParams.city) paginationParams.city = searchParams.city
+
   return (
     <div className="container-forum py-8">
       <div className="mb-6">
@@ -63,22 +66,7 @@ export default async function SearchPage({ searchParams }: Props) {
         {q && <p className="text-sm text-neutral-500 mt-1">{total} result{total !== 1 ? 's' : ''} found</p>}
       </div>
 
-      {/* Search Form */}
-      <form action="/search" method="GET" className="mb-8">
-        <div className="flex gap-2 max-w-xl">
-          <div className="relative flex-1">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
-            <input
-              name="q"
-              defaultValue={q}
-              placeholder="Search properties, cities, projects…"
-              className="input-field pl-10"
-              autoFocus={!q}
-            />
-          </div>
-          <button type="submit" className="btn-primary">Search</button>
-        </div>
-      </form>
+      <SearchForm defaultValue={q} />
 
       {q.length < 2 && q.length > 0 ? (
         <p className="text-sm text-neutral-500">Please enter at least 2 characters.</p>
@@ -96,7 +84,7 @@ export default async function SearchPage({ searchParams }: Props) {
             ))}
           </div>
           {totalPages > 1 && (
-            <Pagination page={page} totalPages={totalPages} basePath="/search" />
+            <Pagination page={page} totalPages={totalPages} basePath="/search" preserveParams={paginationParams} />
           )}
         </>
       )}
