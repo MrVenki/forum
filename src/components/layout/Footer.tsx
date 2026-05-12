@@ -67,8 +67,8 @@ export function Footer() {
                 { href: '/cities', label: 'Browse All Cities' },
                 { href: '/new-topic', label: 'Start a Discussion' },
                 { href: '/search', label: 'Search Properties' },
+                { href: '/developers', label: 'Developer Scores' },
                 { href: '/register', label: 'Create Account' },
-                { href: '/login', label: 'Sign In' },
               ].map((link) => (
                 <li key={link.href}>
                   <Link href={link.href} className="text-sm text-navy-200 hover:text-white transition-colors">
@@ -80,13 +80,28 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-10 border-t border-navy-400 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-navy-300">
-            © {new Date().getFullYear()} {SITE_CONFIG.name}. All rights reserved. Made with ❤️ for India.
-          </p>
-          <p className="text-xs text-navy-400">
-            Property information is user-generated. Always verify independently.
-          </p>
+        {/* Legal links row */}
+        <div className="mt-10 border-t border-navy-400 pt-6">
+          <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 mb-4">
+            {[
+              { href: '/privacy-policy', label: 'Privacy Policy' },
+              { href: '/terms-of-use', label: 'Terms of Use' },
+              { href: '/disclaimer', label: 'Disclaimer' },
+              { href: '/contact', label: 'Contact Us' },
+            ].map((link) => (
+              <Link key={link.href} href={link.href} className="text-xs text-navy-300 hover:text-white transition-colors">
+                {link.label}
+              </Link>
+            ))}
+          </div>
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+            <p className="text-xs text-navy-300">
+              © {new Date().getFullYear()} {SITE_CONFIG.name}. All rights reserved. Made with ❤️ for India.
+            </p>
+            <p className="text-xs text-navy-400">
+              Property information is user-generated. Always verify independently.
+            </p>
+          </div>
         </div>
       </div>
     </footer>
