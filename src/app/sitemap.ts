@@ -38,7 +38,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         take: 5000,
       }),
       prisma.developer.findMany({
-        select: { slug: true, updatedAt: true },
+        select: { slug: true, createdAt: true },
       }),
     ])
     topicPages = topics.map((t) => ({
@@ -49,7 +49,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }))
     developerPages = developers.map((d) => ({
       url: `${baseUrl}/developer/${d.slug}`,
-      lastModified: d.updatedAt,
+      lastModified: d.createdAt,
       changeFrequency: 'weekly' as const,
       priority: 0.7,
     }))
