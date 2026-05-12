@@ -6,6 +6,8 @@ export type TopicWithRelations = Topic & {
   city: City
   user: Pick<User, 'id' | 'name' | 'image'>
   _count?: { comments: number; ratings: number }
+  developerSlug?: string | null
+  developerName?: string | null
 }
 
 export type CommentWithRelations = Comment & {

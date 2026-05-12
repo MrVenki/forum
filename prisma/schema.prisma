@@ -118,30 +118,32 @@ model City {
 }
 
 model Topic {
-  id           String       @id @default(cuid())
-  cityId       String
-  userId       String
-  title        String
-  slug         String
-  propertyName String
-  propertyType PropertyType
-  description  String       @db.Text
-  address      String?
-  priceMin     Decimal?     @db.Decimal(15, 2)
-  priceMax     Decimal?     @db.Decimal(15, 2)
-  image1Url    String?
-  image1PubId  String?
-  image2Url    String?
-  image2PubId  String?
-  avgRating    Decimal      @default(0) @db.Decimal(3, 2)
-  ratingCount  Int          @default(0)
-  commentCount Int          @default(0)
-  viewCount    Int          @default(0)
-  isPublished  Boolean      @default(true)
-  metaTitle    String?
-  metaDesc     String?
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
+  id            String       @id @default(cuid())
+  cityId        String
+  userId        String
+  title         String
+  slug          String
+  propertyName  String
+  propertyType  PropertyType
+  description   String       @db.Text
+  address       String?
+  priceMin      Decimal?     @db.Decimal(15, 2)
+  priceMax      Decimal?     @db.Decimal(15, 2)
+  image1Url     String?
+  image1PubId   String?
+  image2Url     String?
+  image2PubId   String?
+  avgRating     Decimal      @default(0) @db.Decimal(3, 2)
+  ratingCount   Int          @default(0)
+  commentCount  Int          @default(0)
+  viewCount     Int          @default(0)
+  isPublished   Boolean      @default(true)
+  metaTitle     String?
+  metaDesc      String?
+  developerSlug String?
+  developerName String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
 
   city          City                @relation(fields: [cityId], references: [id])
   user          User                @relation(fields: [userId], references: [id])
@@ -152,7 +154,21 @@ model Topic {
   @@unique([cityId, slug])
   @@index([cityId, createdAt(sort: Desc)])
   @@index([avgRating(sort: Desc)])
+  @@index([developerSlug])
   @@map("topics")
+}
+
+model Developer {
+  id             String   @id @default(cuid())
+  name           String
+  slug           String   @unique
+  description    String?  @db.Text
+  foundedYear    Int?
+  hq             String?
+  totalDelivered String?
+  createdAt      DateTime @default(now())
+
+  @@map("developers")
 }
 
 model Comment {

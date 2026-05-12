@@ -76,14 +76,23 @@ export function TopicCard({ topic, priority = false, headingLevel: Tag = 'h3' }:
           </div>
         </div>
 
-        {/* Author */}
-        <div className="flex items-center gap-2 text-xs text-neutral-500">
-          <div className="h-5 w-5 rounded-full bg-saffron-100 flex items-center justify-center text-saffron-700 font-bold text-[10px] shrink-0">
-            {topic.user.name.charAt(0).toUpperCase()}
+        {/* Developer + Author */}
+        <div className="flex items-center justify-between gap-2 text-xs text-neutral-500">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="h-5 w-5 rounded-full bg-saffron-100 flex items-center justify-center text-saffron-700 font-bold text-[10px] shrink-0">
+              {topic.user.name.charAt(0).toUpperCase()}
+            </div>
+            <time dateTime={topic.createdAt.toString()} className="truncate">{formatRelativeTime(topic.createdAt)}</time>
           </div>
-          <span>{topic.user.name}</span>
-          <span>·</span>
-          <time dateTime={topic.createdAt.toString()}>{formatRelativeTime(topic.createdAt)}</time>
+          {topic.developerSlug && (
+            <Link
+              href={`/developer/${topic.developerSlug}`}
+              onClick={(e) => e.stopPropagation()}
+              className="shrink-0 text-[10px] font-medium text-saffron-600 hover:text-saffron-700 bg-saffron-50 border border-saffron-100 rounded px-1.5 py-0.5 transition-colors"
+            >
+              {topic.developerName ?? topic.developerSlug}
+            </Link>
+          )}
         </div>
       </div>
     </article>

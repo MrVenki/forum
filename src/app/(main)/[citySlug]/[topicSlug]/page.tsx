@@ -298,6 +298,16 @@ export default async function TopicPage({ params }: Props) {
                   <dt className="text-neutral-500">Type</dt>
                   <dd className="font-medium text-neutral-800">{propTypeLabel}</dd>
                 </div>
+                {topic.developerSlug && (
+                  <div className="flex justify-between items-center">
+                    <dt className="text-neutral-500">Developer</dt>
+                    <dd className="font-medium">
+                      <Link href={`/developer/${topic.developerSlug}`} className="text-saffron-600 hover:text-saffron-700 transition-colors">
+                        {topic.developerName ?? topic.developerSlug}
+                      </Link>
+                    </dd>
+                  </div>
+                )}
                 {avgRating > 0 && (
                   <div className="flex justify-between">
                     <dt className="text-neutral-500">Rating</dt>
