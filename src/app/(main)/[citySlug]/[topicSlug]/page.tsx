@@ -2,6 +2,8 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { SITE_CONFIG, PROPERTY_TYPES } from '@/lib/constants/config'
 import { getCityDefaultImage } from '@/lib/constants/cityImages'
@@ -15,6 +17,7 @@ import { Badge } from '@/components/ui/badge'
 import { MapPin, Eye, MessageSquare, User, Calendar, Home, IndianRupee } from 'lucide-react'
 import type { CommentWithRelations } from '@/types'
 import { SubscribeButton, SubscriberCount } from '@/components/topic/SubscribeButton'
+import { EditDescriptionForm } from '@/components/topic/EditDescriptionForm'
 
 export const revalidate = 60
 
@@ -58,6 +61,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function TopicPage({ params }: Props) {
+  const session = await getServerSession(authOptions)
+
   const topic = await prisma.topic.findFirst({
     where: {
       slug: params.topicSlug,
@@ -72,6 +77,8 @@ export default async function TopicPage({ params }: Props) {
   })
 
   if (!topic) notFound()
+
+  const isOwner = session?.user.id === topic.user.id
 
   // Increment view count (fire and forget)
   prisma.topic.update({ where: { id: topic.id }, data: { viewCount: { increment: 1 } } }).catch(() => {})
@@ -244,9 +251,13 @@ export default async function TopicPage({ params }: Props) {
             {/* Description */}
             <div className="card-base p-6">
               <h2 className="font-heading font-bold text-lg text-navy-500 mb-3">About This Property</h2>
-              <div className="prose prose-sm max-w-none text-neutral-700 leading-relaxed whitespace-pre-line">
-                {topic.description}
-              </div>
+              {isOwner ? (
+                <EditDescriptionForm topicId={topic.id} initialDescription={topic.description} />
+              ) : (
+                <div className="prose prose-sm max-w-none text-neutral-700 leading-relaxed whitespace-pre-line">
+                  {topic.description}
+                </div>
+              )}
             </div>
 
             {/* Comments */}

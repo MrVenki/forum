@@ -23,6 +23,29 @@ export async function GET(req: NextRequest, { params }: { params: { topicId: str
   return NextResponse.json(topic)
 }
 
+export async function PATCH(req: NextRequest, { params }: { params: { topicId: string } }) {
+  const session = await getServerSession(authOptions)
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const topic = await prisma.topic.findUnique({ where: { id: params.topicId }, select: { userId: true } })
+  if (!topic) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  if (topic.userId !== session.user.id) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+
+  const body = await req.json()
+  const description = typeof body.description === 'string' ? body.description.trim() : null
+  if (!description || description.length < 20) {
+    return NextResponse.json({ error: 'Description must be at least 20 characters.' }, { status: 400 })
+  }
+
+  const updated = await prisma.topic.update({
+    where: { id: params.topicId },
+    data: { description },
+    select: { description: true },
+  })
+
+  return NextResponse.json({ description: updated.description })
+}
+
 export async function DELETE(req: NextRequest, { params }: { params: { topicId: string } }) {
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
