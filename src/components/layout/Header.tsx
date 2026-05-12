@@ -84,6 +84,9 @@ export function Header({ newTopicEnabled = false }: { newTopicEnabled?: boolean 
             <Link href="/developers" className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 transition-colors">
               <Building2 className="h-4 w-4" /> Developers
             </Link>
+            <Link href="/about" className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 transition-colors">
+              About
+            </Link>
           </nav>
 
           {/* Desktop Auth */}

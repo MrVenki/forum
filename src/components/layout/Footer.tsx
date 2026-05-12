@@ -64,6 +64,7 @@ export function Footer() {
             <ul className="space-y-1.5">
               {[
                 { href: '/', label: 'Home' },
+                { href: '/about', label: 'About Us' },
                 { href: '/cities', label: 'Browse All Cities' },
                 { href: '/new-topic', label: 'Start a Discussion' },
                 { href: '/search', label: 'Search Properties' },
@@ -84,6 +85,7 @@ export function Footer() {
         <div className="mt-10 border-t border-navy-400 pt-6">
           <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 mb-4">
             {[
+              { href: '/about', label: 'About Us' },
               { href: '/privacy-policy', label: 'Privacy Policy' },
               { href: '/terms-of-use', label: 'Terms of Use' },
               { href: '/disclaimer', label: 'Disclaimer' },
