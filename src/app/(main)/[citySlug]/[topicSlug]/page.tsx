@@ -18,6 +18,7 @@ import { MapPin, Eye, MessageSquare, User, Calendar, Home, IndianRupee } from 'l
 import type { CommentWithRelations } from '@/types'
 import { SubscribeButton, SubscriberCount } from '@/components/topic/SubscribeButton'
 import { EditDescriptionForm } from '@/components/topic/EditDescriptionForm'
+import { ShareButton } from '@/components/topic/ShareButton'
 
 export const revalidate = 60
 
@@ -53,9 +54,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description,
       url,
       type: 'article',
+      siteName: SITE_CONFIG.name,
       publishedTime: topic.createdAt.toISOString(),
       modifiedTime: topic.updatedAt.toISOString(),
       images: [{ url: ogImage, width: 1200, height: 630, alt: topic.propertyName }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [ogImage],
+      site: SITE_CONFIG.twitterHandle,
     },
   }
 }
@@ -166,7 +175,14 @@ export default async function TopicPage({ params }: Props) {
                   </Badge>
                   <Badge variant="outline">{propTypeLabel}</Badge>
                 </div>
-                <SubscribeButton topicId={topic.id} initialCount={subscriberCount} />
+                <div className="flex items-center gap-2">
+                  <ShareButton
+                    title={`${topic.propertyName}, ${topic.city.name} — Reviews & Discussion`}
+                    text={topic.description.slice(0, 100).replace(/\n/g, ' ') + '…'}
+                    url={topicUrl}
+                  />
+                  <SubscribeButton topicId={topic.id} initialCount={subscriberCount} />
+                </div>
               </div>
 
               <h1 className="font-heading text-2xl sm:text-3xl font-bold text-navy-500 leading-snug">
