@@ -29,7 +29,9 @@ export default function LoginPage() {
     setError('')
     const res = await signIn('credentials', { ...data, redirect: false })
     setLoading(false)
-    if (res?.error) {
+    if (res?.error === 'EmailNotVerified') {
+      router.push(`/verify-email?email=${encodeURIComponent(data.email)}`)
+    } else if (res?.error) {
       setError('Invalid email or password. Please try again.')
     } else {
       router.push('/')

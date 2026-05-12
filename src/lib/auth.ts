@@ -4,6 +4,7 @@ import GoogleProvider from 'next-auth/providers/google'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import bcrypt from 'bcryptjs'
 import { prisma } from './prisma'
+import { isEmailVerificationEnabled } from './features'
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma) as NextAuthOptions['adapter'],
@@ -39,6 +40,10 @@ export const authOptions: NextAuthOptions = {
 
         const valid = await bcrypt.compare(credentials.password, user.passwordHash)
         if (!valid) return null
+
+        if (isEmailVerificationEnabled() && !user.emailVerified) {
+          throw new Error('EmailNotVerified')
+        }
 
         return {
           id: user.id,
