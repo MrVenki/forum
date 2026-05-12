@@ -3,6 +3,7 @@ import { Plus_Jakarta_Sans, Inter } from 'next/font/google'
 import './globals.css'
 import { SITE_CONFIG } from '@/lib/constants/config'
 import { Providers } from './providers'
+import { GoogleAnalytics } from '@next/third-parties/google'
 
 const plusJakarta = Plus_Jakarta_Sans({
   subsets: ['latin'],
@@ -88,6 +89,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className={`${plusJakarta.variable} ${inter.variable} antialiased`}>
         <Providers>{children}</Providers>
       </body>
+      <GoogleAnalytics gaId="G-W38XW9VF2N" />
     </html>
   )
 }
