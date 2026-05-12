@@ -116,8 +116,8 @@ export default function PrivacyPolicyPage() {
           </ul>
           <p className="mt-3">
             To exercise any of these rights, contact us at{' '}
-            <a href="mailto:notification@indiapropertytalk.com" className="text-saffron-600 underline">
-              notification@indiapropertytalk.com
+            <a href="mailto:hello@indiapropertytalk.com" className="text-saffron-600 underline">
+              hello@indiapropertytalk.com
             </a>.
           </p>
         </section>
@@ -154,8 +154,8 @@ export default function PrivacyPolicyPage() {
           <h2 className="font-heading text-xl font-bold text-navy-500 mb-3">11. Contact</h2>
           <p>
             For any privacy-related questions or requests, please write to us at{' '}
-            <a href="mailto:notification@indiapropertytalk.com" className="text-saffron-600 underline">
-              notification@indiapropertytalk.com
+            <a href="mailto:hello@indiapropertytalk.com" className="text-saffron-600 underline">
+              hello@indiapropertytalk.com
             </a>. We aim to respond within 7 business days.
           </p>
         </section>

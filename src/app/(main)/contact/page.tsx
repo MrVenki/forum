@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   alternates: { canonical: `${SITE_CONFIG.url}/contact` },
 }
 
-const CONTACT_EMAIL = 'notification@indiapropertytalk.com'
+const CONTACT_EMAIL = 'hello@indiapropertytalk.com'
 
 const topics = [
   {

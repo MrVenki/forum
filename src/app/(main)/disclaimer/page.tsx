@@ -109,8 +109,8 @@ export default function DisclaimerPage() {
           <p>
             If you believe any content on this Platform is factually incorrect, defamatory, or
             violates your rights, please contact us at{' '}
-            <a href="mailto:notification@indiapropertytalk.com" className="text-saffron-600 underline">
-              notification@indiapropertytalk.com
+            <a href="mailto:hello@indiapropertytalk.com" className="text-saffron-600 underline">
+              hello@indiapropertytalk.com
             </a>{' '}
             with details and supporting evidence. We will review and take appropriate action in
             accordance with our content moderation policy.

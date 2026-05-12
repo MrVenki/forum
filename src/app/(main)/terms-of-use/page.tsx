@@ -149,8 +149,8 @@ export default function TermsOfUsePage() {
           <h2 className="font-heading text-xl font-bold text-navy-500 mb-3">12. Contact</h2>
           <p>
             Questions about these Terms? Write to us at{' '}
-            <a href="mailto:notification@indiapropertytalk.com" className="text-saffron-600 underline">
-              notification@indiapropertytalk.com
+            <a href="mailto:hello@indiapropertytalk.com" className="text-saffron-600 underline">
+              hello@indiapropertytalk.com
             </a>.
           </p>
         </section>
