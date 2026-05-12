@@ -17,6 +17,7 @@ export default function RegisterPage() {
   const [showPass, setShowPass] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [agreed, setAgreed] = useState(false)
 
   const { register, handleSubmit, formState: { errors } } = useForm<RegisterInput>({
     resolver: zodResolver(registerSchema),
@@ -102,15 +103,32 @@ export default function RegisterPage() {
             {errors.password && <p className="text-xs text-red-600">{errors.password.message}</p>}
           </div>
 
-          <Button type="submit" className="w-full" disabled={loading}>
+          {/* Terms agreement */}
+          <div className="flex items-start gap-3">
+            <input
+              id="agree"
+              type="checkbox"
+              checked={agreed}
+              onChange={e => setAgreed(e.target.checked)}
+              className="mt-0.5 h-4 w-4 shrink-0 rounded border-neutral-300 accent-saffron-500 cursor-pointer"
+            />
+            <label htmlFor="agree" className="text-xs text-neutral-500 leading-relaxed cursor-pointer">
+              I agree to the{' '}
+              <Link href="/terms-of-use" target="_blank" className="font-semibold text-saffron-500 hover:text-saffron-600 underline underline-offset-2 transition-colors">
+                Terms of Use
+              </Link>{' '}
+              and{' '}
+              <Link href="/privacy-policy" target="_blank" className="font-semibold text-saffron-500 hover:text-saffron-600 underline underline-offset-2 transition-colors">
+                Privacy Policy
+              </Link>. Your information is never sold.
+            </label>
+          </div>
+
+          <Button type="submit" className="w-full" disabled={loading || !agreed}>
             <UserPlus className="h-4 w-4" />
             {loading ? 'Creating account…' : 'Create Free Account'}
           </Button>
         </form>
-
-        <p className="mt-4 text-center text-xs text-neutral-400">
-          By registering, you agree to our Terms of Service. Your information is never sold.
-        </p>
 
         <div className="mt-4 text-center text-sm text-neutral-500">
           Already have an account?{' '}
