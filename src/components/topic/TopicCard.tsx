@@ -87,7 +87,6 @@ export function TopicCard({ topic, priority = false, headingLevel: Tag = 'h3' }:
           {topic.developerSlug && (
             <Link
               href={`/developer/${topic.developerSlug}`}
-              onClick={(e) => e.stopPropagation()}
               className="shrink-0 text-[10px] font-medium text-saffron-600 hover:text-saffron-700 bg-saffron-50 border border-saffron-100 rounded px-1.5 py-0.5 transition-colors"
             >
               {topic.developerName ?? topic.developerSlug}
