@@ -43,6 +43,13 @@ export const metadata: Metadata = {
     site: SITE_CONFIG.twitterHandle,
     creator: SITE_CONFIG.twitterHandle,
   },
+  icons: {
+    icon: [
+      { url: '/logo-icon.svg', type: 'image/svg+xml' },
+    ],
+    shortcut: '/logo-icon.svg',
+    apple: '/logo-icon.svg',
+  },
   robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
   verification: { google: '' },
 }
