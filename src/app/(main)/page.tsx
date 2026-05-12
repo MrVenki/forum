@@ -11,8 +11,8 @@ import type { TopicWithRelations } from '@/types'
 export const revalidate = 900
 
 export const metadata: Metadata = {
-  title: `${SITE_CONFIG.name} — ${SITE_CONFIG.tagline}`,
-  description: SITE_CONFIG.description,
+  title: 'India Property Forum — Honest Reviews & Ratings',
+  description: 'India\'s most trusted property forum. Honest reviews and ratings from real buyers across Mumbai, Delhi, Bengaluru, Hyderabad and 18 more cities.',
   alternates: { canonical: SITE_CONFIG.url },
 }
 
@@ -123,7 +123,7 @@ export default async function HomePage() {
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2">
               <Star className="h-5 w-5 text-gold fill-gold" />
-              <h2 className="font-heading text-2xl font-bold text-navy-500">Top Rated Properties</h2>
+              <h2 className="font-heading text-2xl font-bold text-navy-500">Top Rated Properties in India</h2>
             </div>
             <Link href="/cities" className="text-sm font-medium text-saffron-500 hover:text-saffron-600 flex items-center gap-1">
               View all <ArrowRight className="h-3.5 w-3.5" />
@@ -144,7 +144,7 @@ export default async function HomePage() {
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-2">
                 <TrendingUp className="h-5 w-5 text-saffron-500" />
-                <h2 className="font-heading text-2xl font-bold text-navy-500">Latest Discussions</h2>
+                <h2 className="font-heading text-2xl font-bold text-navy-500">Latest Property Reviews &amp; Discussions</h2>
               </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">

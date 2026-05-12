@@ -2,7 +2,7 @@ export const SITE_CONFIG = {
   name: process.env.NEXT_PUBLIC_SITE_NAME || 'IndiaPropertyTalk',
   tagline: 'Honest Property Discussions by Real Indians',
   description:
-    'Join India\'s most trusted property forum. Discuss real estate in Mumbai, Delhi, Bengaluru, Hyderabad and 18 more cities. Read honest reviews, ratings, and Q&A from real buyers and residents.',
+    'India\'s most trusted property forum. Honest reviews and ratings from real buyers across Mumbai, Delhi, Bengaluru, Hyderabad and 18 more cities.',
   url: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
   ogImage: '/og-default.jpg',
   twitterHandle: '@IndiaPropertyTalk',
