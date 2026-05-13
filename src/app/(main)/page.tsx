@@ -5,6 +5,7 @@ import { SITE_CONFIG } from '@/lib/constants/config'
 import { METRO_CITIES, TIER1_CITIES } from '@/lib/constants/cities'
 import { Badge } from '@/components/ui/badge'
 import { Building2, TrendingUp, Star, MapPin, ArrowRight, PlusCircle } from 'lucide-react'
+import { isNewTopicEnabled } from '@/lib/features'
 import type { Metadata } from 'next'
 import type { TopicWithRelations } from '@/types'
 
@@ -51,6 +52,7 @@ async function getHomeData() {
 
 export default async function HomePage() {
   const { latestTopics, topRatedTopics, cityCounts } = await getHomeData()
+  const newTopicEnabled = isNewTopicEnabled()
 
   const cityCountMap = Object.fromEntries(cityCounts.map((c) => [c.slug, c._count.topics]))
 
@@ -72,9 +74,11 @@ export default async function HomePage() {
               <Link href="/cities" className="btn-primary text-base px-6 py-3">
                 <Building2 className="h-5 w-5" /> Browse Cities
               </Link>
-              <Link href="/new-topic" className="btn-secondary text-base px-6 py-3 bg-white/10 border-white/30 text-white hover:bg-white/20">
-                <PlusCircle className="h-5 w-5" /> Start a Discussion
-              </Link>
+              {newTopicEnabled && (
+                <Link href="/new-topic" className="btn-secondary text-base px-6 py-3 bg-white/10 border-white/30 text-white hover:bg-white/20">
+                  <PlusCircle className="h-5 w-5" /> Start a Discussion
+                </Link>
+              )}
             </div>
           </div>
 
