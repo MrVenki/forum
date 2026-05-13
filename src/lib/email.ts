@@ -78,6 +78,152 @@ export async function sendOtpEmail(email: string, otp: string): Promise<void> {
   })
 }
 
+// ── Admin alert notifications ────────────────────────────────────────────────
+
+const ADMIN_ALERT_EMAIL = process.env.ADMIN_ALERT_EMAIL || 'kesavarap@gmail.com'
+
+export async function sendAdminNewPostAlert(params: {
+  posterName: string
+  propertyName: string
+  cityName: string
+  description: string
+  topicUrl: string
+}): Promise<void> {
+  const { posterName, propertyName, cityName, description, topicUrl } = params
+  const from = process.env.SMTP_FROM || process.env.SMTP_USER || 'noreply@indiapropertytalk.com'
+  const siteName = process.env.NEXT_PUBLIC_SITE_NAME || 'IndiaPropertyTalk'
+  const preview = description.length > 300 ? description.slice(0, 300) + '…' : description
+
+  const transporter = createTransporter()
+  if (!transporter) {
+    console.log(`\n[DEV ADMIN ALERT] New post by ${posterName}: ${propertyName} (${cityName})\n${topicUrl}\n`)
+    return
+  }
+
+  await transporter.sendMail({
+    from: `"${siteName} Alerts" <${from}>`,
+    to: ADMIN_ALERT_EMAIL,
+    subject: `📝 New post: ${propertyName}, ${cityName}`,
+    html: `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f5f5f5;font-family:Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f5;padding:32px 0;">
+    <tr><td align="center">
+      <table width="560" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        <tr>
+          <td style="background:#1e3a5f;padding:24px 36px;">
+            <h1 style="margin:0;color:#fff;font-size:18px;font-weight:700;">${siteName}</h1>
+            <p style="margin:4px 0 0;color:#93c5fd;font-size:12px;">Admin Alert — New Post</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:28px 36px;">
+            <p style="margin:0 0 4px;color:#888;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">New Discussion Posted</p>
+            <h2 style="margin:0 0 2px;color:#1e3a5f;font-size:20px;font-weight:700;">${propertyName}</h2>
+            <p style="margin:0 0 20px;color:#888;font-size:13px;">${cityName} &nbsp;·&nbsp; Posted by <strong style="color:#555;">${posterName}</strong></p>
+            <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:16px 20px;margin-bottom:24px;">
+              <p style="margin:0;color:#4b5563;font-size:14px;line-height:1.7;">${preview.replace(/\n/g, '<br>')}</p>
+            </div>
+            <table width="100%" cellpadding="0" cellspacing="0">
+              <tr>
+                <td>
+                  <a href="${topicUrl}" style="display:inline-block;background:#ea580c;color:#fff;font-size:14px;font-weight:600;padding:11px 28px;border-radius:8px;text-decoration:none;">View Post →</a>
+                </td>
+                <td align="right">
+                  <a href="${topicUrl.replace('indiapropertytalk.com', 'indiapropertytalk.com/admin/posts')}" style="display:inline-block;background:#1e3a5f;color:#fff;font-size:14px;font-weight:600;padding:11px 28px;border-radius:8px;text-decoration:none;">Admin Panel →</a>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        <tr>
+          <td style="background:#f9fafb;padding:16px 36px;border-top:1px solid #eee;text-align:center;">
+            <p style="margin:0;color:#aaa;font-size:12px;">&copy; ${new Date().getFullYear()} ${siteName} Admin Alerts</p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`,
+    text: `New post on ${siteName}\n\n${propertyName} — ${cityName}\nPosted by: ${posterName}\n\n${preview}\n\nView: ${topicUrl}\nAdmin: https://www.indiapropertytalk.com/admin/posts`,
+  })
+}
+
+export async function sendAdminNewCommentAlert(params: {
+  commenterName: string
+  commentContent: string
+  propertyName: string
+  cityName: string
+  topicUrl: string
+  isReply: boolean
+}): Promise<void> {
+  const { commenterName, commentContent, propertyName, cityName, topicUrl, isReply } = params
+  const from = process.env.SMTP_FROM || process.env.SMTP_USER || 'noreply@indiapropertytalk.com'
+  const siteName = process.env.NEXT_PUBLIC_SITE_NAME || 'IndiaPropertyTalk'
+  const preview = commentContent.length > 300 ? commentContent.slice(0, 300) + '…' : commentContent
+  const label = isReply ? 'Reply' : 'Comment'
+
+  const transporter = createTransporter()
+  if (!transporter) {
+    console.log(`\n[DEV ADMIN ALERT] New ${label.toLowerCase()} by ${commenterName} on ${propertyName}: ${preview}\n`)
+    return
+  }
+
+  await transporter.sendMail({
+    from: `"${siteName} Alerts" <${from}>`,
+    to: ADMIN_ALERT_EMAIL,
+    subject: `💬 New ${label}: ${propertyName}, ${cityName}`,
+    html: `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f5f5f5;font-family:Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f5;padding:32px 0;">
+    <tr><td align="center">
+      <table width="560" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        <tr>
+          <td style="background:#1e3a5f;padding:24px 36px;">
+            <h1 style="margin:0;color:#fff;font-size:18px;font-weight:700;">${siteName}</h1>
+            <p style="margin:4px 0 0;color:#93c5fd;font-size:12px;">Admin Alert — New ${label}</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:28px 36px;">
+            <p style="margin:0 0 4px;color:#888;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">New ${label} Posted</p>
+            <h2 style="margin:0 0 2px;color:#1e3a5f;font-size:20px;font-weight:700;">${propertyName}</h2>
+            <p style="margin:0 0 20px;color:#888;font-size:13px;">${cityName} &nbsp;·&nbsp; by <strong style="color:#555;">${commenterName}</strong></p>
+            <div style="background:#f9fafb;border-left:4px solid #ea580c;border-radius:0 8px 8px 0;padding:16px 20px;margin-bottom:24px;">
+              <p style="margin:0;color:#4b5563;font-size:14px;line-height:1.7;">${preview.replace(/\n/g, '<br>')}</p>
+            </div>
+            <table width="100%" cellpadding="0" cellspacing="0">
+              <tr>
+                <td>
+                  <a href="${topicUrl}" style="display:inline-block;background:#ea580c;color:#fff;font-size:14px;font-weight:600;padding:11px 28px;border-radius:8px;text-decoration:none;">View Discussion →</a>
+                </td>
+                <td align="right">
+                  <a href="https://www.indiapropertytalk.com/admin/comments" style="display:inline-block;background:#1e3a5f;color:#fff;font-size:14px;font-weight:600;padding:11px 28px;border-radius:8px;text-decoration:none;">Admin Panel →</a>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        <tr>
+          <td style="background:#f9fafb;padding:16px 36px;border-top:1px solid #eee;text-align:center;">
+            <p style="margin:0;color:#aaa;font-size:12px;">&copy; ${new Date().getFullYear()} ${siteName} Admin Alerts</p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`,
+    text: `New ${label} on ${siteName}\n\n${propertyName} — ${cityName}\nBy: ${commenterName}\n\n"${preview}"\n\nView: ${topicUrl}\nAdmin comments: https://www.indiapropertytalk.com/admin/comments`,
+  })
+}
+
 // ── Subscription notifications ───────────────────────────────────────────────
 
 export function generateUnsubscribeToken(userId: string, topicId: string): string {

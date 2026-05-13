@@ -6,6 +6,7 @@ import { createTopicSchema } from '@/lib/validations/topic'
 import { generateTopicSlug } from '@/lib/utils/slugify'
 import { PAGINATION } from '@/lib/constants/config'
 import { isEmailVerificationEnabled, isNewTopicEnabled } from '@/lib/features'
+import { sendAdminNewPostAlert } from '@/lib/email'
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
@@ -112,6 +113,16 @@ export async function POST(req: NextRequest) {
 
     // Auto-subscribe the creator
     await prisma.topicSubscription.create({ data: { topicId: topic.id, userId: session.user.id } })
+
+    // Notify admin (fire-and-forget)
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.indiapropertytalk.com'
+    sendAdminNewPostAlert({
+      posterName: session.user.name || 'Anonymous',
+      propertyName: topic.propertyName,
+      cityName: topic.city.name,
+      description: topic.description,
+      topicUrl: `${siteUrl}/${topic.city.slug}/${slug}`,
+    }).catch(() => {})
 
     return NextResponse.json({ topic, slug: `/${topic.city.slug}/${slug}` }, { status: 201 })
   } catch (err: unknown) {

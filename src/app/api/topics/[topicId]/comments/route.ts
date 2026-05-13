@@ -5,7 +5,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { createCommentSchema } from '@/lib/validations/comment'
 import { isEmailVerificationEnabled } from '@/lib/features'
-import { generateUnsubscribeToken, sendCommentNotification } from '@/lib/email'
+import { generateUnsubscribeToken, sendCommentNotification, sendAdminNewCommentAlert } from '@/lib/email'
 
 export async function GET(req: NextRequest, { params }: { params: { topicId: string } }) {
   const comments = await prisma.comment.findMany({
@@ -75,10 +75,20 @@ export async function POST(req: NextRequest, { params }: { params: { topicId: st
   if (full) {
     revalidatePath(`/${full.city.slug}/${full.slug}`)
 
-    // Notify all other subscribers (fire-and-forget)
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.indiapropertytalk.com'
     const topicUrl = `${siteUrl}/${full.city.slug}/${full.slug}`
 
+    // Notify admin (fire-and-forget)
+    sendAdminNewCommentAlert({
+      commenterName: session.user.name || 'Anonymous',
+      commentContent: parsed.data.content,
+      propertyName: full.propertyName,
+      cityName: full.city.name,
+      topicUrl,
+      isReply: !!parsed.data.parentId,
+    }).catch(() => {})
+
+    // Notify all other subscribers (fire-and-forget)
     const subscribers = await prisma.topicSubscription.findMany({
       where: { topicId: params.topicId, userId: { not: session.user.id } },
       include: { user: { select: { id: true, name: true, email: true } } },
