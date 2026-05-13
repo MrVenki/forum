@@ -6,6 +6,6 @@
     "maxVerifyAttempts": 5
   },
   "newTopic": {
-    "enabled": false
+    "enabled": true
   }
 }
