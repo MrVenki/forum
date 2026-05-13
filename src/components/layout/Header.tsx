@@ -4,7 +4,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useSession, signOut } from 'next-auth/react'
 import { useState } from 'react'
-import { Home, Building2, PlusCircle, LogIn, LogOut, User, Menu, X, Search, ChevronDown } from 'lucide-react'
+import { Home, Building2, PlusCircle, LogIn, LogOut, User, Menu, X, Search, ChevronDown, Shield } from 'lucide-react'
 import { METRO_CITIES, TIER1_CITIES } from '@/lib/constants/cities'
 import { cn } from '@/lib/utils/cn'
 
@@ -109,6 +109,11 @@ export function Header({ newTopicEnabled = false }: { newTopicEnabled?: boolean 
                     <Link href="/profile" className="flex items-center gap-2 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors">
                       <User className="h-4 w-4" /> My Profile
                     </Link>
+                    {(session.user.role === 'ADMIN' || session.user.role === 'MODERATOR') && (
+                      <Link href="/admin" className="flex items-center gap-2 px-4 py-2 text-sm text-saffron-600 hover:bg-saffron-50 transition-colors font-medium">
+                        <Shield className="h-4 w-4" /> Admin Panel
+                      </Link>
+                    )}
                     <button onClick={() => signOut()} className="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
                       <LogOut className="h-4 w-4" /> Sign Out
                     </button>
@@ -162,6 +167,11 @@ export function Header({ newTopicEnabled = false }: { newTopicEnabled?: boolean 
                   <Link href="/profile" onClick={() => setMobileOpen(false)} className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-neutral-700 hover:bg-neutral-100">
                     <User className="h-4 w-4" /> Profile
                   </Link>
+                  {(session.user.role === 'ADMIN' || session.user.role === 'MODERATOR') && (
+                    <Link href="/admin" onClick={() => setMobileOpen(false)} className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-saffron-600 hover:bg-saffron-50">
+                      <Shield className="h-4 w-4" /> Admin Panel
+                    </Link>
+                  )}
                   <button onClick={() => { signOut(); setMobileOpen(false) }} className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 w-full">
                     <LogOut className="h-4 w-4" /> Sign Out
                   </button>
