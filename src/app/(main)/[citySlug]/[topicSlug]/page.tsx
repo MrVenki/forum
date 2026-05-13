@@ -122,32 +122,68 @@ export default async function TopicPage({ params }: Props) {
   const propTypeLabel = PROPERTY_TYPES.find((p) => p.value === topic.propertyType)?.label || topic.propertyType
   const topicUrl = `${SITE_CONFIG.url}/${params.citySlug}/${params.topicSlug}`
 
-  const jsonLd = {
+  // Always have an image (property photo or city default)
+  const topicImage = topic.image1Url || getCityDefaultImage(topic.city.slug)
+
+  // Schema 1 — DiscussionForumPosting
+  // Fixes: missing required text field, missing comment array, missing author.url
+  const discussionSchema = {
     '@context': 'https://schema.org',
     '@type': 'DiscussionForumPosting',
     headline: `${topic.propertyName}, ${topic.city.name} — Reviews & Discussion`,
+    text: topic.description,           // FIXED: text (or image/video) is required
+    image: topicImage,                 // FIXED: always present
     url: topicUrl,
     datePublished: topic.createdAt.toISOString(),
     dateModified: topic.updatedAt.toISOString(),
-    author: { '@type': 'Person', name: topic.user.name },
+    author: {
+      '@type': 'Person',
+      name: topic.user.name,
+      url: SITE_CONFIG.url,            // FIXED: author.url is required
+    },
     interactionStatistic: {
       '@type': 'InteractionCounter',
       interactionType: 'https://schema.org/CommentAction',
       userInteractionCount: topic._count.comments,
     },
-    ...(avgRating > 0 && topic.ratingCount > 0
-      ? {
-          aggregateRating: {
-            '@type': 'AggregateRating',
-            ratingValue: avgRating.toFixed(1),
-            bestRating: '5',
-            worstRating: '1',
-            ratingCount: topic.ratingCount,
-          },
-        }
-      : {}),
-    ...(topic.image1Url ? { image: topic.image1Url } : {}),
+    // FIXED: include top comments so Google sees discussion content
+    ...(comments.length > 0 && {
+      comment: comments.slice(0, 5).map((c) => ({
+        '@type': 'Comment',
+        text: c.content,
+        dateCreated: c.createdAt.toISOString(),
+        author: {
+          '@type': 'Person',
+          name: c.user.name,
+          url: SITE_CONFIG.url,
+        },
+      })),
+    }),
   }
+
+  // Schema 2 — Product with AggregateRating (separate from DiscussionForumPosting)
+  // FIXED: Google only renders Review Snippets for supported types (Product, LocalBusiness, etc.)
+  // DiscussionForumPosting is NOT a valid parent for aggregateRating in Google's rich results.
+  const ratingSchema = avgRating > 0 && topic.ratingCount > 0
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'Product',
+        name: `${topic.propertyName}, ${topic.city.name}`,
+        description: topic.description.slice(0, 300).replace(/\n/g, ' '),
+        url: topicUrl,
+        image: topicImage,
+        aggregateRating: {
+          '@type': 'AggregateRating',
+          ratingValue: avgRating.toFixed(1),
+          bestRating: '5',
+          worstRating: '1',
+          ratingCount: topic.ratingCount,
+          reviewCount: topic.ratingCount,
+        },
+      }
+    : null
+
+  const jsonLd = ratingSchema ? [discussionSchema, ratingSchema] : discussionSchema
 
   return (
     <>
