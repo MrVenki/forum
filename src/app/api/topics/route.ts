@@ -107,6 +107,8 @@ export async function POST(req: NextRequest) {
         image1PubId: d.image1PubId,
         image2Url: d.image2Url,
         image2PubId: d.image2PubId,
+        developerSlug: d.developerSlug || null,
+        developerName: d.developerName || null,
       },
       include: { city: true },
     })

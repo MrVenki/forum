@@ -15,6 +15,8 @@ export const createTopicSchema = z.object({
   image1PubId: z.string().optional().nullable(),
   image2Url: z.string().url().optional().nullable(),
   image2PubId: z.string().optional().nullable(),
+  developerSlug: z.string().max(100).optional().nullable(),
+  developerName: z.string().max(100).optional().nullable(),
 })
 
 export type CreateTopicInput = z.infer<typeof createTopicSchema>

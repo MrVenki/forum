@@ -13,24 +13,29 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { ImageUploader } from '@/components/shared/ImageUploader'
+import { DeveloperPicker, type DeveloperValue } from '@/components/shared/DeveloperPicker'
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs'
 import { toast } from '@/hooks/use-toast'
 import { PlusCircle, AlertCircle, CheckCircle } from 'lucide-react'
 
 interface City { id: string; name: string; slug: string; tier: string }
+interface Developer { id: string; name: string; slug: string }
 interface UploadedImage { url: string; publicId: string }
 
 export default function NewTopicForm() {
   const router = useRouter()
   const { data: session, status } = useSession()
   const [cities, setCities] = useState<City[]>([])
+  const [developers, setDevelopers] = useState<Developer[]>([])
   const [images, setImages] = useState<UploadedImage[]>([])
+  const [developer, setDeveloper] = useState<DeveloperValue | null>(null)
   const [loading, setLoading] = useState(false)
   const [duplicateWarning, setDuplicateWarning] = useState('')
   const [checkingDuplicate, setCheckingDuplicate] = useState(false)
 
   useEffect(() => {
     fetch('/api/cities').then((r) => r.json()).then(setCities).catch(() => {})
+    fetch('/api/developers').then((r) => r.json()).then(setDevelopers).catch(() => {})
   }, [])
 
   const { register, handleSubmit, control, watch, formState: { errors } } = useForm<CreateTopicInput>({
@@ -69,6 +74,8 @@ export default function NewTopicForm() {
       image2PubId: images[1]?.publicId || null,
       priceMin: data.priceMin ? Number(data.priceMin) : null,
       priceMax: data.priceMax ? Number(data.priceMax) : null,
+      developerSlug: developer?.slug ?? null,
+      developerName: developer?.name ?? null,
     }
 
     const res = await fetch('/api/topics', {
@@ -173,6 +180,27 @@ export default function NewTopicForm() {
                   )}
                 />
                 {errors.propertyType && <p className="text-xs text-red-600">{errors.propertyType.message}</p>}
+              </div>
+
+              {/* Developer / Builder */}
+              <div className="space-y-1.5">
+                <Label>
+                  Developer / Builder
+                  <span className="ml-1.5 text-xs font-normal text-neutral-400">(optional)</span>
+                </Label>
+                <DeveloperPicker
+                  developers={developers}
+                  value={developer}
+                  onChange={setDeveloper}
+                />
+                {developer && (
+                  <p className="text-xs text-neutral-500 flex items-center gap-1">
+                    <CheckCircle className="h-3.5 w-3.5 text-green-500" />
+                    {developer.slug
+                      ? `Linked to ${developer.name}'s profile page`
+                      : `Custom builder "${developer.name}" will be saved`}
+                  </p>
+                )}
               </div>
 
               <div className="space-y-1.5">
