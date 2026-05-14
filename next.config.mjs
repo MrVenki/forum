@@ -8,6 +8,20 @@ const nextConfig = {
     ],
     formats: ['image/avif', 'image/webp'],
   },
+
+  // 301 redirect non-www → www so Google only ever indexes one canonical version.
+  // Eliminates "Alternative page with proper canonical tag" GSC warnings.
+  async redirects() {
+    return [
+      {
+        source: '/:path*',
+        has: [{ type: 'host', value: 'indiapropertytalk.com' }],
+        destination: 'https://www.indiapropertytalk.com/:path*',
+        permanent: true, // 301 — tells Google this is the canonical location
+      },
+    ]
+  },
+
   async headers() {
     return [
       {
