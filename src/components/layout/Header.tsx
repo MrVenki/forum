@@ -4,7 +4,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useSession, signOut } from 'next-auth/react'
 import { useState, useEffect, useRef } from 'react'
-import { Home, Building2, PlusCircle, LogIn, LogOut, User, Menu, X, Search, ChevronDown, Shield, Bookmark } from 'lucide-react'
+import { Home, Building2, PlusCircle, LogIn, LogOut, User, Menu, X, Search, ChevronDown, Shield, Bookmark, Calculator, IndianRupee } from 'lucide-react'
 import { METRO_CITIES, TIER1_CITIES } from '@/lib/constants/cities'
 import { cn } from '@/lib/utils/cn'
 
@@ -12,6 +12,7 @@ export function Header({ newTopicEnabled = false }: { newTopicEnabled?: boolean 
   const { data: session } = useSession()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [citiesOpen, setCitiesOpen] = useState(false)
+  const [toolsOpen, setToolsOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const userMenuRef = useRef<HTMLDivElement>(null)
 
@@ -85,6 +86,44 @@ export function Header({ newTopicEnabled = false }: { newTopicEnabled?: boolean 
                   <div className="mt-3 border-t border-neutral-100 pt-3">
                     <Link href="/cities" onClick={() => setCitiesOpen(false)} className="text-sm font-medium text-saffron-500 hover:text-saffron-600 transition-colors">
                       View all cities →
+                    </Link>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Tools Dropdown */}
+            <div className="relative" onMouseLeave={() => setToolsOpen(false)}>
+              <button
+                onMouseEnter={() => setToolsOpen(true)}
+                onClick={() => setToolsOpen(!toolsOpen)}
+                className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 transition-colors"
+              >
+                <Calculator className="h-4 w-4" /> Tools <ChevronDown className="h-3.5 w-3.5" />
+              </button>
+              {toolsOpen && (
+                <div className="absolute left-0 top-full mt-1 w-72 rounded-xl border border-neutral-200 bg-white p-3 shadow-xl">
+                  <p className="mb-2 px-2 text-xs font-bold uppercase tracking-wider text-neutral-400">Calculators</p>
+                  <Link
+                    href="/tools/emi-calculator"
+                    onClick={() => setToolsOpen(false)}
+                    className="flex items-start gap-3 rounded-lg px-2 py-2.5 hover:bg-saffron-50 transition-colors group"
+                  >
+                    <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-saffron-100">
+                      <IndianRupee className="h-4 w-4 text-saffron-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-navy-500 group-hover:text-saffron-600 transition-colors">EMI Calculator</p>
+                      <p className="text-xs text-neutral-500 leading-snug">EMI, affordability & double-burden check</p>
+                    </div>
+                  </Link>
+                  <div className="mt-2 border-t border-neutral-100 pt-2">
+                    <Link
+                      href="/tools"
+                      onClick={() => setToolsOpen(false)}
+                      className="flex items-center gap-1.5 px-2 py-1.5 text-xs font-medium text-saffron-500 hover:text-saffron-600 transition-colors"
+                    >
+                      View all tools →
                     </Link>
                   </div>
                 </div>
@@ -178,6 +217,12 @@ export function Header({ newTopicEnabled = false }: { newTopicEnabled?: boolean 
             </Link>
             <Link href="/search" onClick={() => setMobileOpen(false)} className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-neutral-700 hover:bg-neutral-100">
               <Search className="h-4 w-4" /> Search
+            </Link>
+            <Link href="/tools" onClick={() => setMobileOpen(false)} className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-neutral-700 hover:bg-neutral-100">
+              <Calculator className="h-4 w-4" /> Tools & Calculators
+            </Link>
+            <Link href="/tools/emi-calculator" onClick={() => setMobileOpen(false)} className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-neutral-500 hover:bg-neutral-100 pl-8">
+              <IndianRupee className="h-4 w-4" /> EMI Calculator
             </Link>
             <div className="pt-2 border-t border-neutral-100">
               {session ? (
