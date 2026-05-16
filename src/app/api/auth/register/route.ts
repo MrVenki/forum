@@ -1,15 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
+import { randomInt } from 'crypto'
 import { prisma } from '@/lib/prisma'
 import { registerSchema } from '@/lib/validations/auth'
 import { isEmailVerificationEnabled, getEmailVerificationConfig } from '@/lib/features'
 import { sendOtpEmail } from '@/lib/email'
+import { checkRateLimit, getClientIp } from '@/lib/rateLimit'
 
+// crypto.randomInt is a CSPRNG — never use Math.random() for security tokens
 function generateOtp(): string {
-  return Math.floor(100000 + Math.random() * 900000).toString()
+  return randomInt(100000, 1000000).toString()
 }
 
 export async function POST(req: NextRequest) {
+  // 5 registration attempts per IP per hour
+  const ip = getClientIp(req)
+  if (!checkRateLimit(`register:${ip}`, 5, 60 * 60 * 1000)) {
+    return NextResponse.json(
+      { error: 'Too many registration attempts. Please try again later.' },
+      { status: 429 }
+    )
+  }
+
   try {
     const body = await req.json()
     const parsed = registerSchema.safeParse(body)

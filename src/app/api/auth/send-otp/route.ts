@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { randomInt } from 'crypto'
 import { prisma } from '@/lib/prisma'
 import { sendOtpEmail } from '@/lib/email'
 import { getEmailVerificationConfig } from '@/lib/features'
 
+// crypto.randomInt is a CSPRNG — never use Math.random() for security tokens
 function generateOtp(): string {
-  return Math.floor(100000 + Math.random() * 900000).toString()
+  return randomInt(100000, 1000000).toString()
 }
 
 export async function POST(req: NextRequest) {

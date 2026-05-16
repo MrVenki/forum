@@ -17,6 +17,13 @@ export async function POST(
   const parsed = schema.safeParse(body)
   if (!parsed.success) return NextResponse.json({ error: 'Invalid reaction type' }, { status: 400 })
 
+  // Verify that the comment belongs to the topic in the URL — prevents IDOR
+  const comment = await prisma.comment.findFirst({
+    where: { id: params.commentId, topicId: params.topicId },
+    select: { id: true },
+  })
+  if (!comment) return NextResponse.json({ error: 'Comment not found' }, { status: 404 })
+
   const { reactionType } = parsed.data
   const existing = await prisma.commentReaction.findUnique({
     where: { commentId_userId: { commentId: params.commentId, userId: session.user.id } },

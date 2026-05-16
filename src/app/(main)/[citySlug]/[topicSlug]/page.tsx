@@ -18,6 +18,14 @@ import { MapPin, Eye, MessageSquare, User, Calendar, Home, IndianRupee } from 'l
 import type { CommentWithRelations } from '@/types'
 import { SubscribeButton, SubscriberCount } from '@/components/topic/SubscribeButton'
 import { EditDescriptionForm } from '@/components/topic/EditDescriptionForm'
+
+/** Safely serialise JSON-LD — escapes </script> injection sequences */
+function safeJsonLd(data: unknown): string {
+  return JSON.stringify(data)
+    .replace(/</g, '\\u003c')
+    .replace(/>/g, '\\u003e')
+    .replace(/&/g, '\\u0026')
+}
 import { ShareButton } from '@/components/topic/ShareButton'
 
 export const revalidate = 60
@@ -187,7 +195,7 @@ export default async function TopicPage({ params }: Props) {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }} />
 
       <div className="container-forum py-6">
         <Breadcrumbs

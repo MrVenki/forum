@@ -80,7 +80,16 @@ export async function sendOtpEmail(email: string, otp: string): Promise<void> {
 
 // ── Admin alert notifications ────────────────────────────────────────────────
 
-const ADMIN_ALERT_EMAIL = process.env.ADMIN_ALERT_EMAIL || 'kesavarap@gmail.com'
+// No hardcoded fallback — require the env var so the admin email is never
+// accidentally committed to source code.
+function getAdminAlertEmail(): string {
+  const email = process.env.ADMIN_ALERT_EMAIL
+  if (!email) {
+    console.warn('[email] ADMIN_ALERT_EMAIL env var is not set — admin alerts disabled')
+    return ''
+  }
+  return email
+}
 
 export async function sendAdminNewPostAlert(params: {
   posterName: string
@@ -92,17 +101,18 @@ export async function sendAdminNewPostAlert(params: {
   const { posterName, propertyName, cityName, description, topicUrl } = params
   const from = process.env.SMTP_FROM || process.env.SMTP_USER || 'noreply@indiapropertytalk.com'
   const siteName = process.env.NEXT_PUBLIC_SITE_NAME || 'IndiaPropertyTalk'
+  const adminEmail = getAdminAlertEmail()
   const preview = description.length > 300 ? description.slice(0, 300) + '…' : description
 
   const transporter = createTransporter()
-  if (!transporter) {
+  if (!transporter || !adminEmail) {
     console.log(`\n[DEV ADMIN ALERT] New post by ${posterName}: ${propertyName} (${cityName})\n${topicUrl}\n`)
     return
   }
 
   await transporter.sendMail({
     from: `"${siteName} Alerts" <${from}>`,
-    to: ADMIN_ALERT_EMAIL,
+    to: adminEmail,
     subject: `📝 New post: ${propertyName}, ${cityName}`,
     html: `
 <!DOCTYPE html>
@@ -163,18 +173,19 @@ export async function sendAdminNewCommentAlert(params: {
   const { commenterName, commentContent, propertyName, cityName, topicUrl, isReply } = params
   const from = process.env.SMTP_FROM || process.env.SMTP_USER || 'noreply@indiapropertytalk.com'
   const siteName = process.env.NEXT_PUBLIC_SITE_NAME || 'IndiaPropertyTalk'
+  const adminEmail = getAdminAlertEmail()
   const preview = commentContent.length > 300 ? commentContent.slice(0, 300) + '…' : commentContent
   const label = isReply ? 'Reply' : 'Comment'
 
   const transporter = createTransporter()
-  if (!transporter) {
+  if (!transporter || !adminEmail) {
     console.log(`\n[DEV ADMIN ALERT] New ${label.toLowerCase()} by ${commenterName} on ${propertyName}: ${preview}\n`)
     return
   }
 
   await transporter.sendMail({
     from: `"${siteName} Alerts" <${from}>`,
-    to: ADMIN_ALERT_EMAIL,
+    to: adminEmail,
     subject: `💬 New ${label}: ${propertyName}, ${cityName}`,
     html: `
 <!DOCTYPE html>
@@ -227,12 +238,19 @@ export async function sendAdminNewCommentAlert(params: {
 // ── Subscription notifications ───────────────────────────────────────────────
 
 export function generateUnsubscribeToken(userId: string, topicId: string): string {
-  const secret = process.env.NEXTAUTH_SECRET || 'fallback-secret'
+  const secret = process.env.NEXTAUTH_SECRET
+  if (!secret) throw new Error('NEXTAUTH_SECRET is not set')
   return crypto.createHmac('sha256', secret).update(`${userId}:${topicId}`).digest('hex')
 }
 
 export function verifyUnsubscribeToken(token: string, userId: string, topicId: string): boolean {
-  return token === generateUnsubscribeToken(userId, topicId)
+  try {
+    const expected = generateUnsubscribeToken(userId, topicId)
+    // Constant-time comparison prevents timing-based token oracle attacks
+    return crypto.timingSafeEqual(Buffer.from(token, 'hex'), Buffer.from(expected, 'hex'))
+  } catch {
+    return false
+  }
 }
 
 interface NotificationParams {
@@ -276,21 +294,17 @@ export async function sendCommentNotification(params: NotificationParams): Promi
     <tr>
       <td align="center">
         <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
-          <!-- Header -->
           <tr>
             <td style="background:#1e3a5f;padding:28px 40px;text-align:center;">
               <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">${siteName}</h1>
               <p style="margin:6px 0 0;color:#93c5fd;font-size:13px;">India's Most Trusted Property Forum</p>
             </td>
           </tr>
-          <!-- Body -->
           <tr>
             <td style="padding:36px 40px 28px;">
               <p style="margin:0 0 6px;color:#666;font-size:13px;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">New reply in a thread you follow</p>
               <h2 style="margin:0 0 4px;color:#1e3a5f;font-size:20px;font-weight:700;">${propertyName}</h2>
               <p style="margin:0 0 24px;color:#888;font-size:13px;">${cityName}</p>
-
-              <!-- Comment card -->
               <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;margin-bottom:28px;">
                 <tr>
                   <td style="padding:16px 20px;">
@@ -299,8 +313,6 @@ export async function sendCommentNotification(params: NotificationParams): Promi
                   </td>
                 </tr>
               </table>
-
-              <!-- CTA -->
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td align="center">
@@ -310,7 +322,6 @@ export async function sendCommentNotification(params: NotificationParams): Promi
               </table>
             </td>
           </tr>
-          <!-- Footer -->
           <tr>
             <td style="background:#f9fafb;padding:20px 40px;border-top:1px solid #eee;text-align:center;">
               <p style="margin:0 0 6px;color:#aaa;font-size:12px;">

@@ -7,16 +7,18 @@ import { generateTopicSlug } from '@/lib/utils/slugify'
 import { PAGINATION } from '@/lib/constants/config'
 import { isEmailVerificationEnabled, isNewTopicEnabled } from '@/lib/features'
 import { sendAdminNewPostAlert } from '@/lib/email'
+import { pingIndexNow } from '@/lib/indexnow'
+import { checkRateLimit, getClientIp } from '@/lib/rateLimit'
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const citySlug = searchParams.get('city')
-  const page = Math.max(1, parseInt(searchParams.get('page') || '1'))
-  const sort = searchParams.get('sort') || 'latest'
-  const type = searchParams.get('type') || ''
-  const check = searchParams.get('check') === 'true'
-  const name = searchParams.get('name') || ''
-  const limit = PAGINATION.TOPICS_PER_PAGE
+  const page     = Math.max(1, parseInt(searchParams.get('page') || '1'))
+  const sort     = searchParams.get('sort') || 'latest'
+  const type     = searchParams.get('type') || ''
+  const check    = searchParams.get('check') === 'true'
+  const name     = searchParams.get('name') || ''
+  const limit    = PAGINATION.TOPICS_PER_PAGE
 
   const where: Record<string, unknown> = { isPublished: true }
   if (citySlug) {
@@ -37,11 +39,35 @@ export async function GET(req: NextRequest) {
   if (type) where.propertyType = type
 
   const orderBy =
-    sort === 'top-rated'
-      ? { avgRating: 'desc' as const }
-      : sort === 'most-discussed'
-      ? { commentCount: 'desc' as const }
-      : { createdAt: 'desc' as const }
+    sort === 'top-rated'      ? { avgRating: 'desc' as const }    :
+    sort === 'most-discussed' ? { commentCount: 'desc' as const }  :
+                                { createdAt: 'desc' as const }
+
+  // Use an explicit select so internal fields (image pubIds, metaTitle, etc.)
+  // are never accidentally exposed to unauthenticated callers.
+  const topicSelect = {
+    id:           true,
+    slug:         true,
+    title:        true,
+    propertyName: true,
+    propertyType: true,
+    description:  true,
+    address:      true,
+    priceMin:     true,
+    priceMax:     true,
+    image1Url:    true,
+    image2Url:    true,
+    avgRating:    true,
+    ratingCount:  true,
+    commentCount: true,
+    viewCount:    true,
+    createdAt:    true,
+    updatedAt:    true,
+    developerName: true,
+    developerSlug: true,
+    city: { select: { id: true, name: true, slug: true } },
+    user: { select: { id: true, name: true, image: true } },
+  } as const
 
   const [topics, total] = await Promise.all([
     prisma.topic.findMany({
@@ -49,10 +75,7 @@ export async function GET(req: NextRequest) {
       orderBy,
       skip: (page - 1) * limit,
       take: limit,
-      include: {
-        city: { select: { id: true, name: true, slug: true } },
-        user: { select: { id: true, name: true, image: true } },
-      },
+      select: topicSelect,
     }),
     prisma.topic.count({ where }),
   ])
@@ -61,12 +84,27 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  if (!isNewTopicEnabled()) return NextResponse.json({ error: 'New topic creation is currently disabled.' }, { status: 403 })
+  if (!isNewTopicEnabled()) {
+    return NextResponse.json({ error: 'New topic creation is currently disabled.' }, { status: 403 })
+  }
 
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   if (isEmailVerificationEnabled() && !session.user.emailVerified) {
     return NextResponse.json({ error: 'Please verify your email before posting.', requiresVerification: true }, { status: 403 })
+  }
+
+  // 5 topics per user per hour
+  if (!checkRateLimit(`topic:${session.user.id}`, 5, 60 * 60 * 1000)) {
+    return NextResponse.json(
+      { error: 'You are posting too frequently. Please wait before creating another topic.' },
+      { status: 429 }
+    )
+  }
+  // IP-level guard
+  const ip = getClientIp(req)
+  if (!checkRateLimit(`topic-ip:${ip}`, 10, 60 * 60 * 1000)) {
+    return NextResponse.json({ error: 'Too many requests from this IP.' }, { status: 429 })
   }
 
   try {
@@ -77,6 +115,23 @@ export async function POST(req: NextRequest) {
     }
 
     const d = parsed.data
+
+    // Validate developerSlug against the Developer table to prevent spoofing
+    if (d.developerSlug) {
+      const dev = await prisma.developer.findUnique({
+        where: { slug: d.developerSlug },
+        select: { id: true, name: true },
+      })
+      if (!dev) {
+        return NextResponse.json(
+          { error: 'Developer not found. Please select a valid developer or leave the field blank.' },
+          { status: 400 }
+        )
+      }
+      // Always use the canonical name from DB so it cannot be spoofed
+      d.developerName = dev.name
+    }
+
     const baseSlug = generateTopicSlug(d.propertyName)
 
     // Ensure slug uniqueness within city
@@ -93,20 +148,20 @@ export async function POST(req: NextRequest) {
 
     const topic = await prisma.topic.create({
       data: {
-        cityId: d.cityId,
-        userId: session.user.id,
+        cityId:       d.cityId,
+        userId:       session.user.id,
         title,
         slug,
         propertyName: d.propertyName,
         propertyType: d.propertyType,
-        description: d.description,
-        address: d.address,
-        priceMin: d.priceMin,
-        priceMax: d.priceMax,
-        image1Url: d.image1Url,
-        image1PubId: d.image1PubId,
-        image2Url: d.image2Url,
-        image2PubId: d.image2PubId,
+        description:  d.description,
+        address:      d.address,
+        priceMin:     d.priceMin,
+        priceMax:     d.priceMax,
+        image1Url:    d.image1Url,
+        image1PubId:  d.image1PubId,
+        image2Url:    d.image2Url,
+        image2PubId:  d.image2PubId,
         developerSlug: d.developerSlug || null,
         developerName: d.developerName || null,
       },
@@ -116,14 +171,16 @@ export async function POST(req: NextRequest) {
     // Auto-subscribe the creator
     await prisma.topicSubscription.create({ data: { topicId: topic.id, userId: session.user.id } })
 
-    // Notify admin (fire-and-forget)
+    // Notify admin + ping IndexNow (fire-and-forget)
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.indiapropertytalk.com'
+    const topicFullUrl = `${siteUrl}/${topic.city.slug}/${slug}`
+    pingIndexNow([topicFullUrl]).catch(() => {})
     sendAdminNewPostAlert({
-      posterName: session.user.name || 'Anonymous',
+      posterName:   session.user.name || 'Anonymous',
       propertyName: topic.propertyName,
-      cityName: topic.city.name,
-      description: topic.description,
-      topicUrl: `${siteUrl}/${topic.city.slug}/${slug}`,
+      cityName:     topic.city.name,
+      description:  topic.description,
+      topicUrl:     topicFullUrl,
     }).catch(() => {})
 
     return NextResponse.json({ topic, slug: `/${topic.city.slug}/${slug}` }, { status: 201 })
