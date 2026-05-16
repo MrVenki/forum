@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { checkRateLimit, getClientIp } from '@/lib/rateLimit'
+import { sendAdminNewUpdateAlert } from '@/lib/email'
 
 const createSchema = z.object({
   content:   z.string().min(10, 'Description must be at least 10 characters').max(2000),
@@ -53,7 +54,10 @@ export async function POST(
     return NextResponse.json({ error: 'Too many requests from this IP.' }, { status: 429 })
   }
 
-  const topic = await prisma.topic.findUnique({ where: { id: params.topicId }, select: { id: true } })
+  const topic = await prisma.topic.findUnique({
+    where: { id: params.topicId },
+    select: { id: true, propertyName: true, slug: true, city: { select: { name: true, slug: true } } },
+  })
   if (!topic) return NextResponse.json({ error: 'Topic not found' }, { status: 404 })
 
   const body = await req.json()
@@ -71,6 +75,17 @@ export async function POST(
     },
     include: { user: { select: { id: true, name: true, image: true, flairTag: true } } },
   })
+
+  // Fire-and-forget admin email alert
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.indiapropertytalk.com'
+  sendAdminNewUpdateAlert({
+    posterName: session.user.name || 'Anonymous',
+    content: parsed.data.content,
+    propertyName: topic.propertyName,
+    cityName: topic.city.name,
+    topicUrl: `${siteUrl}/${topic.city.slug}/${topic.slug}`,
+    hasImage: !!(parsed.data.imageUrl),
+  }).catch(() => {})
 
   return NextResponse.json(update, { status: 201 })
 }

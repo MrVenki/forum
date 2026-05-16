@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { checkRateLimit } from '@/lib/rateLimit'
+import { sendAdminNewAnswerAlert } from '@/lib/email'
 
 const createSchema = z.object({
   body: z.string().min(10, 'Answer must be at least 10 characters').max(2000),
@@ -23,6 +24,7 @@ export async function POST(
 
   const question = await prisma.question.findFirst({
     where: { id: params.questionId, topicId: params.topicId },
+    include: { topic: { select: { propertyName: true, slug: true, city: { select: { name: true, slug: true } } } } },
   })
   if (!question) return NextResponse.json({ error: 'Question not found' }, { status: 404 })
 
@@ -40,6 +42,19 @@ export async function POST(
       user: { select: { id: true, name: true, flairTag: true } },
     },
   })
+
+  // Fire-and-forget admin email alert
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.indiapropertytalk.com'
+  if (question.topic) {
+    sendAdminNewAnswerAlert({
+      posterName: session.user.name || 'Anonymous',
+      answer: parsed.data.body,
+      question: question.body,
+      propertyName: question.topic.propertyName,
+      cityName: question.topic.city.name,
+      topicUrl: `${siteUrl}/${question.topic.city.slug}/${question.topic.slug}`,
+    }).catch(() => {})
+  }
 
   return NextResponse.json(answer, { status: 201 })
 }

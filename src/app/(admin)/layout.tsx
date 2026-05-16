@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation'
 import { getServerSession } from 'next-auth'
 import Link from 'next/link'
 import { authOptions } from '@/lib/auth'
-import { LayoutDashboard, FileText, MessageSquare, Shield, ArrowLeft } from 'lucide-react'
+import { LayoutDashboard, FileText, MessageSquare, Shield, ArrowLeft, HelpCircle, Construction } from 'lucide-react'
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await getServerSession(authOptions)
@@ -30,6 +30,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
             { href: '/admin/posts', label: 'Posts', icon: FileText },
             { href: '/admin/comments', label: 'Comments', icon: MessageSquare },
+            { href: '/admin/questions', label: 'Q&A', icon: HelpCircle },
+            { href: '/admin/updates', label: 'Site Updates', icon: Construction },
           ].map(({ href, label, icon: Icon }) => (
             <Link
               key={href}

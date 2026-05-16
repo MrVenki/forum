@@ -235,6 +235,159 @@ export async function sendAdminNewCommentAlert(params: {
   })
 }
 
+export async function sendAdminNewQuestionAlert(params: {
+  posterName: string
+  question: string
+  propertyName: string
+  cityName: string
+  topicUrl: string
+}): Promise<void> {
+  const { posterName, question, propertyName, cityName, topicUrl } = params
+  const from = process.env.SMTP_FROM || process.env.SMTP_USER || 'noreply@indiapropertytalk.com'
+  const siteName = process.env.NEXT_PUBLIC_SITE_NAME || 'IndiaPropertyTalk'
+  const adminEmail = getAdminAlertEmail()
+  const preview = question.length > 300 ? question.slice(0, 300) + '…' : question
+
+  const transporter = createTransporter()
+  if (!transporter || !adminEmail) {
+    console.log(`\n[DEV ADMIN ALERT] New question by ${posterName} on ${propertyName}: ${preview}\n`)
+    return
+  }
+
+  await transporter.sendMail({
+    from: `"${siteName} Alerts" <${from}>`,
+    to: adminEmail,
+    subject: `❓ New question: ${propertyName}, ${cityName}`,
+    html: adminAlertHtml({
+      siteName, label: 'New Question', icon: '❓',
+      propertyName, cityName, posterName,
+      preview, topicUrl,
+      adminUrl: 'https://www.indiapropertytalk.com/admin/questions',
+      adminLabel: 'Manage Questions',
+    }),
+    text: `New question on ${siteName}\n\n${propertyName} — ${cityName}\nBy: ${posterName}\n\n"${preview}"\n\nView: ${topicUrl}\nAdmin: https://www.indiapropertytalk.com/admin/questions`,
+  })
+}
+
+export async function sendAdminNewAnswerAlert(params: {
+  posterName: string
+  answer: string
+  question: string
+  propertyName: string
+  cityName: string
+  topicUrl: string
+}): Promise<void> {
+  const { posterName, answer, question, propertyName, cityName, topicUrl } = params
+  const from = process.env.SMTP_FROM || process.env.SMTP_USER || 'noreply@indiapropertytalk.com'
+  const siteName = process.env.NEXT_PUBLIC_SITE_NAME || 'IndiaPropertyTalk'
+  const adminEmail = getAdminAlertEmail()
+  const answerPreview = answer.length > 250 ? answer.slice(0, 250) + '…' : answer
+  const qPreview = question.length > 100 ? question.slice(0, 100) + '…' : question
+
+  const transporter = createTransporter()
+  if (!transporter || !adminEmail) {
+    console.log(`\n[DEV ADMIN ALERT] New answer by ${posterName} on ${propertyName}: ${answerPreview}\n`)
+    return
+  }
+
+  await transporter.sendMail({
+    from: `"${siteName} Alerts" <${from}>`,
+    to: adminEmail,
+    subject: `💡 New answer: ${propertyName}, ${cityName}`,
+    html: adminAlertHtml({
+      siteName, label: 'New Answer', icon: '💡',
+      propertyName, cityName, posterName,
+      preview: `Q: ${qPreview}\n\nA: ${answerPreview}`,
+      topicUrl,
+      adminUrl: 'https://www.indiapropertytalk.com/admin/questions',
+      adminLabel: 'Manage Q&A',
+    }),
+    text: `New answer on ${siteName}\n\n${propertyName} — ${cityName}\nBy: ${posterName}\n\nQ: ${qPreview}\nA: ${answerPreview}\n\nView: ${topicUrl}\nAdmin: https://www.indiapropertytalk.com/admin/questions`,
+  })
+}
+
+export async function sendAdminNewUpdateAlert(params: {
+  posterName: string
+  content: string
+  propertyName: string
+  cityName: string
+  topicUrl: string
+  hasImage: boolean
+}): Promise<void> {
+  const { posterName, content, propertyName, cityName, topicUrl, hasImage } = params
+  const from = process.env.SMTP_FROM || process.env.SMTP_USER || 'noreply@indiapropertytalk.com'
+  const siteName = process.env.NEXT_PUBLIC_SITE_NAME || 'IndiaPropertyTalk'
+  const adminEmail = getAdminAlertEmail()
+  const preview = content.length > 300 ? content.slice(0, 300) + '…' : content
+
+  const transporter = createTransporter()
+  if (!transporter || !adminEmail) {
+    console.log(`\n[DEV ADMIN ALERT] New update by ${posterName} on ${propertyName}${hasImage ? ' (with photo)' : ''}: ${preview}\n`)
+    return
+  }
+
+  await transporter.sendMail({
+    from: `"${siteName} Alerts" <${from}>`,
+    to: adminEmail,
+    subject: `🏗️ New site update: ${propertyName}, ${cityName}`,
+    html: adminAlertHtml({
+      siteName, label: `Construction Update${hasImage ? ' (with photo)' : ''}`, icon: '🏗️',
+      propertyName, cityName, posterName,
+      preview, topicUrl,
+      adminUrl: 'https://www.indiapropertytalk.com/admin/updates',
+      adminLabel: 'Manage Updates',
+    }),
+    text: `New construction update on ${siteName}\n\n${propertyName} — ${cityName}\nBy: ${posterName}${hasImage ? ' [photo attached]' : ''}\n\n"${preview}"\n\nView: ${topicUrl}\nAdmin: https://www.indiapropertytalk.com/admin/updates`,
+  })
+}
+
+/** Reusable HTML template for admin alert emails */
+function adminAlertHtml(p: {
+  siteName: string; label: string; icon: string
+  propertyName: string; cityName: string; posterName: string
+  preview: string; topicUrl: string; adminUrl: string; adminLabel: string
+}) {
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f5f5f5;font-family:Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f5;padding:32px 0;">
+    <tr><td align="center">
+      <table width="560" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        <tr>
+          <td style="background:#1e3a5f;padding:24px 36px;">
+            <h1 style="margin:0;color:#fff;font-size:18px;font-weight:700;">${p.siteName}</h1>
+            <p style="margin:4px 0 0;color:#93c5fd;font-size:12px;">Admin Alert — ${p.label}</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:28px 36px;">
+            <p style="margin:0 0 4px;color:#888;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">${p.icon} ${p.label}</p>
+            <h2 style="margin:0 0 2px;color:#1e3a5f;font-size:20px;font-weight:700;">${p.propertyName}</h2>
+            <p style="margin:0 0 20px;color:#888;font-size:13px;">${p.cityName} &nbsp;·&nbsp; by <strong style="color:#555;">${p.posterName}</strong></p>
+            <div style="background:#f9fafb;border-left:4px solid #ea580c;border-radius:0 8px 8px 0;padding:16px 20px;margin-bottom:24px;white-space:pre-line;">
+              <p style="margin:0;color:#4b5563;font-size:14px;line-height:1.7;">${p.preview.replace(/\n/g, '<br>')}</p>
+            </div>
+            <table width="100%" cellpadding="0" cellspacing="0">
+              <tr>
+                <td><a href="${p.topicUrl}" style="display:inline-block;background:#ea580c;color:#fff;font-size:14px;font-weight:600;padding:11px 28px;border-radius:8px;text-decoration:none;">View on Site →</a></td>
+                <td align="right"><a href="${p.adminUrl}" style="display:inline-block;background:#1e3a5f;color:#fff;font-size:14px;font-weight:600;padding:11px 28px;border-radius:8px;text-decoration:none;">${p.adminLabel} →</a></td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        <tr>
+          <td style="background:#f9fafb;padding:16px 36px;border-top:1px solid #eee;text-align:center;">
+            <p style="margin:0;color:#aaa;font-size:12px;">&copy; ${new Date().getFullYear()} ${p.siteName} Admin Alerts</p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`
+}
+
 // ── Subscription notifications ───────────────────────────────────────────────
 
 export function generateUnsubscribeToken(userId: string, topicId: string): string {

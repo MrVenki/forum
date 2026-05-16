@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
-import { FileText, MessageSquare, Users, TrendingUp, Eye, EyeOff, ArrowRight } from 'lucide-react'
+import { FileText, MessageSquare, Users, TrendingUp, Eye, EyeOff, ArrowRight, HelpCircle, Construction } from 'lucide-react'
 import { formatRelativeTime } from '@/lib/utils/format'
 
 export const revalidate = 0
@@ -16,6 +16,10 @@ export default async function AdminDashboard() {
     totalUsers,
     newTopics24h,
     newComments24h,
+    totalQuestions,
+    unansweredQuestions,
+    totalUpdates,
+    newUpdates24h,
     recentTopics,
     recentComments,
   ] = await Promise.all([
@@ -26,6 +30,10 @@ export default async function AdminDashboard() {
     prisma.user.count(),
     prisma.topic.count({ where: { createdAt: { gte: yesterday } } }),
     prisma.comment.count({ where: { createdAt: { gte: yesterday }, isDeleted: false } }),
+    prisma.question.count(),
+    prisma.question.count({ where: { isAnswered: false } }),
+    prisma.topicUpdate.count(),
+    prisma.topicUpdate.count({ where: { createdAt: { gte: yesterday } } }),
     prisma.topic.findMany({
       orderBy: { createdAt: 'desc' },
       take: 8,
@@ -68,6 +76,10 @@ export default async function AdminDashboard() {
     { label: 'Users', value: totalUsers, icon: Users, color: 'text-navy-500', bg: 'bg-navy-50' },
     { label: 'New Posts (24h)', value: newTopics24h, icon: TrendingUp, color: 'text-green-600', bg: 'bg-green-50', highlight: newTopics24h > 0 },
     { label: 'New Comments (24h)', value: newComments24h, icon: TrendingUp, color: 'text-green-600', bg: 'bg-green-50', highlight: newComments24h > 0 },
+    { label: 'Questions', value: totalQuestions, icon: HelpCircle, color: 'text-saffron-500', bg: 'bg-saffron-50' },
+    { label: 'Unanswered', value: unansweredQuestions, icon: HelpCircle, color: 'text-orange-500', bg: 'bg-orange-50', highlight: unansweredQuestions > 0 },
+    { label: 'Site Updates', value: totalUpdates, icon: Construction, color: 'text-blue-600', bg: 'bg-blue-50' },
+    { label: 'Updates (24h)', value: newUpdates24h, icon: Construction, color: 'text-green-600', bg: 'bg-green-50', highlight: newUpdates24h > 0 },
   ]
 
   return (
@@ -78,7 +90,7 @@ export default async function AdminDashboard() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-10">
+      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-10">
         {stats.map((s) => (
           <div
             key={s.label}

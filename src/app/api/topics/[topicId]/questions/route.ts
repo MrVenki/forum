@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { checkRateLimit } from '@/lib/rateLimit'
+import { sendAdminNewQuestionAlert } from '@/lib/email'
 
 const createSchema = z.object({
   body: z.string().min(10, 'Question must be at least 10 characters').max(1000),
@@ -45,7 +46,10 @@ export async function POST(
     return NextResponse.json({ error: 'Too many questions today. Try again tomorrow.' }, { status: 429 })
   }
 
-  const topic = await prisma.topic.findUnique({ where: { id: params.topicId }, select: { id: true } })
+  const topic = await prisma.topic.findUnique({
+    where: { id: params.topicId },
+    select: { id: true, propertyName: true, slug: true, city: { select: { name: true, slug: true } } },
+  })
   if (!topic) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
   const body = await req.json()
@@ -66,6 +70,16 @@ export async function POST(
       },
     },
   })
+
+  // Fire-and-forget admin email alert
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.indiapropertytalk.com'
+  sendAdminNewQuestionAlert({
+    posterName: session.user.name || 'Anonymous',
+    question: parsed.data.body,
+    propertyName: topic.propertyName,
+    cityName: topic.city.name,
+    topicUrl: `${siteUrl}/${topic.city.slug}/${topic.slug}`,
+  }).catch(() => {})
 
   return NextResponse.json(question, { status: 201 })
 }
