@@ -121,6 +121,9 @@ model User {
   statusVotes      StatusVote[]
   polls            Poll[]
   pollVotes        PollVote[]
+  priceLogs        PriceLog[]
+  questions        Question[]
+  answers          Answer[]
 
   @@map("users")
 }
@@ -134,7 +137,8 @@ model City {
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
 
-  topics Topic[]
+  topics    Topic[]
+  questions Question[]
 
   @@map("cities")
 }
@@ -179,6 +183,8 @@ model Topic {
   updates       TopicUpdate[]
   statusVotes   StatusVote[]
   polls         Poll[]
+  priceLogs     PriceLog[]
+  questions     Question[]
 
   @@unique([cityId, slug])
   @@index([cityId, createdAt(sort: Desc)])
@@ -352,4 +358,59 @@ model PollVote {
 
   @@unique([pollId, userId])
   @@map("poll_votes")
+}
+
+// ─── Phase 2 Models ───────────────────────────────────────────────────────────
+
+model PriceLog {
+  id            String   @id @default(cuid())
+  topicId       String
+  userId        String
+  pricePerSqFt  Decimal  @db.Decimal(10, 2)
+  configuration String?  // e.g. "2BHK", "3BHK", "Plot"
+  source        String?  // e.g. "Builder website", "Site visit", "Broker"
+  loggedAt      DateTime
+  createdAt     DateTime @default(now())
+
+  topic Topic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id])
+
+  @@index([topicId, loggedAt(sort: Asc)])
+  @@map("price_logs")
+}
+
+model Question {
+  id         String   @id @default(cuid())
+  topicId    String?
+  cityId     String?
+  userId     String
+  body       String   @db.Text
+  isAnswered Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  topic   Topic?   @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  city    City?    @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  user    User     @relation(fields: [userId], references: [id])
+  answers Answer[]
+
+  @@index([topicId, createdAt(sort: Desc)])
+  @@index([cityId, createdAt(sort: Desc)])
+  @@map("questions")
+}
+
+model Answer {
+  id         String   @id @default(cuid())
+  questionId String
+  userId     String
+  body       String   @db.Text
+  isBest     Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id])
+
+  @@index([questionId, createdAt(sort: Asc)])
+  @@map("answers")
 }

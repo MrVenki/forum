@@ -22,6 +22,9 @@ import { ConstructionStatus } from '@/components/topic/ConstructionStatus'
 import { BookmarkButton } from '@/components/topic/BookmarkButton'
 import { PollWidget } from '@/components/topic/PollWidget'
 import { UpdatesFeed } from '@/components/topic/UpdatesFeed'
+import { PriceHistoryWidget } from '@/components/topic/PriceHistoryWidget'
+import { QASection } from '@/components/topic/QASection'
+import { EmiCalculator } from '@/components/tools/EmiCalculator'
 
 /** Safely serialise JSON-LD — escapes </script> injection sequences */
 function safeJsonLd(data: unknown): string {
@@ -341,6 +344,15 @@ export default async function TopicPage({ params }: Props) {
               <UpdatesFeed topicId={topic.id} />
             </div>
 
+            {/* Price History */}
+            <div className="card-base p-6">
+              <PriceHistoryWidget
+                topicId={topic.id}
+                priceMin={topic.priceMin ? Number(topic.priceMin) : null}
+                priceMax={topic.priceMax ? Number(topic.priceMax) : null}
+              />
+            </div>
+
             {/* Discussion & Comments */}
             <div className="card-base p-6">
               <div className="flex items-center justify-between mb-4">
@@ -351,6 +363,11 @@ export default async function TopicPage({ params }: Props) {
                 <SubscriberCount count={subscriberCount} />
               </div>
               <CommentList topicId={topic.id} initialComments={comments} />
+            </div>
+
+            {/* Q&A Section */}
+            <div className="card-base p-6">
+              <QASection topicId={topic.id} />
             </div>
           </div>
 
@@ -427,6 +444,14 @@ export default async function TopicPage({ params }: Props) {
                     </li>
                   ))}
                 </ul>
+              </div>
+            )}
+
+            {/* Compact EMI Calculator */}
+            {topic.priceMin && (
+              <div className="card-base p-5">
+                <h3 className="font-heading font-bold text-navy-500 mb-3 text-sm">EMI Calculator</h3>
+                <EmiCalculator prefillPrice={Number(topic.priceMin)} compact />
               </div>
             )}
 
