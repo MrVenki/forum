@@ -13,13 +13,13 @@ export async function GET(req: NextRequest, { params }: { params: { topicId: str
     where: { topicId: params.topicId, parentId: null, isDeleted: false },
     orderBy: { createdAt: 'asc' },
     include: {
-      user: { select: { id: true, name: true, image: true } },
+      user: { select: { id: true, name: true, image: true, flairTag: true } },
       reactions: true,
       replies: {
         where: { isDeleted: false },
         orderBy: { createdAt: 'asc' },
         include: {
-          user: { select: { id: true, name: true, image: true } },
+          user: { select: { id: true, name: true, image: true, flairTag: true } },
           reactions: true,
         },
       },

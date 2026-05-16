@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
+import { SITE_CONFIG } from '@/lib/constants/config'
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs'
 import { StarRating } from '@/components/rating/StarRating'
 import { TopicCard } from '@/components/topic/TopicCard'
@@ -12,12 +13,18 @@ export const revalidate = 3600
 
 interface Props { params: { developerSlug: string } }
 
+export async function generateStaticParams() {
+  const developers = await prisma.developer.findMany({ select: { slug: true } })
+  return developers.map((d) => ({ developerSlug: d.slug }))
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const developer = await prisma.developer.findUnique({ where: { slug: params.developerSlug } })
   if (!developer) return {}
   return {
     title: `${developer.name} — Developer Reputation Score | IndiaPropertyTalk`,
     description: `Community ratings, reviews and property listings for ${developer.name}. See what buyers say about build quality, delivery, and value.`,
+    alternates: { canonical: `${SITE_CONFIG.url}/developer/${developer.slug}` },
   }
 }
 

@@ -18,6 +18,10 @@ import { MapPin, Eye, MessageSquare, User, Calendar, Home, IndianRupee } from 'l
 import type { CommentWithRelations } from '@/types'
 import { SubscribeButton, SubscriberCount } from '@/components/topic/SubscribeButton'
 import { EditDescriptionForm } from '@/components/topic/EditDescriptionForm'
+import { ConstructionStatus } from '@/components/topic/ConstructionStatus'
+import { BookmarkButton } from '@/components/topic/BookmarkButton'
+import { PollWidget } from '@/components/topic/PollWidget'
+import { UpdatesFeed } from '@/components/topic/UpdatesFeed'
 
 /** Safely serialise JSON-LD — escapes </script> injection sequences */
 function safeJsonLd(data: unknown): string {
@@ -105,13 +109,13 @@ export default async function TopicPage({ params }: Props) {
       where: { topicId: topic.id, parentId: null, isDeleted: false },
       orderBy: { createdAt: 'asc' },
       include: {
-        user: { select: { id: true, name: true, image: true } },
+        user: { select: { id: true, name: true, image: true, flairTag: true } },
         reactions: true,
         replies: {
           where: { isDeleted: false },
           orderBy: { createdAt: 'asc' },
           include: {
-            user: { select: { id: true, name: true, image: true } },
+            user: { select: { id: true, name: true, image: true, flairTag: true } },
             reactions: true,
           },
         },
@@ -220,6 +224,7 @@ export default async function TopicPage({ params }: Props) {
                   <Badge variant="outline">{propTypeLabel}</Badge>
                 </div>
                 <div className="flex items-center gap-2">
+                  <BookmarkButton topicId={topic.id} />
                   <ShareButton
                     title={`${topic.propertyName}, ${topic.city.name} — Reviews & Discussion`}
                     text={topic.description.slice(0, 100).replace(/\n/g, ' ') + '…'}
@@ -278,6 +283,14 @@ export default async function TopicPage({ params }: Props) {
               </div>
             </div>
 
+            {/* Construction Status */}
+            <ConstructionStatus
+              topicId={topic.id}
+              initialStatus={topic.constructionStatus}
+              initialExpected={topic.expectedPossession?.toISOString() ?? null}
+              initialActual={topic.actualPossession?.toISOString() ?? null}
+            />
+
             {/* Images */}
             {(() => {
               const propertyImages = [topic.image1Url, topic.image2Url].filter(Boolean) as string[]
@@ -323,7 +336,12 @@ export default async function TopicPage({ params }: Props) {
               )}
             </div>
 
-            {/* Comments */}
+            {/* Construction Updates Feed */}
+            <div className="card-base p-6">
+              <UpdatesFeed topicId={topic.id} />
+            </div>
+
+            {/* Discussion & Comments */}
             <div className="card-base p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="font-heading font-bold text-lg text-navy-500">
@@ -379,6 +397,9 @@ export default async function TopicPage({ params }: Props) {
                 )}
               </dl>
             </div>
+
+            {/* Community Poll */}
+            <PollWidget topicId={topic.id} topicOwnerId={topic.user.id} />
 
             {/* Related Topics */}
             {relatedTopics.length > 0 && (

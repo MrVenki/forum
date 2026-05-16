@@ -37,6 +37,21 @@ enum UserRole {
   ADMIN
 }
 
+enum ConstructionStatus {
+  ON_TRACK
+  DELAYED
+  STALLED
+  POSSESSION_DONE
+}
+
+enum FlairTag {
+  OWNER
+  BUYER
+  RESEARCHER
+  NRI
+  BROKER
+}
+
 // ─── Auth Models (NextAuth) ───────────────────────────────────────────────────
 
 model Account {
@@ -92,6 +107,8 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
+  flairTag         FlairTag?
+
   accounts         Account[]
   sessions         Session[]
   topics           Topic[]
@@ -99,6 +116,11 @@ model User {
   ratings          Rating[]
   commentReactions CommentReaction[]
   subscriptions    TopicSubscription[]
+  bookmarks        Bookmark[]
+  topicUpdates     TopicUpdate[]
+  statusVotes      StatusVote[]
+  polls            Poll[]
+  pollVotes        PollVote[]
 
   @@map("users")
 }
@@ -140,16 +162,23 @@ model Topic {
   isPublished   Boolean      @default(true)
   metaTitle     String?
   metaDesc      String?
-  developerSlug String?
-  developerName String?
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
+  developerSlug      String?
+  developerName      String?
+  constructionStatus ConstructionStatus?
+  expectedPossession DateTime?
+  actualPossession   DateTime?
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
 
   city          City                @relation(fields: [cityId], references: [id])
   user          User                @relation(fields: [userId], references: [id])
   comments      Comment[]
   ratings       Rating[]
   subscriptions TopicSubscription[]
+  bookmarks     Bookmark[]
+  updates       TopicUpdate[]
+  statusVotes   StatusVote[]
+  polls         Poll[]
 
   @@unique([cityId, slug])
   @@index([cityId, createdAt(sort: Desc)])
@@ -246,4 +275,81 @@ model Rating {
 
   @@unique([topicId, userId])
   @@map("ratings")
+}
+
+// ─── Phase 1 Models ───────────────────────────────────────────────────────────
+
+model Bookmark {
+  id        String   @id @default(cuid())
+  userId    String
+  topicId   String
+  createdAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  topic Topic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, topicId])
+  @@index([userId])
+  @@map("bookmarks")
+}
+
+model TopicUpdate {
+  id          String   @id @default(cuid())
+  topicId     String
+  userId      String
+  content     String   @db.Text
+  imageUrl    String?
+  imagePubId  String?
+  visitedAt   DateTime
+  createdAt   DateTime @default(now())
+
+  topic Topic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id])
+
+  @@index([topicId, visitedAt(sort: Desc)])
+  @@map("topic_updates")
+}
+
+model StatusVote {
+  id        String             @id @default(cuid())
+  topicId   String
+  userId    String
+  status    ConstructionStatus
+  createdAt DateTime           @default(now())
+
+  topic Topic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id])
+
+  @@unique([topicId, userId])
+  @@index([topicId])
+  @@map("status_votes")
+}
+
+model Poll {
+  id        String     @id @default(cuid())
+  topicId   String     @unique
+  userId    String
+  question  String
+  options   String[]
+  createdAt DateTime   @default(now())
+
+  topic Topic      @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  user  User       @relation(fields: [userId], references: [id])
+  votes PollVote[]
+
+  @@map("polls")
+}
+
+model PollVote {
+  id          String   @id @default(cuid())
+  pollId      String
+  userId      String
+  optionIndex Int
+  createdAt   DateTime @default(now())
+
+  poll Poll @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([pollId, userId])
+  @@map("poll_votes")
 }

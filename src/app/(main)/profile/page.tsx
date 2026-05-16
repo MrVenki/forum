@@ -6,16 +6,17 @@ import Link from 'next/link'
 import { TopicCard } from '@/components/topic/TopicCard'
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs'
 import { formatAbsoluteDate } from '@/lib/utils/format'
-import { User, MessageSquare, Star, Calendar } from 'lucide-react'
+import { User, MessageSquare, Star, Calendar, Bookmark } from 'lucide-react'
 import type { TopicWithRelations } from '@/types'
 import { EditNameForm } from '@/components/profile/EditNameForm'
+import { FlairPickerClient } from '@/components/profile/FlairPickerClient'
 
 export default async function ProfilePage() {
   const session = await getServerSession(authOptions)
   if (!session) redirect('/login')
 
-  const [user, topics, commentCount, ratingCount] = await Promise.all([
-    prisma.user.findUnique({ where: { id: session.user.id }, select: { id: true, name: true, email: true, createdAt: true, image: true } }),
+  const [user, topics, commentCount, ratingCount, bookmarkCount] = await Promise.all([
+    prisma.user.findUnique({ where: { id: session.user.id }, select: { id: true, name: true, email: true, createdAt: true, image: true, flairTag: true } }),
     prisma.topic.findMany({
       where: { userId: session.user.id, isPublished: true },
       orderBy: { createdAt: 'desc' },
@@ -27,6 +28,7 @@ export default async function ProfilePage() {
     }),
     prisma.comment.count({ where: { userId: session.user.id, isDeleted: false } }),
     prisma.rating.count({ where: { userId: session.user.id } }),
+    prisma.bookmark.count({ where: { userId: session.user.id } }),
   ])
 
   if (!user) redirect('/login')
@@ -59,6 +61,14 @@ export default async function ProfilePage() {
                   <p className="text-xs text-neutral-400">{stat.label}</p>
                 </div>
               ))}
+            </div>
+
+            <Link href="/profile/watchlist" className="mt-4 flex items-center justify-center gap-1.5 text-sm text-neutral-600 hover:text-saffron-600 transition-colors">
+              <Bookmark className="h-4 w-4" /> Watchlist ({bookmarkCount})
+            </Link>
+
+            <div className="mt-4 border-t border-neutral-100 pt-4">
+              <FlairPickerClient initialFlair={user.flairTag} />
             </div>
 
             <Link href="/new-topic" className="btn-primary w-full mt-4 text-sm justify-center">

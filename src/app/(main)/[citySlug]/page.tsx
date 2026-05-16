@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import { SITE_CONFIG, PROPERTY_TYPES, PAGINATION } from '@/lib/constants/config'
+import { INDIAN_CITIES } from '@/lib/constants/cities'
 import { TopicCard } from '@/components/topic/TopicCard'
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs'
 import { Pagination } from '@/components/shared/Pagination'
@@ -12,6 +13,10 @@ import { MapPin, TrendingUp, MessageSquare, Clock, PlusCircle } from 'lucide-rea
 import type { TopicWithRelations } from '@/types'
 
 export const revalidate = 3600
+
+export async function generateStaticParams() {
+  return INDIAN_CITIES.map((city) => ({ citySlug: city.slug }))
+}
 
 interface Props {
   params: { citySlug: string }

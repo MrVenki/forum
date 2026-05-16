@@ -12,6 +12,13 @@
     "db:seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts",
     "db:seed-content": "ts-node --project tsconfig.seed.json prisma/seed-content.ts",
     "db:seed-content-2": "ts-node --project tsconfig.seed.json prisma/seed-content-2.ts",
+    "db:seed-tier1": "ts-node --project tsconfig.seed.json prisma/seed-tier1.ts",
+    "db:seed-tier1-a": "ts-node --project tsconfig.seed.json prisma/seed-tier1-a.ts",
+    "db:seed-tier1-b": "ts-node --project tsconfig.seed.json prisma/seed-tier1-b.ts",
+    "db:seed-tier1-c": "ts-node --project tsconfig.seed.json prisma/seed-tier1-c.ts",
+    "db:seed-tier1-d": "ts-node --project tsconfig.seed.json prisma/seed-tier1-d.ts",
+    "db:seed-tier1-e": "ts-node --project tsconfig.seed.json prisma/seed-tier1-e.ts",
+    "db:seed-tier1-f": "ts-node --project tsconfig.seed.json prisma/seed-tier1-f.ts",
     "db:studio": "prisma studio",
     "postinstall": "prisma generate"
   },

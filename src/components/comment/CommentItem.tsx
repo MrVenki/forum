@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils/cn'
 import { CornerDownRight } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
 import type { CommentWithRelations, ReactionType } from '@/types'
+import { FlairBadge } from '@/components/topic/FlairBadge'
 
 interface CommentItemProps {
   comment: CommentWithRelations
@@ -63,8 +64,9 @@ export function CommentItem({ comment, topicId, onReply, isReply = false }: Comm
 
         <div className="flex-1 min-w-0">
           {/* Header */}
-          <div className="flex items-baseline gap-2 flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap">
             <span className="font-semibold text-sm text-neutral-800">{comment.user.name}</span>
+            {comment.user.flairTag && <FlairBadge flair={comment.user.flairTag} />}
             <time
               className="text-xs text-neutral-500"
               dateTime={comment.createdAt.toString()}

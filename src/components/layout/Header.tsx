@@ -4,7 +4,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useSession, signOut } from 'next-auth/react'
 import { useState } from 'react'
-import { Home, Building2, PlusCircle, LogIn, LogOut, User, Menu, X, Search, ChevronDown, Shield } from 'lucide-react'
+import { Home, Building2, PlusCircle, LogIn, LogOut, User, Menu, X, Search, ChevronDown, Shield, Bookmark } from 'lucide-react'
 import { METRO_CITIES, TIER1_CITIES } from '@/lib/constants/cities'
 import { cn } from '@/lib/utils/cn'
 
@@ -108,6 +108,9 @@ export function Header({ newTopicEnabled = false }: { newTopicEnabled?: boolean 
                   <div className="invisible group-hover:visible absolute right-0 top-full mt-1 w-48 rounded-xl border border-neutral-200 bg-white py-1 shadow-lg">
                     <Link href="/profile" className="flex items-center gap-2 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors">
                       <User className="h-4 w-4" /> My Profile
+                    </Link>
+                    <Link href="/profile/watchlist" className="flex items-center gap-2 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors">
+                      <Bookmark className="h-4 w-4" /> Watchlist
                     </Link>
                     {(session.user.role === 'ADMIN' || session.user.role === 'MODERATOR') && (
                       <Link href="/admin" className="flex items-center gap-2 px-4 py-2 text-sm text-saffron-600 hover:bg-saffron-50 transition-colors font-medium">
