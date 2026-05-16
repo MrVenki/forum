@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { IndianRupee, Calculator, TrendingUp, Home, FileText, BarChart3, ArrowRight, CheckCircle } from 'lucide-react'
+import { IndianRupee, Calculator, TrendingUp, Home, FileText, BarChart3, ArrowRight, CheckCircle, Building } from 'lucide-react'
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs'
 
 export const metadata: Metadata = {
@@ -27,30 +27,42 @@ const LIVE_TOOLS = [
     highlights: ['Income multiple vs RBI guideline', 'EMI-to-income ratio', 'Double burden (EMI + rent) mode', 'SBI / HDFC / ICICI rate ranges'],
     badge: 'Most Used',
   },
-]
-
-const COMING_SOON = [
   {
-    icon: Calculator,
+    href: '/tools/stamp-duty-calculator',
+    icon: FileText,
     color: 'text-teal-600',
     bg: 'bg-teal-50',
+    border: 'border-teal-200',
     title: 'Stamp Duty Calculator',
-    description: 'Estimate stamp duty and registration charges for any state — Maharashtra, Karnataka, Delhi, UP, Telangana and more.',
+    description: 'Calculate stamp duty and registration charges for 13 states — Maharashtra, Karnataka, Delhi, UP, Telangana, Tamil Nadu and more. Includes women buyer concessions.',
+    highlights: ['13 states covered', 'Women buyer concessions', 'Transfer duty included', 'True cost of purchase'],
+    badge: null,
   },
   {
-    icon: Home,
-    color: 'text-blue-600',
-    bg: 'bg-blue-50',
-    title: 'Rent vs Buy Calculator',
-    description: 'Should you rent or buy? Compare the true cost over 5, 10, 20 years — accounting for appreciation, opportunity cost, and tax benefits.',
-  },
-  {
+    href: '/tools/home-loan-eligibility',
     icon: TrendingUp,
     color: 'text-emerald-600',
     bg: 'bg-emerald-50',
+    border: 'border-emerald-200',
     title: 'Home Loan Eligibility Calculator',
-    description: 'Find out the maximum home loan you qualify for based on salary, existing EMIs, FOIR norms, and bank-specific criteria.',
+    description: 'Find out how much home loan you qualify for based on your salary, existing EMIs, and FOIR norms. Compares SBI, HDFC, ICICI, Axis and 4 more banks.',
+    highlights: ['8 bank comparison', 'FOIR utilisation meter', 'Existing EMI impact', 'Property budget estimate'],
+    badge: null,
   },
+  {
+    href: '/tools/rent-vs-buy',
+    icon: Home,
+    color: 'text-blue-600',
+    bg: 'bg-blue-50',
+    border: 'border-blue-200',
+    title: 'Rent vs Buy Calculator',
+    description: 'Compare the true long-term cost of renting versus buying — accounting for property appreciation, rent escalation, EMI burden, and opportunity cost of down payment.',
+    highlights: ['Break-even year finder', 'Opportunity cost of down payment', 'Rent escalation modelling', '30-year horizon view'],
+    badge: null,
+  },
+]
+
+const COMING_SOON = [
   {
     icon: BarChart3,
     color: 'text-purple-600',
@@ -59,11 +71,18 @@ const COMING_SOON = [
     description: 'Calculate annualised return on your property investment — rental yield, capital appreciation, and total ROI over any holding period.',
   },
   {
-    icon: FileText,
+    icon: Building,
     color: 'text-orange-600',
     bg: 'bg-orange-50',
     title: 'GST on Property Calculator',
     description: 'Calculate GST payable on under-construction flats — different rates for affordable vs non-affordable housing, with and without ITC.',
+  },
+  {
+    icon: Calculator,
+    color: 'text-rose-600',
+    bg: 'bg-rose-50',
+    title: 'Home Loan Tax Benefit Calculator',
+    description: 'Calculate annual tax savings under Section 80C (principal) and Section 24(b) (interest) on your home loan — for both old and new tax regimes.',
   },
 ]
 
@@ -96,7 +115,7 @@ const jsonLd = {
   name: 'Property & Home Loan Calculators India',
   description: 'Free online calculators for Indian home buyers and property investors',
   url: 'https://www.indiapropertytalk.com/tools',
-  numberOfItems: LIVE_TOOLS.length + COMING_SOON.length,
+  numberOfItems: LIVE_TOOLS.length,
   itemListElement: [
     ...LIVE_TOOLS.map((t, i) => ({
       '@type': 'ListItem',
