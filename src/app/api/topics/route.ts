@@ -9,6 +9,7 @@ import { isEmailVerificationEnabled, isNewTopicEnabled } from '@/lib/features'
 import { sendAdminNewPostAlert } from '@/lib/email'
 import { pingIndexNow } from '@/lib/indexnow'
 import { checkRateLimit, getClientIp } from '@/lib/rateLimit'
+import { verifyTurnstile } from '@/lib/turnstile'
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
@@ -109,6 +110,12 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json()
+
+    // Bot protection
+    if (!(await verifyTurnstile(body.cfToken))) {
+      return NextResponse.json({ error: 'Security check failed. Please try again.' }, { status: 403 })
+    }
+
     const parsed = createTopicSchema.safeParse(body)
     if (!parsed.success) {
       return NextResponse.json({ error: parsed.error.errors[0].message }, { status: 400 })

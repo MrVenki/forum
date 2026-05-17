@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ImageUploader } from '@/components/shared/ImageUploader'
 import { DeveloperPicker, type DeveloperValue } from '@/components/shared/DeveloperPicker'
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs'
+import { TurnstileWidget } from '@/components/shared/TurnstileWidget'
 import { toast } from '@/hooks/use-toast'
 import { PlusCircle, AlertCircle, CheckCircle } from 'lucide-react'
 
@@ -32,6 +33,7 @@ export default function NewTopicForm() {
   const [loading, setLoading] = useState(false)
   const [duplicateWarning, setDuplicateWarning] = useState('')
   const [checkingDuplicate, setCheckingDuplicate] = useState(false)
+  const [cfToken, setCfToken] = useState('')
 
   useEffect(() => {
     fetch('/api/cities').then((r) => r.json()).then(setCities).catch(() => {})
@@ -81,7 +83,7 @@ export default function NewTopicForm() {
     const res = await fetch('/api/topics', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({ ...payload, cfToken }),
     })
     const result = await res.json()
     setLoading(false)
@@ -259,10 +261,13 @@ export default function NewTopicForm() {
                 <CheckCircle className="h-3.5 w-3.5 text-green-500" />
                 Your post will be visible immediately after submission.
               </div>
-              <Button type="submit" disabled={loading} size="lg">
-                <PlusCircle className="h-5 w-5" />
-                {loading ? 'Publishing…' : 'Publish Discussion'}
-              </Button>
+              <div className="flex flex-col items-end gap-2">
+                <TurnstileWidget onSuccess={setCfToken} onExpire={() => setCfToken('')} />
+                  <Button type="submit" disabled={loading} size="lg">
+                  <PlusCircle className="h-5 w-5" />
+                  {loading ? 'Publishing…' : 'Publish Discussion'}
+                </Button>
+              </div>
             </div>
           </form>
         </div>

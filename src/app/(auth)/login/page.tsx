@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { LogIn, Eye, EyeOff } from 'lucide-react'
+import { TurnstileWidget } from '@/components/shared/TurnstileWidget'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -19,6 +20,7 @@ export default function LoginPage() {
   const [showPass, setShowPass] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [cfToken, setCfToken] = useState('')
 
   const { register, handleSubmit, formState: { errors } } = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
@@ -27,10 +29,12 @@ export default function LoginPage() {
   const onSubmit = async (data: LoginInput) => {
     setLoading(true)
     setError('')
-    const res = await signIn('credentials', { ...data, redirect: false })
+    const res = await signIn('credentials', { ...data, cfToken, redirect: false })
     setLoading(false)
     if (res?.error === 'EmailNotVerified') {
       router.push(`/verify-email?email=${encodeURIComponent(data.email)}`)
+    } else if (res?.error === 'BotDetected') {
+      setError('Security check failed. Please try again.')
     } else if (res?.error) {
       setError('Invalid email or password. Please try again.')
     } else {
@@ -99,6 +103,8 @@ export default function LoginPage() {
             </div>
             {errors.password && <p className="text-xs text-red-600">{errors.password.message}</p>}
           </div>
+
+          <TurnstileWidget onSuccess={setCfToken} onExpire={() => setCfToken('')} />
 
           <Button type="submit" className="w-full" disabled={loading}>
             <LogIn className="h-4 w-4" />

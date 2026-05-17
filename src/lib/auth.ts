@@ -5,6 +5,7 @@ import CredentialsProvider from 'next-auth/providers/credentials'
 import bcrypt from 'bcryptjs'
 import { prisma } from './prisma'
 import { isEmailVerificationEnabled } from './features'
+import { verifyTurnstile } from './turnstile'
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma) as NextAuthOptions['adapter'],
@@ -27,9 +28,14 @@ export const authOptions: NextAuthOptions = {
       credentials: {
         email: { label: 'Email', type: 'email' },
         password: { label: 'Password', type: 'password' },
+        cfToken: { label: 'CF Token', type: 'text' },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null
+
+        // Bot protection
+        const humanVerified = await verifyTurnstile(credentials.cfToken)
+        if (!humanVerified) throw new Error('BotDetected')
 
         const user = await prisma.user.findUnique({
           where: { email: credentials.email },

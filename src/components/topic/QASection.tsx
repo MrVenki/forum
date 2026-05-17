@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import { HelpCircle, CheckCircle2, ChevronDown, ChevronUp, Send, MessageSquare } from 'lucide-react'
 import { FlairBadge } from './FlairBadge'
+import { TurnstileWidget } from '@/components/shared/TurnstileWidget'
 
 interface Answer {
   id: string
@@ -114,6 +115,7 @@ function QuestionCard({
   const [answerText, setAnswerText] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const [answerCfToken, setAnswerCfToken] = useState('')
 
   const hasAnswers = question.answers.length > 0
 
@@ -124,7 +126,7 @@ function QuestionCard({
     const res = await fetch(`/api/topics/${topicId}/questions/${question.id}/answers`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ body: answerText.trim() }),
+      body: JSON.stringify({ body: answerText.trim(), cfToken: answerCfToken }),
     })
     if (res.ok) {
       const newAnswer = await res.json()
@@ -197,6 +199,7 @@ function QuestionCard({
       {/* Answer form */}
       {session && (
         <form onSubmit={submitAnswer} className="flex gap-2 pt-1 border-t border-neutral-100">
+          <TurnstileWidget onSuccess={setAnswerCfToken} onExpire={() => setAnswerCfToken('')} />
           <textarea
             value={answerText}
             onChange={e => setAnswerText(e.target.value)}
@@ -231,6 +234,7 @@ export function QASection({ topicId }: Props) {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [showForm, setShowForm] = useState(false)
+  const [cfToken, setCfToken] = useState('')
 
   const fetchQuestions = useCallback(async () => {
     const res = await fetch(`/api/topics/${topicId}/questions`)
@@ -247,7 +251,7 @@ export function QASection({ topicId }: Props) {
     const res = await fetch(`/api/topics/${topicId}/questions`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ body: questionText.trim() }),
+      body: JSON.stringify({ body: questionText.trim(), cfToken }),
     })
     if (res.ok) {
       const q = await res.json()
@@ -297,6 +301,7 @@ export function QASection({ topicId }: Props) {
       {showForm && session && (
         <form onSubmit={handleAskQuestion} className="card-base p-4 space-y-3">
           <p className="text-sm font-semibold text-navy-500">Ask a Question</p>
+          <TurnstileWidget onSuccess={setCfToken} onExpire={() => setCfToken('')} />
           <textarea
             value={questionText}
             onChange={e => setQuestionText(e.target.value)}

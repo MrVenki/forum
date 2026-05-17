@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import { TrendingUp, Plus, X, Info } from 'lucide-react'
 import { FlairBadge } from './FlairBadge'
+import { TurnstileWidget } from '@/components/shared/TurnstileWidget'
 
 interface PriceLogEntry {
   id: string
@@ -43,6 +44,7 @@ export function PriceHistoryWidget({ topicId, priceMin, priceMax }: Props) {
   const [loggedAt, setLoggedAt] = useState(new Date().toISOString().split('T')[0])
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const [cfToken, setCfToken] = useState('')
 
   const fetch_ = useCallback(async () => {
     const res = await fetch(`/api/topics/${topicId}/price-history`)
@@ -65,6 +67,7 @@ export function PriceHistoryWidget({ topicId, priceMin, priceMax }: Props) {
         configuration: config || null,
         source: source || null,
         loggedAt: new Date(loggedAt).toISOString(),
+        cfToken,
       }),
     })
     if (res.ok) {
@@ -175,6 +178,7 @@ export function PriceHistoryWidget({ topicId, priceMin, priceMax }: Props) {
       {/* Log form */}
       {showForm && session && (
         <form onSubmit={handleSubmit} className="card-base p-4 space-y-3">
+          <TurnstileWidget onSuccess={setCfToken} onExpire={() => setCfToken('')} />
           <div className="flex items-center justify-between">
             <p className="text-sm font-semibold text-navy-500">Log a Price Entry</p>
             <button type="button" onClick={() => setShowForm(false)}>

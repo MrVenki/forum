@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react'
 import Image from 'next/image'
 import { Camera, CalendarDays, Plus, X, Upload } from 'lucide-react'
 import { FlairBadge } from './FlairBadge'
+import { TurnstileWidget } from '@/components/shared/TurnstileWidget'
 
 interface UpdateUser {
   id: string
@@ -42,6 +43,7 @@ export function UpdatesFeed({ topicId }: Props) {
   const [uploading, setUploading] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const [cfToken, setCfToken] = useState('')
 
   const fetchUpdates = useCallback(async (p = 1) => {
     setLoading(true)
@@ -108,6 +110,7 @@ export function UpdatesFeed({ topicId }: Props) {
         visitedAt: new Date(visitedAt).toISOString(),
         imageUrl,
         imagePubId,
+        cfToken,
       }),
     })
     if (res.ok) {
@@ -151,6 +154,7 @@ export function UpdatesFeed({ topicId }: Props) {
       {/* Post form */}
       {showForm && session && (
         <form onSubmit={handleSubmit} className="card-base p-4 space-y-3">
+          <TurnstileWidget onSuccess={setCfToken} onExpire={() => setCfToken('')} />
           <div className="flex items-center justify-between mb-1">
             <p className="text-sm font-semibold text-navy-500">Share a Construction Update</p>
             <button type="button" onClick={() => setShowForm(false)}>

@@ -7,6 +7,7 @@ import { createCommentSchema } from '@/lib/validations/comment'
 import { isEmailVerificationEnabled } from '@/lib/features'
 import { generateUnsubscribeToken, sendCommentNotification, sendAdminNewCommentAlert } from '@/lib/email'
 import { checkRateLimit, getClientIp } from '@/lib/rateLimit'
+import { verifyTurnstile } from '@/lib/turnstile'
 
 export async function GET(req: NextRequest, { params }: { params: { topicId: string } }) {
   const comments = await prisma.comment.findMany({
@@ -46,6 +47,12 @@ export async function POST(req: NextRequest, { params }: { params: { topicId: st
   }
 
   const body = await req.json()
+
+  // Bot protection
+  if (!(await verifyTurnstile(body.cfToken))) {
+    return NextResponse.json({ error: 'Security check failed. Please try again.' }, { status: 403 })
+  }
+
   const parsed = createCommentSchema.safeParse(body)
   if (!parsed.success) return NextResponse.json({ error: parsed.error.errors[0].message }, { status: 400 })
 

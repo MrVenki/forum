@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { checkRateLimit } from '@/lib/rateLimit'
 import { sendAdminNewAnswerAlert } from '@/lib/email'
+import { verifyTurnstile } from '@/lib/turnstile'
 
 const createSchema = z.object({
   body: z.string().min(10, 'Answer must be at least 10 characters').max(2000),
@@ -29,6 +30,12 @@ export async function POST(
   if (!question) return NextResponse.json({ error: 'Question not found' }, { status: 404 })
 
   const body = await req.json()
+
+  // Bot protection
+  if (!(await verifyTurnstile(body.cfToken))) {
+    return NextResponse.json({ error: 'Security check failed. Please try again.' }, { status: 403 })
+  }
+
   const parsed = createSchema.safeParse(body)
   if (!parsed.success) return NextResponse.json({ error: parsed.error.errors[0].message }, { status: 400 })
 

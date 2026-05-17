@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { toast } from '@/hooks/use-toast'
 import { Send } from 'lucide-react'
 import type { CommentWithRelations } from '@/types'
+import { TurnstileWidget } from '@/components/shared/TurnstileWidget'
 
 interface CommentFormProps {
   topicId: string
@@ -18,6 +19,7 @@ interface CommentFormProps {
 export function CommentForm({ topicId, parentId, onSuccess, onCancel, placeholder }: CommentFormProps) {
   const [content, setContent] = useState('')
   const [loading, setLoading] = useState(false)
+  const [cfToken, setCfToken] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -29,7 +31,7 @@ export function CommentForm({ topicId, parentId, onSuccess, onCancel, placeholde
     const res = await fetch(`/api/topics/${topicId}/comments`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ content: content.trim(), parentId }),
+      body: JSON.stringify({ content: content.trim(), parentId, cfToken }),
     })
     const data = await res.json()
     setLoading(false)
@@ -49,6 +51,7 @@ export function CommentForm({ topicId, parentId, onSuccess, onCancel, placeholde
 
   return (
     <form onSubmit={handleSubmit} className="space-y-2">
+      <TurnstileWidget onSuccess={setCfToken} onExpire={() => setCfToken('')} />
       <Textarea
         value={content}
         onChange={(e) => setContent(e.target.value)}

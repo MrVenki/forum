@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { UserPlus, Eye, EyeOff } from 'lucide-react'
+import { TurnstileWidget } from '@/components/shared/TurnstileWidget'
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -18,6 +19,7 @@ export default function RegisterPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [agreed, setAgreed] = useState(false)
+  const [cfToken, setCfToken] = useState('')
 
   const { register, handleSubmit, formState: { errors } } = useForm<RegisterInput>({
     resolver: zodResolver(registerSchema),
@@ -29,7 +31,7 @@ export default function RegisterPage() {
     const res = await fetch('/api/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
+      body: JSON.stringify({ ...data, cfToken }),
     })
     const json = await res.json()
     setLoading(false)
@@ -123,6 +125,8 @@ export default function RegisterPage() {
               </Link>. Your information is never sold.
             </label>
           </div>
+
+          <TurnstileWidget onSuccess={setCfToken} onExpire={() => setCfToken('')} />
 
           <Button type="submit" className="w-full" disabled={loading || !agreed}>
             <UserPlus className="h-4 w-4" />

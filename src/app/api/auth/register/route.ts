@@ -6,6 +6,7 @@ import { registerSchema } from '@/lib/validations/auth'
 import { isEmailVerificationEnabled, getEmailVerificationConfig } from '@/lib/features'
 import { sendOtpEmail } from '@/lib/email'
 import { checkRateLimit, getClientIp } from '@/lib/rateLimit'
+import { verifyTurnstile } from '@/lib/turnstile'
 
 // crypto.randomInt is a CSPRNG — never use Math.random() for security tokens
 function generateOtp(): string {
@@ -24,6 +25,13 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json()
+
+    // Bot protection
+    const humanVerified = await verifyTurnstile(body.cfToken)
+    if (!humanVerified) {
+      return NextResponse.json({ error: 'Security check failed. Please try again.' }, { status: 403 })
+    }
+
     const parsed = registerSchema.safeParse(body)
     if (!parsed.success) {
       return NextResponse.json({ error: parsed.error.errors[0].message }, { status: 400 })
