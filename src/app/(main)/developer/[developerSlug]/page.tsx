@@ -18,13 +18,25 @@ export async function generateStaticParams() {
   return developers.map((d) => ({ developerSlug: d.slug }))
 }
 
+const MIN_TOPICS_TO_INDEX = 3 // Noindex thin developer pages to preserve crawl budget
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const developer = await prisma.developer.findUnique({ where: { slug: params.developerSlug } })
   if (!developer) return {}
+
+  const topicCount = await prisma.topic.count({
+    where: { developerSlug: params.developerSlug, isPublished: true },
+  })
+
+  // Pages with fewer than 3 topics are thin content — noindex to protect crawl budget
+  // while still keeping the page accessible to users who land via internal links.
+  const shouldIndex = topicCount >= MIN_TOPICS_TO_INDEX
+
   return {
     title: `${developer.name} — Developer Reputation Score | IndiaPropertyTalk`,
     description: `Community ratings, reviews and property listings for ${developer.name}. See what buyers say about build quality, delivery, and value.`,
-    alternates: { canonical: `${SITE_CONFIG.url}/developer/${developer.slug}` },
+    alternates: shouldIndex ? { canonical: `${SITE_CONFIG.url}/developer/${developer.slug}` } : undefined,
+    robots: shouldIndex ? undefined : { index: false, follow: true },
   }
 }
 

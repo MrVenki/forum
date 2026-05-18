@@ -4,10 +4,12 @@ import { prisma } from '@/lib/prisma'
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs'
 import { StarRating } from '@/components/rating/StarRating'
 import { Building2, MapPin, Calendar, Home, Star } from 'lucide-react'
+import { SITE_CONFIG } from '@/lib/constants/config'
 
 export const metadata: Metadata = {
   title: 'Developer Reputation Scores — IndiaPropertyTalk',
   description: 'Compare Indian real estate developers by community ratings, review counts, and project quality scores based on verified buyer experiences.',
+  alternates: { canonical: `${SITE_CONFIG.url}/developers` },
 }
 
 export const revalidate = 3600

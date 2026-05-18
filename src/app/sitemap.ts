@@ -35,23 +35,33 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let topicPages: MetadataRoute.Sitemap = []
   let developerPages: MetadataRoute.Sitemap = []
   try {
-    const [topics, developers] = await Promise.all([
-      prisma.topic.findMany({
-        where: { isPublished: true },
-        select: { slug: true, updatedAt: true, city: { select: { slug: true } } },
-        orderBy: { updatedAt: 'desc' },
-        take: 5000,
-      }),
-      prisma.developer.findMany({
-        select: { slug: true, createdAt: true },
-      }),
-    ])
+    const topics = await prisma.topic.findMany({
+      where: { isPublished: true },
+      select: { slug: true, updatedAt: true, city: { select: { slug: true } } },
+      orderBy: { updatedAt: 'desc' },
+      take: 5000,
+    })
     topicPages = topics.map((t) => ({
       url: `${baseUrl}/${t.city.slug}/${t.slug}`,
       lastModified: t.updatedAt,
       changeFrequency: 'daily' as const,
       priority: 0.8,
     }))
+
+    // Only include developer pages with ≥3 published topics.
+    // Thin developer pages (0-2 topics) waste crawl budget and dilute quality signals —
+    // they're noindexed at the page level too, so excluding from sitemap is consistent.
+    const developerTopicCounts = await prisma.topic.groupBy({
+      by: ['developerSlug'],
+      where: { isPublished: true, developerSlug: { not: null } },
+      _count: { _all: true },
+      having: { developerSlug: { _count: { gte: 3 } } },
+    })
+    const qualifiedSlugs = new Set(developerTopicCounts.map((d) => d.developerSlug!))
+    const developers = await prisma.developer.findMany({
+      where: { slug: { in: [...qualifiedSlugs] } },
+      select: { slug: true, createdAt: true },
+    })
     developerPages = developers.map((d) => ({
       url: `${baseUrl}/developer/${d.slug}`,
       lastModified: d.createdAt,
