@@ -5,7 +5,7 @@
  */
 
 const INDEXNOW_KEY = process.env.INDEXNOW_KEY
-const SITE_HOST = 'www.indiapropertytalk.com'
+const SITE_HOST = 'indiapropertytalk.com' // canonical domain — no www
 
 export async function pingIndexNow(urls: string[]): Promise<void> {
   if (!INDEXNOW_KEY) return // skip silently if key not configured

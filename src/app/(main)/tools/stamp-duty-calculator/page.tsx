@@ -2,15 +2,16 @@ import type { Metadata } from 'next'
 import { StampDutyCalculator } from '@/components/tools/StampDutyCalculator'
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs'
 import { FileText } from 'lucide-react'
+import { SITE_CONFIG } from '@/lib/constants/config'
 
 export const metadata: Metadata = {
   title: 'Stamp Duty Calculator India 2025 — All States — IndiaPropertyTalk',
   description: 'Calculate stamp duty and registration charges for Maharashtra, Karnataka, Delhi, UP, Telangana, Tamil Nadu and 9 more states. Includes women buyer concessions and transfer duty.',
-  alternates: { canonical: 'https://www.indiapropertytalk.com/tools/stamp-duty-calculator' },
+  alternates: { canonical: `${SITE_CONFIG.url}/tools/stamp-duty-calculator` },
   openGraph: {
     title: 'Stamp Duty Calculator India 2025 — All States',
     description: 'Instant stamp duty & registration charge estimates for 13 Indian states. Know the true cost before you register.',
-    url: 'https://www.indiapropertytalk.com/tools/stamp-duty-calculator',
+    url: `${SITE_CONFIG.url}/tools/stamp-duty-calculator`,
   },
 }
 

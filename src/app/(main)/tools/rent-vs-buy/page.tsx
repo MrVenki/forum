@@ -2,15 +2,16 @@ import type { Metadata } from 'next'
 import { RentVsBuyCalculator } from '@/components/tools/RentVsBuyCalculator'
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs'
 import { Home } from 'lucide-react'
+import { SITE_CONFIG } from '@/lib/constants/config'
 
 export const metadata: Metadata = {
   title: 'Rent vs Buy Calculator India 2025 — Is Buying Worth It? — IndiaPropertyTalk',
   description: 'Should you rent or buy a home in India? Compare true long-term costs accounting for EMI, rent increases, property appreciation, and opportunity cost of down payment.',
-  alternates: { canonical: 'https://www.indiapropertytalk.com/tools/rent-vs-buy' },
+  alternates: { canonical: `${SITE_CONFIG.url}/tools/rent-vs-buy` },
   openGraph: {
     title: 'Rent vs Buy Calculator India — Which Is Smarter?',
     description: 'The only rent vs buy calculator that accounts for Indian market conditions — property appreciation, rent escalation, and investment opportunity cost.',
-    url: 'https://www.indiapropertytalk.com/tools/rent-vs-buy',
+    url: `${SITE_CONFIG.url}/tools/rent-vs-buy`,
   },
 }
 

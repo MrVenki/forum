@@ -179,7 +179,7 @@ export async function POST(req: NextRequest) {
     await prisma.topicSubscription.create({ data: { topicId: topic.id, userId: session.user.id } })
 
     // Notify admin + ping IndexNow (fire-and-forget)
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.indiapropertytalk.com'
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://indiapropertytalk.com'
     const topicFullUrl = `${siteUrl}/${topic.city.slug}/${slug}`
     pingIndexNow([topicFullUrl]).catch(() => {})
     sendAdminNewPostAlert({

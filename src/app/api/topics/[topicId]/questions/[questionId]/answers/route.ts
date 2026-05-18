@@ -51,7 +51,7 @@ export async function POST(
   })
 
   // Fire-and-forget admin email alert
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.indiapropertytalk.com'
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://indiapropertytalk.com'
   if (question.topic) {
     sendAdminNewAnswerAlert({
       posterName: session.user.name || 'Anonymous',

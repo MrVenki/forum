@@ -158,7 +158,7 @@ export async function sendAdminNewPostAlert(params: {
   </table>
 </body>
 </html>`,
-    text: `New post on ${siteName}\n\n${propertyName} — ${cityName}\nPosted by: ${posterName}\n\n${preview}\n\nView: ${topicUrl}\nAdmin: https://www.indiapropertytalk.com/admin/posts`,
+    text: `New post on ${siteName}\n\n${propertyName} — ${cityName}\nPosted by: ${posterName}\n\n${preview}\n\nView: ${topicUrl}\nAdmin: https://indiapropertytalk.com/admin/posts`,
   })
 }
 
@@ -215,7 +215,7 @@ export async function sendAdminNewCommentAlert(params: {
                   <a href="${topicUrl}" style="display:inline-block;background:#ea580c;color:#fff;font-size:14px;font-weight:600;padding:11px 28px;border-radius:8px;text-decoration:none;">View Discussion →</a>
                 </td>
                 <td align="right">
-                  <a href="https://www.indiapropertytalk.com/admin/comments" style="display:inline-block;background:#1e3a5f;color:#fff;font-size:14px;font-weight:600;padding:11px 28px;border-radius:8px;text-decoration:none;">Admin Panel →</a>
+                  <a href="https://indiapropertytalk.com/admin/comments" style="display:inline-block;background:#1e3a5f;color:#fff;font-size:14px;font-weight:600;padding:11px 28px;border-radius:8px;text-decoration:none;">Admin Panel →</a>
                 </td>
               </tr>
             </table>
@@ -231,7 +231,7 @@ export async function sendAdminNewCommentAlert(params: {
   </table>
 </body>
 </html>`,
-    text: `New ${label} on ${siteName}\n\n${propertyName} — ${cityName}\nBy: ${commenterName}\n\n"${preview}"\n\nView: ${topicUrl}\nAdmin comments: https://www.indiapropertytalk.com/admin/comments`,
+    text: `New ${label} on ${siteName}\n\n${propertyName} — ${cityName}\nBy: ${commenterName}\n\n"${preview}"\n\nView: ${topicUrl}\nAdmin comments: https://indiapropertytalk.com/admin/comments`,
   })
 }
 
@@ -262,10 +262,10 @@ export async function sendAdminNewQuestionAlert(params: {
       siteName, label: 'New Question', icon: '❓',
       propertyName, cityName, posterName,
       preview, topicUrl,
-      adminUrl: 'https://www.indiapropertytalk.com/admin/questions',
+      adminUrl: 'https://indiapropertytalk.com/admin/questions',
       adminLabel: 'Manage Questions',
     }),
-    text: `New question on ${siteName}\n\n${propertyName} — ${cityName}\nBy: ${posterName}\n\n"${preview}"\n\nView: ${topicUrl}\nAdmin: https://www.indiapropertytalk.com/admin/questions`,
+    text: `New question on ${siteName}\n\n${propertyName} — ${cityName}\nBy: ${posterName}\n\n"${preview}"\n\nView: ${topicUrl}\nAdmin: https://indiapropertytalk.com/admin/questions`,
   })
 }
 
@@ -299,10 +299,10 @@ export async function sendAdminNewAnswerAlert(params: {
       propertyName, cityName, posterName,
       preview: `Q: ${qPreview}\n\nA: ${answerPreview}`,
       topicUrl,
-      adminUrl: 'https://www.indiapropertytalk.com/admin/questions',
+      adminUrl: 'https://indiapropertytalk.com/admin/questions',
       adminLabel: 'Manage Q&A',
     }),
-    text: `New answer on ${siteName}\n\n${propertyName} — ${cityName}\nBy: ${posterName}\n\nQ: ${qPreview}\nA: ${answerPreview}\n\nView: ${topicUrl}\nAdmin: https://www.indiapropertytalk.com/admin/questions`,
+    text: `New answer on ${siteName}\n\n${propertyName} — ${cityName}\nBy: ${posterName}\n\nQ: ${qPreview}\nA: ${answerPreview}\n\nView: ${topicUrl}\nAdmin: https://indiapropertytalk.com/admin/questions`,
   })
 }
 
@@ -334,10 +334,10 @@ export async function sendAdminNewUpdateAlert(params: {
       siteName, label: `Construction Update${hasImage ? ' (with photo)' : ''}`, icon: '🏗️',
       propertyName, cityName, posterName,
       preview, topicUrl,
-      adminUrl: 'https://www.indiapropertytalk.com/admin/updates',
+      adminUrl: 'https://indiapropertytalk.com/admin/updates',
       adminLabel: 'Manage Updates',
     }),
-    text: `New construction update on ${siteName}\n\n${propertyName} — ${cityName}\nBy: ${posterName}${hasImage ? ' [photo attached]' : ''}\n\n"${preview}"\n\nView: ${topicUrl}\nAdmin: https://www.indiapropertytalk.com/admin/updates`,
+    text: `New construction update on ${siteName}\n\n${propertyName} — ${cityName}\nBy: ${posterName}${hasImage ? ' [photo attached]' : ''}\n\n"${preview}"\n\nView: ${topicUrl}\nAdmin: https://indiapropertytalk.com/admin/updates`,
   })
 }
 
@@ -425,7 +425,7 @@ export async function sendCommentNotification(params: NotificationParams): Promi
 
   const from = process.env.SMTP_FROM || process.env.SMTP_USER || 'noreply@indiapropertytalk.com'
   const siteName = process.env.NEXT_PUBLIC_SITE_NAME || 'IndiaPropertyTalk'
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.indiapropertytalk.com'
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://indiapropertytalk.com'
 
   const preview = commentContent.length > 200 ? commentContent.slice(0, 200) + '…' : commentContent
 

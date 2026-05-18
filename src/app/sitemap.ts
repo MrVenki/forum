@@ -9,14 +9,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = SITE_CONFIG.url
 
   const staticPages: MetadataRoute.Sitemap = [
-    { url: baseUrl,                          lastModified: new Date(), changeFrequency: 'daily',   priority: 1.0 },
-    { url: `${baseUrl}/cities`,              lastModified: new Date(), changeFrequency: 'weekly',  priority: 0.8 },
-    { url: `${baseUrl}/developers`,          lastModified: new Date(), changeFrequency: 'weekly',  priority: 0.8 },
-    { url: `${baseUrl}/about`,               lastModified: new Date(), changeFrequency: 'monthly', priority: 0.6 },
-    { url: `${baseUrl}/contact`,             lastModified: new Date(), changeFrequency: 'monthly', priority: 0.5 },
-    { url: `${baseUrl}/privacy-policy`,      lastModified: new Date(), changeFrequency: 'monthly', priority: 0.3 },
-    { url: `${baseUrl}/terms-of-use`,        lastModified: new Date(), changeFrequency: 'monthly', priority: 0.3 },
-    { url: `${baseUrl}/disclaimer`,          lastModified: new Date(), changeFrequency: 'monthly', priority: 0.3 },
+    { url: baseUrl,                                          lastModified: new Date(), changeFrequency: 'daily',   priority: 1.0 },
+    { url: `${baseUrl}/cities`,                              lastModified: new Date(), changeFrequency: 'weekly',  priority: 0.8 },
+    { url: `${baseUrl}/developers`,                          lastModified: new Date(), changeFrequency: 'weekly',  priority: 0.8 },
+    // Tools hub + individual calculators — high-value SEO pages
+    { url: `${baseUrl}/tools`,                               lastModified: new Date(), changeFrequency: 'monthly', priority: 0.8 },
+    { url: `${baseUrl}/tools/emi-calculator`,                lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${baseUrl}/tools/stamp-duty-calculator`,         lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${baseUrl}/tools/home-loan-eligibility`,         lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${baseUrl}/tools/rent-vs-buy`,                   lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${baseUrl}/about`,                               lastModified: new Date(), changeFrequency: 'monthly', priority: 0.6 },
+    { url: `${baseUrl}/contact`,                             lastModified: new Date(), changeFrequency: 'monthly', priority: 0.5 },
+    { url: `${baseUrl}/privacy-policy`,                      lastModified: new Date(), changeFrequency: 'monthly', priority: 0.3 },
+    { url: `${baseUrl}/terms-of-use`,                        lastModified: new Date(), changeFrequency: 'monthly', priority: 0.3 },
+    { url: `${baseUrl}/disclaimer`,                          lastModified: new Date(), changeFrequency: 'monthly', priority: 0.3 },
   ]
 
   const cityPages: MetadataRoute.Sitemap = INDIAN_CITIES.map((city) => ({

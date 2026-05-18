@@ -18,6 +18,6 @@ export async function GET(req: NextRequest) {
 
   await prisma.topicSubscription.deleteMany({ where: { topicId, userId } })
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.indiapropertytalk.com'
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://indiapropertytalk.com'
   return NextResponse.redirect(`${siteUrl}/?unsubscribed=1`)
 }

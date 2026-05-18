@@ -2,15 +2,16 @@ import type { Metadata } from 'next'
 import { EligibilityCalculator } from '@/components/tools/EligibilityCalculator'
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs'
 import { TrendingUp } from 'lucide-react'
+import { SITE_CONFIG } from '@/lib/constants/config'
 
 export const metadata: Metadata = {
   title: 'Home Loan Eligibility Calculator India 2025 — IndiaPropertyTalk',
   description: 'Find out how much home loan you qualify for based on your salary and existing EMIs. Compares SBI, HDFC, ICICI, Axis and 4 more banks using FOIR norms.',
-  alternates: { canonical: 'https://www.indiapropertytalk.com/tools/home-loan-eligibility' },
+  alternates: { canonical: `${SITE_CONFIG.url}/tools/home-loan-eligibility` },
   openGraph: {
     title: 'Home Loan Eligibility Calculator — How Much Loan Can I Get?',
     description: 'Instant eligibility estimate for SBI, HDFC, ICICI, Axis Bank and more. Based on FOIR norms and your salary.',
-    url: 'https://www.indiapropertytalk.com/tools/home-loan-eligibility',
+    url: `${SITE_CONFIG.url}/tools/home-loan-eligibility`,
   },
 }
 

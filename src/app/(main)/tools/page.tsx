@@ -2,15 +2,16 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { IndianRupee, Calculator, TrendingUp, Home, FileText, BarChart3, ArrowRight, CheckCircle, Building } from 'lucide-react'
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs'
+import { SITE_CONFIG } from '@/lib/constants/config'
 
 export const metadata: Metadata = {
   title: 'Free Property & Home Loan Calculators India 2025 — IndiaPropertyTalk',
   description: 'Free calculators for Indian home buyers: EMI calculator, affordability checker, stamp duty estimator, rent vs buy analysis and more. Make smarter property decisions.',
-  alternates: { canonical: 'https://www.indiapropertytalk.com/tools' },
+  alternates: { canonical: `${SITE_CONFIG.url}/tools` },
   openGraph: {
     title: 'Free Property Calculators for Indian Home Buyers — IndiaPropertyTalk',
     description: 'EMI calculator, affordability checker, stamp duty estimator and more. Trusted by thousands of Indian property buyers.',
-    url: 'https://www.indiapropertytalk.com/tools',
+    url: `${SITE_CONFIG.url}/tools`,
     type: 'website',
   },
 }
@@ -114,7 +115,7 @@ const jsonLd = {
   '@type': 'ItemList',
   name: 'Property & Home Loan Calculators India',
   description: 'Free online calculators for Indian home buyers and property investors',
-  url: 'https://www.indiapropertytalk.com/tools',
+  url: `${SITE_CONFIG.url}/tools`,
   numberOfItems: LIVE_TOOLS.length,
   itemListElement: [
     ...LIVE_TOOLS.map((t, i) => ({
@@ -122,7 +123,7 @@ const jsonLd = {
       position: i + 1,
       name: t.title,
       description: t.description,
-      url: `https://www.indiapropertytalk.com${t.href}`,
+      url: `${SITE_CONFIG.url}${t.href}`,
     })),
     ...COMING_SOON.map((t, i) => ({
       '@type': 'ListItem',

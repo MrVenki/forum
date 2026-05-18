@@ -104,7 +104,7 @@ export async function POST(req: NextRequest, { params }: { params: { topicId: st
   if (full) {
     revalidatePath(`/${full.city.slug}/${full.slug}`)
 
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.indiapropertytalk.com'
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://indiapropertytalk.com'
     const topicUrl = `${siteUrl}/${full.city.slug}/${full.slug}`
 
     // Notify admin (fire-and-forget)

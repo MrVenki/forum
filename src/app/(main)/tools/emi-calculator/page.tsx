@@ -2,11 +2,12 @@ import type { Metadata } from 'next'
 import { EmiCalculator } from '@/components/tools/EmiCalculator'
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs'
 import { IndianRupee } from 'lucide-react'
+import { SITE_CONFIG } from '@/lib/constants/config'
 
 export const metadata: Metadata = {
   title: 'Home Loan EMI Calculator India 2025 — IndiaPropertyTalk',
   description: 'Calculate your home loan EMI instantly. Includes affordability check, income multiple, double-burden analysis for under-construction properties, and EMI-to-income ratio.',
-  alternates: { canonical: 'https://www.indiapropertytalk.com/tools/emi-calculator' },
+  alternates: { canonical: `${SITE_CONFIG.url}/tools/emi-calculator` },
 }
 
 export default function EmiCalculatorPage() {
