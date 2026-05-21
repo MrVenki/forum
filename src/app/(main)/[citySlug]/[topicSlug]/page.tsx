@@ -198,11 +198,25 @@ export default async function TopicPage({ params }: Props) {
       }
     : null
 
-  const jsonLd = ratingSchema ? [discussionSchema, ratingSchema] : discussionSchema
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: SITE_CONFIG.url },
+      { '@type': 'ListItem', position: 2, name: topic.city.name, item: `${SITE_CONFIG.url}/${params.citySlug}` },
+      { '@type': 'ListItem', position: 3, name: topic.propertyName, item: topicUrl },
+    ],
+  }
+
+  const schemas = [
+    discussionSchema,
+    ...(ratingSchema ? [ratingSchema] : []),
+    breadcrumbSchema,
+  ]
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(schemas) }} />
 
       <div className="container-forum py-6">
         <Breadcrumbs

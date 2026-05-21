@@ -84,7 +84,7 @@ export default async function CityPage({ params, searchParams }: Props) {
 
   const totalPages = Math.ceil(total / limit)
 
-  const jsonLd = {
+  const itemListSchema = {
     '@context': 'https://schema.org',
     '@type': 'ItemList',
     name: `${city.name} Property Forum Topics`,
@@ -98,6 +98,15 @@ export default async function CityPage({ params, searchParams }: Props) {
     })),
   }
 
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: SITE_CONFIG.url },
+      { '@type': 'ListItem', position: 2, name: city.name, item: `${SITE_CONFIG.url}/${city.slug}` },
+    ],
+  }
+
   const SORT_OPTIONS = [
     { value: 'latest', label: 'Latest', icon: Clock },
     { value: 'top-rated', label: 'Top Rated', icon: TrendingUp },
@@ -106,7 +115,7 @@ export default async function CityPage({ params, searchParams }: Props) {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify([itemListSchema, breadcrumbSchema]) }} />
 
       <div className="bg-gradient-to-br from-navy-500 to-navy-700 text-white">
         <div className="container-forum py-10">

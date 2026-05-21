@@ -86,7 +86,46 @@ export default async function DeveloperPage({ params }: Props) {
     avgRating >= 3.0 ? 'text-orange-500' :
     avgRating > 0    ? 'text-red-500' : 'text-neutral-400'
 
+  const developerUrl = `${SITE_CONFIG.url}/developer/${developer.slug}`
+
+  const profileSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'ProfilePage',
+    name: `${developer.name} — Developer Reviews & Reputation`,
+    url: developerUrl,
+    mainEntity: {
+      '@type': 'Organization',
+      name: developer.name,
+      url: developerUrl,
+      ...(developer.description && { description: developer.description }),
+      ...(developer.hq && { location: { '@type': 'Place', name: developer.hq } }),
+      ...(avgRating > 0 && totalRatings > 0 && {
+        aggregateRating: {
+          '@type': 'AggregateRating',
+          ratingValue: avgRating.toFixed(1),
+          bestRating: '5',
+          worstRating: '1',
+          ratingCount: totalRatings,
+          reviewCount: totalRatings,
+        },
+      }),
+    },
+  }
+
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: SITE_CONFIG.url },
+      { '@type': 'ListItem', position: 2, name: 'Developer Reputation Scores', item: `${SITE_CONFIG.url}/developers` },
+      { '@type': 'ListItem', position: 3, name: developer.name, item: developerUrl },
+    ],
+  }
+
   return (
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify([profileSchema, breadcrumbSchema]) }} />
+
     <div className="container-forum py-8">
       <Breadcrumbs items={[
         { label: 'Developer Reputation Scores', href: '/developers' },
@@ -261,5 +300,6 @@ export default async function DeveloperPage({ params }: Props) {
         </aside>
       </div>
     </div>
+    </>
   )
 }
