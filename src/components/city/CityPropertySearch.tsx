@@ -73,7 +73,10 @@ export function CityPropertySearch({ topics, citySlug, cityName }: Props) {
 
       {/* Dropdown results */}
       {showDropdown && (
-        <div className="absolute z-50 top-full mt-1.5 left-0 right-0 bg-white rounded-xl border border-neutral-200 shadow-xl overflow-hidden">
+        <div
+          className="absolute z-50 top-full mt-1.5 left-0 right-0 bg-white rounded-xl border border-neutral-200 shadow-xl overflow-hidden"
+          onMouseDown={(e) => e.preventDefault()}
+        >
           {filtered.length === 0 ? (
             <div className="flex items-center gap-2 px-4 py-3.5 text-sm text-neutral-400">
               <Search className="h-4 w-4 opacity-50 shrink-0" />
