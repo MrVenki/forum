@@ -8,6 +8,7 @@ import { TopicCard } from '@/components/topic/TopicCard'
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs'
 import { Pagination } from '@/components/shared/Pagination'
 import { EmptyState } from '@/components/shared/EmptyState'
+import { CityPropertySearch } from '@/components/city/CityPropertySearch'
 import { Badge } from '@/components/ui/badge'
 import { MapPin, TrendingUp, MessageSquare, Clock, PlusCircle } from 'lucide-react'
 import type { TopicWithRelations } from '@/types'
@@ -68,7 +69,7 @@ export default async function CityPage({ params, searchParams }: Props) {
     : sort === 'most-discussed' ? { commentCount: 'desc' as const }
     : { createdAt: 'desc' as const }
 
-  const [topics, total] = await Promise.all([
+  const [topics, total, allTopicsForSearch] = await Promise.all([
     prisma.topic.findMany({
       where,
       orderBy,
@@ -80,6 +81,17 @@ export default async function CityPage({ params, searchParams }: Props) {
       },
     }),
     prisma.topic.count({ where }),
+    prisma.topic.findMany({
+      where: { cityId: city.id, isPublished: true },
+      select: {
+        slug: true,
+        propertyName: true,
+        propertyType: true,
+        avgRating: true,
+        ratingCount: true,
+      },
+      orderBy: { propertyName: 'asc' },
+    }),
   ])
 
   const totalPages = Math.ceil(total / limit)
@@ -140,6 +152,21 @@ export default async function CityPage({ params, searchParams }: Props) {
       </div>
 
       <div className="container-forum py-8">
+        {/* Property search */}
+        {allTopicsForSearch.length > 0 && (
+          <CityPropertySearch
+            topics={allTopicsForSearch.map((t) => ({
+              slug: t.slug,
+              propertyName: t.propertyName,
+              propertyType: t.propertyType,
+              avgRating: Number(t.avgRating),
+              ratingCount: t.ratingCount,
+            }))}
+            citySlug={city.slug}
+            cityName={city.name}
+          />
+        )}
+
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3 mb-6">
           {/* Sort */}

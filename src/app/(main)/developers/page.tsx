@@ -1,9 +1,7 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs'
-import { StarRating } from '@/components/rating/StarRating'
-import { Building2, MapPin, Calendar, Home, Star } from 'lucide-react'
+import { DeveloperSearch } from '@/components/developer/DeveloperSearch'
 import { SITE_CONFIG } from '@/lib/constants/config'
 
 export const metadata: Metadata = {
@@ -56,71 +54,7 @@ export default async function DevelopersPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-        {rows.map(({ developer, avg, projects, ratings }) => (
-          <Link
-            key={developer.slug}
-            href={`/developer/${developer.slug}`}
-            className="card-base p-5 flex flex-col gap-4 hover:shadow-md transition-shadow group"
-          >
-            {/* Header */}
-            <div className="flex items-start gap-3">
-              <div className="h-12 w-12 rounded-xl bg-saffron-50 border border-saffron-100 flex items-center justify-center text-saffron-600 font-heading font-bold text-xl shrink-0">
-                {developer.name.charAt(0)}
-              </div>
-              <div className="min-w-0">
-                <h2 className="font-heading font-bold text-navy-500 group-hover:text-saffron-600 transition-colors leading-tight">
-                  {developer.name}
-                </h2>
-                <div className="flex items-center gap-3 mt-0.5 text-xs text-neutral-400 flex-wrap">
-                  {developer.hq && (
-                    <span className="flex items-center gap-1">
-                      <MapPin className="h-3 w-3" /> {developer.hq}
-                    </span>
-                  )}
-                  {developer.foundedYear && (
-                    <span className="flex items-center gap-1">
-                      <Calendar className="h-3 w-3" /> Est. {developer.foundedYear}
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Rating */}
-            <div className="flex items-center gap-3">
-              <span className="text-3xl font-bold text-navy-500">{avg > 0 ? avg.toFixed(1) : '–'}</span>
-              <div>
-                <StarRating value={avg} readonly size="sm" showCount={false} />
-                <p className="text-xs text-neutral-400 mt-0.5">{ratings} rating{ratings !== 1 ? 's' : ''}</p>
-              </div>
-            </div>
-
-            {/* Stats */}
-            <div className="grid grid-cols-2 gap-2 pt-3 border-t border-neutral-100 text-center">
-              <div>
-                <p className="font-bold text-lg text-saffron-500">{projects}</p>
-                <p className="text-xs text-neutral-400 flex items-center justify-center gap-1">
-                  <Home className="h-3 w-3" /> Project{projects !== 1 ? 's' : ''}
-                </p>
-              </div>
-              <div>
-                <p className="font-bold text-lg text-saffron-500">{ratings}</p>
-                <p className="text-xs text-neutral-400 flex items-center justify-center gap-1">
-                  <Star className="h-3 w-3" /> Ratings
-                </p>
-              </div>
-            </div>
-
-            {developer.totalDelivered && (
-              <p className="text-xs text-neutral-500 border-t border-neutral-100 pt-3 line-clamp-1">
-                <Building2 className="h-3 w-3 inline mr-1 text-neutral-400" />
-                {developer.totalDelivered}
-              </p>
-            )}
-          </Link>
-        ))}
-      </div>
+      <DeveloperSearch rows={rows} />
     </div>
   )
 }
