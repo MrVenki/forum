@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const city = await prisma.city.findUnique({ where: { slug: params.citySlug, isActive: true } })
   if (!city) return {}
 
-  const title = `${city.name} Property Reviews Forum`
+  const title = `${city.name} Property Reviews & Discussion Forum`
   const description = `Join ${city.name}'s property community. Read honest reviews, ratings, and discussions about real estate projects in ${city.name}, ${city.state}. Powered by real buyers and residents.`
 
   return {
