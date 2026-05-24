@@ -78,9 +78,9 @@ export function CommentItem({ comment, topicId, onReply, isReply = false }: Comm
           </div>
 
           {/* Content */}
-          <p className="mt-1.5 text-sm text-neutral-700 leading-relaxed whitespace-pre-line">
-            {comment.isDeleted ? <em className="text-neutral-400">[Comment removed]</em> : comment.content}
-          </p>
+          <div className="mt-1.5 text-sm text-neutral-700 leading-relaxed whitespace-pre-line">
+            {comment.isDeleted ? <em className="text-neutral-400">[Comment removed]</em> : <CommentContent text={comment.content} />}
+          </div>
 
           {/* Reactions */}
           {!comment.isDeleted && (
@@ -139,5 +139,23 @@ export function CommentItem({ comment, topicId, onReply, isReply = false }: Comm
         </div>
       )}
     </div>
+  )
+}
+
+/** Renders comment text with @mentions highlighted */
+function CommentContent({ text }: { text: string }) {
+  const parts = text.split(/(@[a-z0-9]{3,19})/gi)
+  return (
+    <>
+      {parts.map((part, i) =>
+        /^@[a-z0-9]{3,19}$/i.test(part) ? (
+          <span key={i} className="inline-flex items-center font-semibold text-saffron-600 bg-saffron-50 rounded px-1 py-0.5 text-xs leading-normal">
+            {part.toLowerCase()}
+          </span>
+        ) : (
+          part
+        )
+      )}
+    </>
   )
 }

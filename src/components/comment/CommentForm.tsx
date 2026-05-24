@@ -2,11 +2,11 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
 import { toast } from '@/hooks/use-toast'
 import { Send } from 'lucide-react'
 import type { CommentWithRelations } from '@/types'
 import { TurnstileWidget } from '@/components/shared/TurnstileWidget'
+import { MentionTextarea } from './MentionTextarea'
 
 interface CommentFormProps {
   topicId: string
@@ -52,13 +52,13 @@ export function CommentForm({ topicId, parentId, onSuccess, onCancel, placeholde
   return (
     <form onSubmit={handleSubmit} className="space-y-2">
       <TurnstileWidget onSuccess={setCfToken} onExpire={() => setCfToken('')} />
-      <Textarea
+      <MentionTextarea
         value={content}
-        onChange={(e) => setContent(e.target.value)}
-        placeholder={placeholder || 'Share your thoughts, experience or question…'}
+        onChange={setContent}
+        placeholder={placeholder || 'Share your thoughts… type @ to mention someone'}
         rows={3}
         maxLength={5000}
-        className="resize-none"
+        disabled={loading}
       />
       <div className="flex items-center justify-between">
         <span className="text-xs text-neutral-400">{content.length}/5000</span>
