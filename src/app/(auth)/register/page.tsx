@@ -1,16 +1,17 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { registerSchema, type RegisterInput } from '@/lib/validations/auth'
+import { deriveBase } from '@/lib/utils/username'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { UserPlus, Eye, EyeOff } from 'lucide-react'
+import { UserPlus, Eye, EyeOff, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react'
 import { TurnstileWidget } from '@/components/shared/TurnstileWidget'
 
 export default function RegisterPage() {
@@ -21,11 +22,61 @@ export default function RegisterPage() {
   const [agreed, setAgreed] = useState(false)
   const [cfToken, setCfToken] = useState('')
 
-  const { register, handleSubmit, formState: { errors } } = useForm<RegisterInput>({
+  // Username state
+  const [usernameChecking, setUsernameChecking] = useState(false)
+  const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null)
+  const [usernameTouched, setUsernameTouched] = useState(false)
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>()
+
+  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<RegisterInput>({
     resolver: zodResolver(registerSchema),
   })
 
+  const nameValue = watch('name')
+  const emailValue = watch('email')
+  const usernameValue = watch('username')
+
+  // Auto-suggest username from name + email
+  useEffect(() => {
+    if (!usernameTouched && nameValue && nameValue.trim().length >= 2) {
+      const suggested = deriveBase(nameValue, emailValue || '')
+      setValue('username', suggested, { shouldValidate: false })
+      checkUsername(suggested)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nameValue, emailValue])
+
+  const checkUsername = useCallback((value: string) => {
+    clearTimeout(debounceRef.current)
+    if (!value || value.length < 3 || !/^[a-z0-9]+$/.test(value)) {
+      setUsernameAvailable(null)
+      return
+    }
+    setUsernameChecking(true)
+    debounceRef.current = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/auth/check-username?q=${encodeURIComponent(value)}`)
+        const data = await res.json()
+        setUsernameAvailable(data.available)
+      } finally {
+        setUsernameChecking(false)
+      }
+    }, 400)
+  }, [])
+
+  function handleUsernameChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const lower = e.target.value.toLowerCase().replace(/[^a-z0-9]/g, '')
+    setUsernameTouched(true)
+    setUsernameAvailable(null)
+    setValue('username', lower, { shouldValidate: true })
+    checkUsername(lower)
+  }
+
   const onSubmit = async (data: RegisterInput) => {
+    if (usernameAvailable === false) {
+      setError('That username is already taken. Please choose another.')
+      return
+    }
     setLoading(true)
     setError('')
     const res = await fetch('/api/auth/register', {
@@ -42,6 +93,14 @@ export default function RegisterPage() {
     } else {
       router.push('/login?registered=1')
     }
+  }
+
+  const usernameStatus = () => {
+    if (!usernameValue || usernameValue.length < 3) return null
+    if (usernameChecking) return <Loader2 className="h-4 w-4 text-neutral-400 animate-spin" />
+    if (usernameAvailable === true) return <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+    if (usernameAvailable === false) return <AlertCircle className="h-4 w-4 text-red-400" />
+    return null
   }
 
   return (
@@ -88,6 +147,40 @@ export default function RegisterPage() {
             {errors.name && <p className="text-xs text-red-600">{errors.name.message}</p>}
           </div>
 
+          {/* Username field */}
+          <div className="space-y-1.5">
+            <Label htmlFor="username">
+              Username <span className="text-neutral-400 font-normal text-xs">(shown publicly instead of your name)</span>
+            </Label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-neutral-400 font-medium select-none pointer-events-none">@</span>
+              <input
+                id="username"
+                type="text"
+                value={usernameValue || ''}
+                onChange={handleUsernameChange}
+                maxLength={19}
+                placeholder="yourhandle"
+                className={`w-full rounded-md border pl-7 pr-9 py-2 text-sm font-mono focus:outline-none focus:ring-2 transition-colors ${
+                  errors.username || usernameAvailable === false
+                    ? 'border-red-300 focus:ring-red-300'
+                    : usernameAvailable === true
+                    ? 'border-emerald-300 focus:ring-emerald-300'
+                    : 'border-neutral-300 focus:ring-saffron-400'
+                }`}
+              />
+              <div className="absolute right-3 top-1/2 -translate-y-1/2">{usernameStatus()}</div>
+            </div>
+            <p className="text-xs text-neutral-400">Lowercase letters &amp; numbers only · max 19 chars</p>
+            {errors.username && <p className="text-xs text-red-600">{errors.username.message}</p>}
+            {!errors.username && usernameAvailable === false && (
+              <p className="text-xs text-red-500">Username already taken — try another</p>
+            )}
+            {!errors.username && usernameAvailable === true && (
+              <p className="text-xs text-emerald-600">Username available!</p>
+            )}
+          </div>
+
           <div className="space-y-1.5">
             <Label htmlFor="email">Email address</Label>
             <Input id="email" type="email" placeholder="you@example.com" {...register('email')} />
@@ -128,7 +221,7 @@ export default function RegisterPage() {
 
           <TurnstileWidget onSuccess={setCfToken} onExpire={() => setCfToken('')} />
 
-          <Button type="submit" className="w-full" disabled={loading || !agreed}>
+          <Button type="submit" className="w-full" disabled={loading || !agreed || usernameAvailable === false}>
             <UserPlus className="h-4 w-4" />
             {loading ? 'Creating account…' : 'Create Free Account'}
           </Button>

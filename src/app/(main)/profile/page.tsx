@@ -1,4 +1,4 @@
-import { getServerSession } from 'next-auth'
+﻿import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
@@ -9,6 +9,7 @@ import { formatAbsoluteDate } from '@/lib/utils/format'
 import { User, MessageSquare, Star, Calendar, Bookmark } from 'lucide-react'
 import type { TopicWithRelations } from '@/types'
 import { EditNameForm } from '@/components/profile/EditNameForm'
+import { EditUsernameForm } from '@/components/profile/EditUsernameForm'
 import { FlairPickerClient } from '@/components/profile/FlairPickerClient'
 
 export default async function ProfilePage() {
@@ -16,14 +17,14 @@ export default async function ProfilePage() {
   if (!session) redirect('/login')
 
   const [user, topics, commentCount, ratingCount, bookmarkCount] = await Promise.all([
-    prisma.user.findUnique({ where: { id: session.user.id }, select: { id: true, name: true, email: true, createdAt: true, image: true, flairTag: true } }),
+    prisma.user.findUnique({ where: { id: session.user.id }, select: { id: true, name: true, username: true, email: true, createdAt: true, image: true, flairTag: true } }),
     prisma.topic.findMany({
       where: { userId: session.user.id, isPublished: true },
       orderBy: { createdAt: 'desc' },
       take: 12,
       include: {
         city: { select: { id: true, name: true, slug: true, tier: true } },
-        user: { select: { id: true, name: true, image: true } },
+        user: { select: { id: true, name: true, username: true, image: true } },
       },
     }),
     prisma.comment.count({ where: { userId: session.user.id, isDeleted: false } }),
@@ -42,9 +43,10 @@ export default async function ProfilePage() {
         <aside className="lg:col-span-1">
           <div className="card-base p-6 text-center">
             <div className="h-20 w-20 rounded-full bg-saffron-100 flex items-center justify-center text-saffron-700 text-3xl font-bold mx-auto">
-              {user.name.charAt(0).toUpperCase()}
+              {(user.username ?? user.name).charAt(0).toUpperCase()}
             </div>
             <EditNameForm initialName={user.name} />
+            <EditUsernameForm initialUsername={user.username ?? ''} />
             <p className="text-sm text-neutral-500">{user.email}</p>
             <p className="text-xs text-neutral-400 mt-2 flex items-center justify-center gap-1">
               <Calendar className="h-3.5 w-3.5" /> Joined {formatAbsoluteDate(user.createdAt)}

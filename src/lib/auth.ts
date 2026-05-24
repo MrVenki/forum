@@ -6,6 +6,7 @@ import bcrypt from 'bcryptjs'
 import { prisma } from './prisma'
 import { isEmailVerificationEnabled } from './features'
 import { verifyTurnstile } from './turnstile'
+import { makeUniqueUsername } from './utils/username'
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma) as NextAuthOptions['adapter'],
@@ -54,6 +55,7 @@ export const authOptions: NextAuthOptions = {
         return {
           id: user.id,
           name: user.name,
+          username: user.username,
           email: user.email,
           image: user.image,
           role: user.role,
@@ -62,22 +64,39 @@ export const authOptions: NextAuthOptions = {
       },
     }),
   ],
+  events: {
+    // Auto-generate username for Google OAuth users who don't have one yet
+    async signIn({ user, account }) {
+      if (account?.provider === 'google' && user.id) {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: user.id },
+          select: { username: true, name: true, email: true },
+        })
+        if (dbUser && !dbUser.username) {
+          const username = await makeUniqueUsername(dbUser.name, dbUser.email ?? '')
+          await prisma.user.update({ where: { id: user.id }, data: { username } })
+        }
+      }
+    },
+  },
   callbacks: {
     async jwt({ token, user, trigger }) {
       if (user) {
         token.id = user.id
         token.role = (user as { role?: string }).role ?? 'USER'
+        token.username = (user as { username?: string | null }).username ?? null
         // Google users always have emailVerified set; credentials users may not
         const u = user as { emailVerified?: Date | boolean | null }
         token.emailVerified = u.emailVerified != null && u.emailVerified !== false
       }
-      // Re-fetch emailVerified on manual session update (after OTP verification)
+      // Re-fetch on session update (e.g. after OTP verification or username change)
       if (trigger === 'update') {
         const dbUser = await prisma.user.findUnique({
           where: { id: token.id as string },
-          select: { emailVerified: true },
+          select: { emailVerified: true, username: true },
         })
         token.emailVerified = dbUser?.emailVerified != null
+        token.username = dbUser?.username ?? null
       }
       return token
     },
@@ -86,6 +105,7 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.id as string
         session.user.role = token.role as string
         session.user.emailVerified = token.emailVerified as boolean
+        session.user.username = (token.username as string | null | undefined) ?? null
       }
       return session
     },

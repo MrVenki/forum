@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+﻿import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -31,7 +31,7 @@ export async function GET(
       orderBy: { visitedAt: 'desc' },
       skip: (page - 1) * limit,
       take: limit,
-      include: { user: { select: { id: true, name: true, image: true, flairTag: true } } },
+      include: { user: { select: { id: true, name: true, username: true, image: true, flairTag: true } } },
     }),
     prisma.topicUpdate.count({ where: { topicId: params.topicId } }),
   ])
@@ -80,7 +80,7 @@ export async function POST(
       imagePubId: parsed.data.imagePubId ?? null,
       visitedAt: new Date(parsed.data.visitedAt),
     },
-    include: { user: { select: { id: true, name: true, image: true, flairTag: true } } },
+    include: { user: { select: { id: true, name: true, username: true, image: true, flairTag: true } } },
   })
 
   // Fire-and-forget admin email alert

@@ -158,9 +158,11 @@ export function Header({ newTopicEnabled = false }: { newTopicEnabled?: boolean 
                     className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-100 transition-colors ${userMenuOpen ? 'bg-neutral-100' : ''}`}
                   >
                     <div className="h-7 w-7 rounded-full bg-saffron-100 flex items-center justify-center text-saffron-700 text-xs font-bold">
-                      {session.user.name?.charAt(0).toUpperCase()}
+                      {(session.user.username ?? session.user.name)?.charAt(0).toUpperCase()}
                     </div>
-                    <span className="max-w-[100px] truncate">{session.user.name?.split(' ')[0]}</span>
+                    <span className="max-w-[100px] truncate">
+                      {session.user.username ? `@${session.user.username}` : session.user.name?.split(' ')[0]}
+                    </span>
                     <ChevronDown className={`h-3.5 w-3.5 transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} />
                   </button>
                   {userMenuOpen && (

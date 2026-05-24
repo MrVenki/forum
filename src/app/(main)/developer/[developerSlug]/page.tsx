@@ -1,4 +1,4 @@
-import { notFound } from 'next/navigation'
+﻿import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
@@ -50,7 +50,7 @@ export default async function DeveloperPage({ params }: Props) {
       orderBy: { avgRating: 'desc' },
       include: {
         city: { select: { id: true, name: true, slug: true, tier: true } },
-        user: { select: { id: true, name: true, image: true } },
+        user: { select: { id: true, name: true, username: true, image: true } },
       },
     }) as Promise<TopicWithRelations[]>,
     prisma.rating.findMany({

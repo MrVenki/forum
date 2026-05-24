@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+﻿import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
 export async function GET(req: NextRequest) {
@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
       orderBy: { createdAt: 'desc' },
       include: {
         city: { select: { name: true, slug: true } },
-        user: { select: { id: true, name: true, image: true } },
+        user: { select: { id: true, name: true, username: true, image: true } },
       },
     }),
     prisma.topic.count({ where }),

@@ -22,7 +22,8 @@ export function CommentItem({ comment, topicId, onReply, isReply = false }: Comm
   const { data: session } = useSession()
   const [showReplyForm, setShowReplyForm] = useState(false)
   const [reactions, setReactions] = useState(comment.reactions)
-  const initials = comment.user.name.charAt(0).toUpperCase()
+  const handle = comment.user.username ? `@${comment.user.username}` : comment.user.name
+  const initials = (comment.user.username ?? comment.user.name).charAt(0).toUpperCase()
 
   const reactionCounts = REACTION_TYPES.reduce(
     (acc, r) => ({ ...acc, [r.value]: reactions.filter((rx) => rx.reactionType === r.value).length }),
@@ -65,7 +66,7 @@ export function CommentItem({ comment, topicId, onReply, isReply = false }: Comm
         <div className="flex-1 min-w-0">
           {/* Header */}
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-semibold text-sm text-neutral-800">{comment.user.name}</span>
+            <span className="font-semibold text-sm text-neutral-800">{handle}</span>
             {comment.user.flairTag && <FlairBadge flair={comment.user.flairTag} />}
             <time
               className="text-xs text-neutral-500"
@@ -122,7 +123,7 @@ export function CommentItem({ comment, topicId, onReply, isReply = false }: Comm
                 parentId={comment.id}
                 onSuccess={handleReplySuccess}
                 onCancel={() => setShowReplyForm(false)}
-                placeholder={`Reply to ${comment.user.name}…`}
+                placeholder={`Reply to ${handle}…`}
               />
             </div>
           )}

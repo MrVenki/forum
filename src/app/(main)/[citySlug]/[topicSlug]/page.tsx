@@ -1,4 +1,4 @@
-import { notFound } from 'next/navigation'
+﻿import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -95,7 +95,7 @@ export default async function TopicPage({ params }: Props) {
     },
     include: {
       city: true,
-      user: { select: { id: true, name: true, image: true, createdAt: true } },
+      user: { select: { id: true, name: true, username: true, image: true, createdAt: true } },
       _count: { select: { comments: true, ratings: true } },
     },
   })
@@ -112,13 +112,13 @@ export default async function TopicPage({ params }: Props) {
       where: { topicId: topic.id, parentId: null, isDeleted: false },
       orderBy: { createdAt: 'asc' },
       include: {
-        user: { select: { id: true, name: true, image: true, flairTag: true } },
+        user: { select: { id: true, name: true, username: true, image: true, flairTag: true } },
         reactions: true,
         replies: {
           where: { isDeleted: false },
           orderBy: { createdAt: 'asc' },
           include: {
-            user: { select: { id: true, name: true, image: true, flairTag: true } },
+            user: { select: { id: true, name: true, username: true, image: true, flairTag: true } },
             reactions: true,
           },
         },

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+﻿import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { revalidatePath } from 'next/cache'
 import { authOptions } from '@/lib/auth'
@@ -14,13 +14,13 @@ export async function GET(req: NextRequest, { params }: { params: { topicId: str
     where: { topicId: params.topicId, parentId: null, isDeleted: false },
     orderBy: { createdAt: 'asc' },
     include: {
-      user: { select: { id: true, name: true, image: true, flairTag: true } },
+      user: { select: { id: true, name: true, username: true, image: true, flairTag: true } },
       reactions: true,
       replies: {
         where: { isDeleted: false },
         orderBy: { createdAt: 'asc' },
         include: {
-          user: { select: { id: true, name: true, image: true, flairTag: true } },
+          user: { select: { id: true, name: true, username: true, image: true, flairTag: true } },
           reactions: true,
         },
       },
@@ -78,7 +78,7 @@ export async function POST(req: NextRequest, { params }: { params: { topicId: st
       parentId: parsed.data.parentId || null,
     },
     include: {
-      user: { select: { id: true, name: true, image: true } },
+      user: { select: { id: true, name: true, username: true, image: true } },
       reactions: true,
     },
   })

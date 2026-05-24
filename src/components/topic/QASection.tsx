@@ -11,7 +11,7 @@ interface Answer {
   body: string
   isBest: boolean
   createdAt: string
-  user: { id: string; name: string; flairTag: string | null }
+  user: { id: string; name: string; username: string | null; flairTag: string | null }
 }
 
 interface Question {
@@ -19,7 +19,7 @@ interface Question {
   body: string
   isAnswered: boolean
   createdAt: string
-  user: { id: string; name: string; flairTag: string | null }
+  user: { id: string; name: string; username: string | null; flairTag: string | null }
   answers: Answer[]
 }
 
@@ -78,7 +78,7 @@ function AnswerItem({
           )}
           <p className="text-sm text-neutral-700 whitespace-pre-line">{answer.body}</p>
           <div className="flex items-center gap-2 mt-2 flex-wrap">
-            <span className="text-xs text-neutral-500">{answer.user.name}</span>
+            <span className="text-xs text-neutral-500">{answer.user.username ? `@${answer.user.username}` : answer.user.name}</span>
             {answer.user.flairTag && <FlairBadge flair={answer.user.flairTag} />}
             <span className="text-xs text-neutral-400">{timeAgo(answer.createdAt)}</span>
             {isQuestionAuthor && (
@@ -156,7 +156,7 @@ function QuestionCard({
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium text-neutral-800 leading-relaxed">{question.body}</p>
           <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-            <span className="text-xs text-neutral-500">{question.user.name}</span>
+            <span className="text-xs text-neutral-500">{question.user.username ? `@${question.user.username}` : question.user.name}</span>
             {question.user.flairTag && <FlairBadge flair={question.user.flairTag} />}
             <span className="text-xs text-neutral-400">{timeAgo(question.createdAt)}</span>
             {question.isAnswered && (

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+﻿import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -24,7 +24,7 @@ export async function GET(
     where: { topicId: params.topicId },
     include: {
       votes: { select: { optionIndex: true, userId: true } },
-      user:  { select: { id: true, name: true } },
+      user:  { select: { id: true, name: true, username: true } },
     },
   })
 

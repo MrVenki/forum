@@ -37,15 +37,21 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: parsed.error.errors[0].message }, { status: 400 })
     }
 
-    const { name, email, password } = parsed.data
+    const { name, username, email, password } = parsed.data
 
-    const existing = await prisma.user.findUnique({ where: { email } })
-    if (existing) {
+    const [existingEmail, existingUsername] = await Promise.all([
+      prisma.user.findUnique({ where: { email } }),
+      prisma.user.findUnique({ where: { username } }),
+    ])
+    if (existingEmail) {
       return NextResponse.json({ error: 'An account with this email already exists.' }, { status: 409 })
+    }
+    if (existingUsername) {
+      return NextResponse.json({ error: 'That username is already taken. Please choose another.' }, { status: 409 })
     }
 
     const passwordHash = await bcrypt.hash(password, 12)
-    await prisma.user.create({ data: { name, email, passwordHash } })
+    await prisma.user.create({ data: { name, username, email, passwordHash } })
 
     if (isEmailVerificationEnabled()) {
       const config = getEmailVerificationConfig()

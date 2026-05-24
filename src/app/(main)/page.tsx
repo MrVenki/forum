@@ -1,4 +1,4 @@
-import Link from 'next/link'
+﻿import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import { TopicCard } from '@/components/topic/TopicCard'
 import { SITE_CONFIG } from '@/lib/constants/config'
@@ -26,7 +26,7 @@ async function getHomeData() {
         take: 8,
         include: {
           city: { select: { id: true, name: true, slug: true, tier: true } },
-          user: { select: { id: true, name: true, image: true } },
+          user: { select: { id: true, name: true, username: true, image: true } },
         },
       }),
       prisma.topic.findMany({
@@ -35,7 +35,7 @@ async function getHomeData() {
         take: 4,
         include: {
           city: { select: { id: true, name: true, slug: true, tier: true } },
-          user: { select: { id: true, name: true, image: true } },
+          user: { select: { id: true, name: true, username: true, image: true } },
         },
       }),
       prisma.city.findMany({

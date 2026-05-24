@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+﻿import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -67,7 +67,7 @@ export async function GET(req: NextRequest) {
     developerName: true,
     developerSlug: true,
     city: { select: { id: true, name: true, slug: true } },
-    user: { select: { id: true, name: true, image: true } },
+    user: { select: { id: true, name: true, username: true, image: true } },
   } as const
 
   const [topics, total] = await Promise.all([

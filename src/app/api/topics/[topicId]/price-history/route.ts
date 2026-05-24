@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+﻿import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -23,7 +23,7 @@ export async function GET(
   const logs = await prisma.priceLog.findMany({
     where: { topicId: params.topicId },
     orderBy: { loggedAt: 'asc' },
-    include: { user: { select: { id: true, name: true, flairTag: true } } },
+    include: { user: { select: { id: true, name: true, username: true, flairTag: true } } },
   })
 
   return NextResponse.json(logs)
@@ -67,7 +67,7 @@ export async function POST(
       source:       parsed.data.source ?? null,
       loggedAt:     new Date(parsed.data.loggedAt),
     },
-    include: { user: { select: { id: true, name: true, flairTag: true } } },
+    include: { user: { select: { id: true, name: true, username: true, flairTag: true } } },
   })
 
   return NextResponse.json(log, { status: 201 })

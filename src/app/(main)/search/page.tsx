@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+﻿import type { Metadata } from 'next'
 import { prisma } from '@/lib/prisma'
 import { TopicCard } from '@/components/topic/TopicCard'
 import { Pagination } from '@/components/shared/Pagination'
@@ -37,7 +37,7 @@ async function searchTopics(q: string, page: number, citySlug?: string) {
       orderBy: { createdAt: 'desc' },
       include: {
         city: { select: { id: true, name: true, slug: true, tier: true } },
-        user: { select: { id: true, name: true, image: true } },
+        user: { select: { id: true, name: true, username: true, image: true } },
       },
     }),
     prisma.topic.count({ where }),

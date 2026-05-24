@@ -1,4 +1,4 @@
-import { notFound } from 'next/navigation'
+﻿import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
@@ -77,7 +77,7 @@ export default async function CityPage({ params, searchParams }: Props) {
       take: limit,
       include: {
         city: { select: { id: true, name: true, slug: true, tier: true } },
-        user: { select: { id: true, name: true, image: true } },
+        user: { select: { id: true, name: true, username: true, image: true } },
       },
     }),
     prisma.topic.count({ where }),

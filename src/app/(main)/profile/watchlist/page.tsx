@@ -1,4 +1,4 @@
-import { redirect } from 'next/navigation'
+﻿import { redirect } from 'next/navigation'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -19,7 +19,7 @@ export default async function WatchlistPage() {
       topic: {
         include: {
           city: { select: { id: true, name: true, slug: true, tier: true } },
-          user: { select: { id: true, name: true, image: true } },
+          user: { select: { id: true, name: true, username: true, image: true } },
         },
       },
     },

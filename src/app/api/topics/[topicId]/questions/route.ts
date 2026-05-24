@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+﻿import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -22,11 +22,11 @@ export async function GET(
     where: { topicId: params.topicId },
     orderBy: { createdAt: 'desc' },
     include: {
-      user: { select: { id: true, name: true, flairTag: true } },
+      user: { select: { id: true, name: true, username: true, flairTag: true } },
       answers: {
         orderBy: [{ isBest: 'desc' }, { createdAt: 'asc' }],
         include: {
-          user: { select: { id: true, name: true, flairTag: true } },
+          user: { select: { id: true, name: true, username: true, flairTag: true } },
         },
       },
     },
@@ -70,10 +70,10 @@ export async function POST(
       body: parsed.data.body,
     },
     include: {
-      user: { select: { id: true, name: true, flairTag: true } },
+      user: { select: { id: true, name: true, username: true, flairTag: true } },
       answers: {
         orderBy: [{ isBest: 'desc' }, { createdAt: 'asc' }],
-        include: { user: { select: { id: true, name: true, flairTag: true } } },
+        include: { user: { select: { id: true, name: true, username: true, flairTag: true } } },
       },
     },
   })

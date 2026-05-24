@@ -10,6 +10,7 @@ import { TurnstileWidget } from '@/components/shared/TurnstileWidget'
 interface UpdateUser {
   id: string
   name: string
+  username: string | null
   image: string | null
   flairTag: string | null
 }
@@ -274,7 +275,9 @@ export function UpdatesFeed({ topicId }: Props) {
                 <div className="flex-1 card-base p-4">
                   <div className="flex items-start justify-between gap-2 mb-2">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-sm font-medium text-navy-500">{upd.user.name}</span>
+                      <span className="text-sm font-medium text-navy-500">
+                        {upd.user.username ? `@${upd.user.username}` : upd.user.name}
+                      </span>
                       {upd.user.flairTag && <FlairBadge flair={upd.user.flairTag} />}
                     </div>
                     <div className="flex items-center gap-1 text-xs text-neutral-400 shrink-0">

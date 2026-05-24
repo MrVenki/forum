@@ -4,7 +4,7 @@ export type { City, Topic, Comment, CommentReaction, Rating, User, PropertyType,
 
 export type TopicWithRelations = Topic & {
   city: City
-  user: Pick<User, 'id' | 'name' | 'image'>
+  user: Pick<User, 'id' | 'name' | 'username' | 'image'>
   _count?: { comments: number; ratings: number }
   developerSlug?: string | null
   developerName?: string | null
@@ -12,12 +12,12 @@ export type TopicWithRelations = Topic & {
 }
 
 export type CommentWithRelations = Comment & {
-  user: Pick<User, 'id' | 'name' | 'image' | 'flairTag'>
+  user: Pick<User, 'id' | 'name' | 'username' | 'image' | 'flairTag'>
   reactions: CommentReaction[]
   replies?: CommentWithRelations[]
   _count?: { replies: number }
 }
 
 export type RatingWithUser = Rating & {
-  user: Pick<User, 'id' | 'name' | 'image'>
+  user: Pick<User, 'id' | 'name' | 'username' | 'image'>
 }

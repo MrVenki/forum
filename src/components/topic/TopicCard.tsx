@@ -79,8 +79,11 @@ export function TopicCard({ topic, priority = false, headingLevel: Tag = 'h3' }:
         {/* Developer + Author */}
         <div className="flex items-center justify-between gap-2 text-xs text-neutral-500">
           <div className="flex items-center gap-2 min-w-0">
-            <div className="h-5 w-5 rounded-full bg-saffron-100 flex items-center justify-center text-saffron-700 font-bold text-[10px] shrink-0">
-              {topic.user.name.charAt(0).toUpperCase()}
+            <div
+              className="h-5 w-5 rounded-full bg-saffron-100 flex items-center justify-center text-saffron-700 font-bold text-[10px] shrink-0"
+              title={topic.user.username ? `@${topic.user.username}` : topic.user.name}
+            >
+              {(topic.user.username ?? topic.user.name).charAt(0).toUpperCase()}
             </div>
             <time dateTime={topic.createdAt.toString()} className="truncate">{formatRelativeTime(topic.createdAt)}</time>
           </div>
