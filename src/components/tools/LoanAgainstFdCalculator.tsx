@@ -386,7 +386,7 @@ export function LoanAgainstFdCalculator() {
             </div>
             <div>
               <p className="font-semibold text-saffron-300 mb-1">No Credit Score Required</p>
-              <p className="text-navy-200">Since the FD is the collateral, your CIBIL score doesn't matter. Processing is faster — usually within 24 hours.</p>
+              <p className="text-navy-200">Since the FD is the collateral, your CIBIL score does not matter. Processing is faster — usually within 24 hours.</p>
             </div>
           </div>
           <div className="space-y-3">
@@ -400,7 +400,7 @@ export function LoanAgainstFdCalculator() {
             </div>
             <div>
               <p className="font-semibold text-saffron-300 mb-1">When It Makes Sense</p>
-              <p className="text-navy-200">Best for short-term liquidity needs. At only 1–2% net cost, it's cheaper than personal loans (12–18%) or credit card loans (36–42%).</p>
+              <p className="text-navy-200">Best for short-term liquidity needs. At only 1–2% net cost, it is cheaper than personal loans (12–18%) or credit card loans (36–42%).</p>
             </div>
           </div>
         </div>
