@@ -18,6 +18,17 @@ export const metadata: Metadata = {
 
 const LIVE_TOOLS = [
   {
+    href: '/tools/loan-against-fd',
+    icon: Shield,
+    color: 'text-emerald-600',
+    bg: 'bg-emerald-50',
+    border: 'border-emerald-200',
+    title: 'Loan Against FD Calculator',
+    description: 'Calculate monthly EMI and true net cost of a loan against your Fixed Deposit. Compare loan-against-FD vs breaking FD — shows how FD interest offsets borrowing cost.',
+    highlights: ['Net borrowing cost (loan − FD rate)', 'FD vs break comparison', 'Year-by-year breakdown', 'Premature withdrawal penalty'],
+    badge: 'New',
+  },
+  {
     href: '/tools/emi-calculator',
     icon: IndianRupee,
     color: 'text-saffron-500',
@@ -60,17 +71,6 @@ const LIVE_TOOLS = [
     description: 'Compare the true long-term cost of renting versus buying — accounting for property appreciation, rent escalation, EMI burden, and opportunity cost of down payment.',
     highlights: ['Break-even year finder', 'Opportunity cost of down payment', 'Rent escalation modelling', '30-year horizon view'],
     badge: null,
-  },
-  {
-    href: '/tools/loan-against-fd',
-    icon: Shield,
-    color: 'text-emerald-600',
-    bg: 'bg-emerald-50',
-    border: 'border-emerald-200',
-    title: 'Loan Against FD Calculator',
-    description: 'Calculate monthly EMI and true net cost of a loan against your Fixed Deposit. Compare loan-against-FD vs breaking FD — shows how FD interest offsets borrowing cost.',
-    highlights: ['Net borrowing cost (loan − FD rate)', 'FD vs break comparison', 'Year-by-year breakdown', 'Premature withdrawal penalty'],
-    badge: 'New',
   },
 ]
 
