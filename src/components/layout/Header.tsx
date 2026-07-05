@@ -105,10 +105,11 @@ export function Header({ newTopicEnabled = false }: { newTopicEnabled?: boolean 
                 <div className="absolute left-0 top-full mt-1 w-80 rounded-xl border border-neutral-200 bg-white p-3 shadow-xl">
                   <p className="mb-2 px-2 text-xs font-bold uppercase tracking-wider text-neutral-400">Calculators</p>
                   {[
+                    { href: '/tools/loan-against-fd', Icon: Shield, label: 'Loan Against FD', desc: 'Net EMI after FD interest offset', bg: 'bg-emerald-100', color: 'text-emerald-600', hover: 'hover:bg-emerald-50' },
                     { href: '/tools/emi-calculator', Icon: IndianRupee, label: 'EMI Calculator', desc: 'EMI, affordability & double-burden', bg: 'bg-saffron-100', color: 'text-saffron-600', hover: 'hover:bg-saffron-50' },
                     { href: '/tools/stamp-duty-calculator', Icon: FileText, label: 'Stamp Duty Calculator', desc: '13 states — incl. women concessions', bg: 'bg-teal-100', color: 'text-teal-600', hover: 'hover:bg-teal-50' },
-                    { href: '/tools/home-loan-eligibility', Icon: TrendingUp, label: 'Loan Eligibility', desc: 'How much loan can you get?', bg: 'bg-emerald-100', color: 'text-emerald-600', hover: 'hover:bg-emerald-50' },
-                    { href: '/tools/rent-vs-buy', Icon: Home, label: 'Rent vs Buy', desc: 'True long-term cost comparison', bg: 'bg-blue-100', color: 'text-blue-600', hover: 'hover:bg-blue-50' },
+                    { href: '/tools/home-loan-eligibility', Icon: TrendingUp, label: 'Loan Eligibility', desc: 'How much loan can you get?', bg: 'bg-blue-100', color: 'text-blue-600', hover: 'hover:bg-blue-50' },
+                    { href: '/tools/rent-vs-buy', Icon: Home, label: 'Rent vs Buy', desc: 'True long-term cost comparison', bg: 'bg-purple-100', color: 'text-purple-600', hover: 'hover:bg-purple-50' },
                   ].map(({ href, Icon, label, desc, bg, color, hover }) => (
                     <Link key={href} href={href} onClick={() => setToolsOpen(false)}
                       className={`flex items-center gap-3 rounded-lg px-2 py-2 ${hover} transition-colors group`}
@@ -224,6 +225,9 @@ export function Header({ newTopicEnabled = false }: { newTopicEnabled?: boolean 
             </Link>
             <Link href="/tools" onClick={() => setMobileOpen(false)} className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-neutral-700 hover:bg-neutral-100">
               <Calculator className="h-4 w-4" /> Tools & Calculators
+            </Link>
+            <Link href="/tools/loan-against-fd" onClick={() => setMobileOpen(false)} className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-neutral-500 hover:bg-neutral-100 pl-8">
+              <Shield className="h-4 w-4 text-emerald-600" /> Loan Against FD
             </Link>
             <Link href="/tools/emi-calculator" onClick={() => setMobileOpen(false)} className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-neutral-500 hover:bg-neutral-100 pl-8">
               <IndianRupee className="h-4 w-4" /> EMI Calculator
