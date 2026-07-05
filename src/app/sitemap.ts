@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { SITE_CONFIG } from '@/lib/constants/config'
 import { INDIAN_CITIES } from '@/lib/constants/cities'
 
+export const dynamic = 'force-dynamic'
 export const revalidate = 3600
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -18,6 +19,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/tools/stamp-duty-calculator`,         lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
     { url: `${baseUrl}/tools/home-loan-eligibility`,         lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
     { url: `${baseUrl}/tools/rent-vs-buy`,                   lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${baseUrl}/tools/loan-against-fd`,               lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
     { url: `${baseUrl}/about`,                               lastModified: new Date(), changeFrequency: 'monthly', priority: 0.6 },
     { url: `${baseUrl}/contact`,                             lastModified: new Date(), changeFrequency: 'monthly', priority: 0.5 },
     { url: `${baseUrl}/privacy-policy`,                      lastModified: new Date(), changeFrequency: 'monthly', priority: 0.3 },
