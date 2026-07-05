@@ -14,16 +14,16 @@ export const revalidate = 3600
 interface Props { params: { developerSlug: string } }
 
 export async function generateStaticParams() {
-  // Only pre-build developers that have enough topics to be worth static generation.
-  // Thin developer pages are noindexed anyway (MIN_TOPICS_TO_INDEX check below).
-  // Others are rendered on first request via ISR (revalidate = 3600).
-  const developers = await prisma.developer.findMany({
-    where: {
-      topics: { some: { isPublished: true } },
-    },
-    select: { slug: true },
+  // Only pre-build developers that have published topics — topics link via developerSlug string.
+  // Thin/empty developer pages are noindexed anyway; others render on-demand via ISR.
+  const rows = await prisma.topic.findMany({
+    where: { isPublished: true, developerSlug: { not: null } },
+    select: { developerSlug: true },
+    distinct: ['developerSlug'],
   })
-  return developers.map((d) => ({ developerSlug: d.slug }))
+  return rows
+    .filter((r) => r.developerSlug)
+    .map((r) => ({ developerSlug: r.developerSlug! }))
 }
 
 const MIN_TOPICS_TO_INDEX = 3 // Noindex thin developer pages to preserve crawl budget

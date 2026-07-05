@@ -82,6 +82,14 @@ export function LoanAgainstFdCalculator() {
     const fdValueAtLoanEnd = calcFdMaturity(fdAmount, fdRate, Math.min(loanYears, fdTenureYears))
     const fdInterestDuringLoan = fdValueAtLoanEnd - fdAmount
 
+    // Monthly FD interest credit (quarterly-compounded monthly equivalent)
+    // (1 + r/4)^(1/3) - 1 gives the true monthly rate from quarterly compounding
+    const monthlyFdInterest = fdAmount * (Math.pow(1 + fdRate / 100 / 4, 1 / 3) - 1)
+
+    // Net effective monthly outgo = what you actually feel in your pocket each month
+    // Bank still takes full EMI, but FD simultaneously earns this credit
+    const netMonthlyOutgo = Math.max(0, emi - monthlyFdInterest)
+
     // Net cost = loan interest paid - FD interest earned during loan period
     const netCostOfBorrowing = totalLoanInterest - fdInterestDuringLoan
 
@@ -147,6 +155,7 @@ export function LoanAgainstFdCalculator() {
     return {
       clampedLoan, maxLoan, emi, totalPaid, totalLoanInterest,
       fdMaturityFull, fdInterestTotal, fdInterestDuringLoan,
+      monthlyFdInterest, netMonthlyOutgo,
       netCostOfBorrowing, effectiveRate, breakevenMonth,
       fdPrematureInterest, oppCostBreakFd, yearlyRows, loanYears,
     }
@@ -228,10 +237,25 @@ export function LoanAgainstFdCalculator() {
       {/* Results Summary */}
       <div>
         <h2 className="font-heading font-bold text-navy-500 text-lg mb-4">Loan Repayment Summary</h2>
+
+        {/* Net outgo — the headline figure */}
+        <div className="rounded-2xl bg-saffron-500 text-white p-5 mb-3 flex flex-col sm:flex-row sm:items-center gap-4">
+          <div className="flex-1">
+            <p className="text-saffron-100 text-xs font-semibold uppercase tracking-wide mb-0.5">Net Effective Monthly Outgo</p>
+            <p className="text-4xl font-bold">{fmt(r.netMonthlyOutgo)}<span className="text-lg font-normal text-saffron-200">/mo</span></p>
+            <p className="text-saffron-100 text-sm mt-1">= {fmt(r.emi)} EMI − {fmt(r.monthlyFdInterest)} FD interest earned/mo</p>
+          </div>
+          <div className="text-sm text-saffron-100 sm:text-right space-y-1">
+            <p>Bank collects <span className="text-white font-semibold">{fmt(r.emi)}/mo</span> as EMI</p>
+            <p>FD earns back <span className="text-white font-semibold">{fmt(r.monthlyFdInterest)}/mo</span></p>
+            <p className="text-xs text-saffron-200">Your pocket feels only the difference</p>
+          </div>
+        </div>
+
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <StatCard label="Monthly EMI" value={fmt(r.emi)} sub={`for ${loanTenureMonths} months`} color="text-saffron-600" bg="bg-saffron-50" />
+          <StatCard label="Gross EMI (bank)" value={fmt(r.emi)} sub={`for ${loanTenureMonths} months`} />
           <StatCard label="Total Paid" value={fmt(r.totalPaid)} sub="principal + interest" />
-          <StatCard label="Total Interest" value={fmt(r.totalLoanInterest)} sub="cost of the loan" color="text-red-600" />
+          <StatCard label="Total Loan Interest" value={fmt(r.totalLoanInterest)} sub="cost of the loan" color="text-red-600" />
           <StatCard label="FD Interest Earned" value={fmt(r.fdInterestDuringLoan)} sub={`during ${loanTenureMonths}-month loan`} color="text-emerald-600" bg="bg-emerald-50" />
         </div>
       </div>
