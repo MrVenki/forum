@@ -590,3 +590,51 @@ export async function sendWeeklyDigest(params: {
     text,
   })
 }
+
+function escapeHtml(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+}
+
+export interface LeadNotification {
+  name: string
+  phone: string
+  email?: string | null
+  city?: string | null
+  loanAmount?: number | null
+  monthlyIncome?: number | null
+  source: string
+}
+
+/** Notify the site owner of a new loan lead. Never throws. */
+export async function sendLeadNotification(lead: LeadNotification): Promise<void> {
+  try {
+    const to = process.env.LEAD_NOTIFY_EMAIL || 'mrvenkik@gmail.com'
+    const from = process.env.SMTP_FROM || process.env.SMTP_USER || 'noreply@indiapropertytalk.com'
+    const inr = (n?: number | null) => (n ? `₹${n.toLocaleString('en-IN')}` : '—')
+    const rows: [string, string][] = [
+      ['Name', lead.name],
+      ['Phone', lead.phone],
+      ['Email', lead.email || '—'],
+      ['City', lead.city || '—'],
+      ['Loan amount', inr(lead.loanAmount)],
+      ['Monthly income', inr(lead.monthlyIncome)],
+      ['Source', lead.source],
+    ]
+    const text = rows.map(([k, v]) => `${k}: ${v}`).join('\n')
+    const html =
+      '<table style="font-family:Arial,sans-serif;font-size:14px;border-collapse:collapse">' +
+      rows
+        .map(([k, v]) => `<tr><td style="padding:4px 12px 4px 0;color:#666">${k}</td><td><strong>${escapeHtml(v)}</strong></td></tr>`)
+        .join('') +
+      '</table>'
+
+    const transporter = createTransporter()
+    if (!transporter) {
+      console.log(`\n[DEV EMAIL] To: ${to}\nSubject: NEW Lead\n${text}\n`)
+      return
+    }
+    await transporter.sendMail({ from, to, subject: 'NEW Lead', text, html })
+  } catch (err) {
+    console.error('[Lead notify] failed to send email', err)
+  }
+}

@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { checkRateLimit, getClientIp } from '@/lib/rateLimit'
 import { verifyTurnstile } from '@/lib/turnstile'
+import { sendLeadNotification } from '@/lib/email'
 
 const leadSchema = z.object({
   name: z.string().trim().min(2).max(80),
@@ -52,6 +53,15 @@ export async function POST(req: NextRequest) {
         source: d.source,
         consent: true,
       },
+    })
+    await sendLeadNotification({
+      name: d.name,
+      phone,
+      email: d.email || null,
+      city: d.city || null,
+      loanAmount: d.loanAmount ?? null,
+      monthlyIncome: d.monthlyIncome ?? null,
+      source: d.source,
     })
   }
   // Same response for duplicates so the endpoint can't be used to probe numbers
