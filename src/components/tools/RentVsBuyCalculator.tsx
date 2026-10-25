@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import { Home, Info, TrendingUp, TrendingDown } from 'lucide-react'
+import { LoanLeadForm } from './LoanLeadForm'
 
 function formatINR(n: number) {
   if (n >= 1_00_00_000) return `₹${(n / 1_00_00_000).toFixed(2)} Cr`
@@ -259,6 +260,11 @@ export function RentVsBuyCalculator() {
               </p>
             )}
           </div>
+
+          <LoanLeadForm
+            source="rent-vs-buy"
+            loanAmount={propertyPrice * (1 - downPaymentPct / 100)}
+          />
 
           <div className="flex items-start gap-1.5 text-[10px] text-neutral-400">
             <Info className="h-3 w-3 mt-0.5 shrink-0" />

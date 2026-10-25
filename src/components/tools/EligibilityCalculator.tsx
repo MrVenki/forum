@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import { TrendingUp, Info, CheckCircle, AlertCircle } from 'lucide-react'
+import { LoanLeadForm } from './LoanLeadForm'
 
 function formatINR(n: number) {
   if (n >= 1_00_00_000) return `₹${(n / 1_00_00_000).toFixed(2)} Cr`
@@ -220,6 +221,14 @@ export function EligibilityCalculator({ compact = false }: Props) {
                 You are eligible for a home loan. A higher CIBIL score (750+) can get you a better interest rate, increasing your eligible amount.
               </p>
             </div>
+          )}
+
+          {results.maxLoan > 0 && (
+            <LoanLeadForm
+              source="eligibility-calculator"
+              loanAmount={results.maxLoan}
+              monthlyIncome={monthlyIncome}
+            />
           )}
 
           <div className="flex items-start gap-1.5 text-[10px] text-neutral-400">
