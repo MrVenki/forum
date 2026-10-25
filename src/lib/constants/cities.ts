@@ -21,6 +21,7 @@ export const INDIAN_CITIES = [
   { name: 'Ludhiana', slug: 'ludhiana', state: 'Punjab', tier: 'TIER1' as const },
   { name: 'Agra', slug: 'agra', state: 'Uttar Pradesh', tier: 'TIER1' as const },
   { name: 'Nashik', slug: 'nashik', state: 'Maharashtra', tier: 'TIER1' as const },
+  { name: 'Vijayawada', slug: 'vijayawada', state: 'Andhra Pradesh', tier: 'TIER1' as const },
 ]
 
 export const METRO_CITIES = INDIAN_CITIES.filter((c) => c.tier === 'METRO')
