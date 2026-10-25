@@ -464,3 +464,25 @@ model ReferralVisit {
   @@index([topicId])
   @@map("referral_visits")
 }
+
+// ─── Monetisation: loan enquiry leads ─────────────────────────────────────────
+
+model LoanLead {
+  id            String   @id @default(cuid())
+  name          String
+  phone         String
+  email         String?
+  city          String?
+  loanAmount    Int?
+  monthlyIncome Int?
+  source        String
+  consent       Boolean
+  consentAt     DateTime @default(now())
+  status        String   @default("NEW")
+  notes         String?
+  createdAt     DateTime @default(now())
+
+  @@index([createdAt(sort: Desc)])
+  @@index([status])
+  @@map("loan_leads")
+}

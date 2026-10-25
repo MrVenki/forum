@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import { IndianRupee, TrendingUp, AlertCircle, Info } from 'lucide-react'
+import { LoanLeadForm } from './LoanLeadForm'
 
 function formatINR(n: number) {
   if (n >= 1_00_00_000) return `₹${(n / 1_00_00_000).toFixed(2)} Cr`
@@ -227,6 +228,14 @@ export function EmiCalculator({ prefillPrice, compact = false }: Props) {
               </div>
             )}
           </div>
+
+          {!compact && (
+            <LoanLeadForm
+              source="emi-calculator"
+              loanAmount={results.loanAmount}
+              monthlyIncome={monthlyIncome}
+            />
+          )}
 
           <div className="flex items-start gap-1.5 text-[10px] text-neutral-400">
             <Info className="h-3 w-3 mt-0.5 shrink-0" />
