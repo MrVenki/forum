@@ -44,6 +44,19 @@ enum ConstructionStatus {
   POSSESSION_DONE
 }
 
+enum BuyIntent {
+  YES
+  MAYBE
+  NO
+}
+
+enum AudienceType {
+  CONSIDERING
+  BOOKED
+  RESIDENT
+  EXPLORING
+}
+
 enum FlairTag {
   OWNER
   BUYER
@@ -109,6 +122,7 @@ model User {
   updatedAt     DateTime  @updatedAt
 
   flairTag         FlairTag?
+  digestOptOut     Boolean   @default(false)
 
   accounts         Account[]
   sessions         Session[]
@@ -186,6 +200,8 @@ model Topic {
   polls         Poll[]
   priceLogs     PriceLog[]
   questions     Question[]
+  buyIntentVotes BuyIntentVote[]
+  referralVisits ReferralVisit[]
 
   @@unique([cityId, slug])
   @@index([cityId, createdAt(sort: Desc)])
@@ -214,6 +230,7 @@ model Comment {
   parentId  String?
   content   String   @db.Text
   isDeleted Boolean  @default(false)
+  viaReferral Boolean @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -414,4 +431,36 @@ model Answer {
 
   @@index([questionId, createdAt(sort: Asc)])
   @@map("answers")
+}
+
+// ─── Community engagement ─────────────────────────────────────────────────────
+
+model BuyIntentVote {
+  id        String        @id @default(cuid())
+  topicId   String
+  voterKey  String
+  userId    String?
+  intent    BuyIntent
+  audience  AudienceType?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  topic Topic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  @@unique([topicId, voterKey])
+  @@index([topicId])
+  @@map("buy_intent_votes")
+}
+
+model ReferralVisit {
+  id        String   @id @default(cuid())
+  topicId   String
+  visitorKey String
+  createdAt DateTime @default(now())
+
+  topic Topic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  @@unique([topicId, visitorKey])
+  @@index([topicId])
+  @@map("referral_visits")
 }

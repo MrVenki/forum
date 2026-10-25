@@ -14,11 +14,12 @@ import { FlairBadge } from '@/components/topic/FlairBadge'
 interface CommentItemProps {
   comment: CommentWithRelations
   topicId: string
+  topicOwnerId?: string
   onReply?: (reply: CommentWithRelations) => void
   isReply?: boolean
 }
 
-export function CommentItem({ comment, topicId, onReply, isReply = false }: CommentItemProps) {
+export function CommentItem({ comment, topicId, topicOwnerId, onReply, isReply = false }: CommentItemProps) {
   const { data: session } = useSession()
   const [showReplyForm, setShowReplyForm] = useState(false)
   const [reactions, setReactions] = useState(comment.reactions)
@@ -68,6 +69,11 @@ export function CommentItem({ comment, topicId, onReply, isReply = false }: Comm
           <div className="flex items-center gap-2 flex-wrap">
             <span className="font-semibold text-sm text-neutral-800">{handle}</span>
             {comment.user.flairTag && <FlairBadge flair={comment.user.flairTag} />}
+            {topicOwnerId && comment.user.id === topicOwnerId && (
+              <span className="inline-flex items-center rounded-full border border-navy-200 bg-navy-50 px-1.5 py-0.5 text-[10px] font-semibold text-navy-600">
+                Poster
+              </span>
+            )}
             <time
               className="text-xs text-neutral-500"
               dateTime={comment.createdAt.toString()}
@@ -134,7 +140,7 @@ export function CommentItem({ comment, topicId, onReply, isReply = false }: Comm
       {comment.replies && comment.replies.length > 0 && (
         <div className="mt-3 space-y-3">
           {comment.replies.map((reply) => (
-            <CommentItem key={reply.id} comment={reply} topicId={topicId} isReply />
+            <CommentItem key={reply.id} comment={reply} topicId={topicId} topicOwnerId={topicOwnerId} isReply />
           ))}
         </div>
       )}

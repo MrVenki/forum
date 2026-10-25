@@ -16,7 +16,11 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid or expired link' }, { status: 403 })
   }
 
-  await prisma.topicSubscription.deleteMany({ where: { topicId, userId } })
+  if (topicId === 'digest') {
+    await prisma.user.update({ where: { id: userId }, data: { digestOptOut: true } }).catch(() => {})
+  } else {
+    await prisma.topicSubscription.deleteMany({ where: { topicId, userId } })
+  }
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://indiapropertytalk.com'
   return NextResponse.redirect(`${siteUrl}/?unsubscribed=1`)

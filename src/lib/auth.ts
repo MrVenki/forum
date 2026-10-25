@@ -7,6 +7,7 @@ import { prisma } from './prisma'
 import { isEmailVerificationEnabled } from './features'
 import { verifyTurnstile } from './turnstile'
 import { makeUniqueUsername } from './utils/username'
+import { consumeOtp } from './otp'
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma) as NextAuthOptions['adapter'],
@@ -60,6 +61,40 @@ export const authOptions: NextAuthOptions = {
           image: user.image,
           role: user.role,
           emailVerified: user.emailVerified,
+        }
+      },
+    }),
+    CredentialsProvider({
+      id: 'email-otp',
+      name: 'email-otp',
+      credentials: {
+        email: { label: 'Email', type: 'email' },
+        code: { label: 'Code', type: 'text' },
+      },
+      async authorize(credentials) {
+        const email = credentials?.email?.trim().toLowerCase()
+        const code = credentials?.code?.trim()
+        if (!email || !code) return null
+
+        const user = await prisma.user.findUnique({ where: { email } })
+        if (!user || !user.isActive || user.role !== 'USER') return null
+
+        const result = await consumeOtp(email, code)
+        if (!result.ok) throw new Error(result.error)
+
+        const verifiedAt = user.emailVerified ?? new Date()
+        if (!user.emailVerified) {
+          await prisma.user.update({ where: { id: user.id }, data: { emailVerified: verifiedAt } })
+        }
+
+        return {
+          id: user.id,
+          name: user.name,
+          username: user.username,
+          email: user.email,
+          image: user.image,
+          role: user.role,
+          emailVerified: verifiedAt,
         }
       },
     }),

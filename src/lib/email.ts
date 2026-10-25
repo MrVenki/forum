@@ -406,6 +406,14 @@ export function verifyUnsubscribeToken(token: string, userId: string, topicId: s
   }
 }
 
+function esc(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
+
 interface NotificationParams {
   subscriberEmail: string
   subscriberName: string
@@ -415,12 +423,13 @@ interface NotificationParams {
   cityName: string
   topicUrl: string
   unsubscribeUrl: string
+  isReplyToYou?: boolean
 }
 
 export async function sendCommentNotification(params: NotificationParams): Promise<void> {
   const {
     subscriberEmail, subscriberName, commenterName, commentContent,
-    propertyName, cityName, topicUrl, unsubscribeUrl,
+    propertyName, cityName, topicUrl, unsubscribeUrl, isReplyToYou,
   } = params
 
   const from = process.env.SMTP_FROM || process.env.SMTP_USER || 'noreply@indiapropertytalk.com'
@@ -428,6 +437,7 @@ export async function sendCommentNotification(params: NotificationParams): Promi
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://indiapropertytalk.com'
 
   const preview = commentContent.length > 200 ? commentContent.slice(0, 200) + '…' : commentContent
+  const headline = isReplyToYou ? `${commenterName} replied to your comment` : 'New reply in a thread you follow'
 
   const transporter = createTransporter()
   if (!transporter) {
@@ -455,21 +465,21 @@ export async function sendCommentNotification(params: NotificationParams): Promi
           </tr>
           <tr>
             <td style="padding:36px 40px 28px;">
-              <p style="margin:0 0 6px;color:#666;font-size:13px;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">New reply in a thread you follow</p>
-              <h2 style="margin:0 0 4px;color:#1e3a5f;font-size:20px;font-weight:700;">${propertyName}</h2>
-              <p style="margin:0 0 24px;color:#888;font-size:13px;">${cityName}</p>
+              <p style="margin:0 0 6px;color:#666;font-size:13px;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">${esc(headline)}</p>
+              <h2 style="margin:0 0 4px;color:#1e3a5f;font-size:20px;font-weight:700;">${esc(propertyName)}</h2>
+              <p style="margin:0 0 24px;color:#888;font-size:13px;">${esc(cityName)}</p>
               <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;margin-bottom:28px;">
                 <tr>
                   <td style="padding:16px 20px;">
-                    <p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#374151;">${commenterName}</p>
-                    <p style="margin:0;font-size:14px;color:#4b5563;line-height:1.6;">${preview}</p>
+                    <p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#374151;">${esc(commenterName)}</p>
+                    <p style="margin:0;font-size:14px;color:#4b5563;line-height:1.6;">${esc(preview)}</p>
                   </td>
                 </tr>
               </table>
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td align="center">
-                    <a href="${topicUrl}" style="display:inline-block;background:#ea580c;color:#ffffff;font-size:14px;font-weight:600;padding:12px 32px;border-radius:8px;text-decoration:none;">View Full Discussion →</a>
+                    <a href="${topicUrl}" style="display:inline-block;background:#ea580c;color:#ffffff;font-size:14px;font-weight:600;padding:12px 32px;border-radius:8px;text-decoration:none;">${isReplyToYou ? 'View reply →' : 'View Full Discussion →'}</a>
                   </td>
                 </tr>
               </table>
@@ -478,7 +488,7 @@ export async function sendCommentNotification(params: NotificationParams): Promi
           <tr>
             <td style="background:#f9fafb;padding:20px 40px;border-top:1px solid #eee;text-align:center;">
               <p style="margin:0 0 6px;color:#aaa;font-size:12px;">
-                You're following <strong style="color:#666;">${propertyName}</strong> on ${siteName}.
+                You're following <strong style="color:#666;">${esc(propertyName)}</strong> on ${siteName}.
               </p>
               <p style="margin:0;color:#aaa;font-size:12px;">
                 <a href="${unsubscribeUrl}" style="color:#888;text-decoration:underline;">Unsubscribe from this thread</a>
@@ -498,8 +508,85 @@ export async function sendCommentNotification(params: NotificationParams): Promi
   await transporter.sendMail({
     from: `"${siteName}" <${from}>`,
     to: subscriberEmail,
-    subject: `New reply on ${propertyName} – ${cityName}`,
+    subject: isReplyToYou
+      ? `${commenterName} replied to your comment on ${propertyName}`
+      : `New reply on ${propertyName} – ${cityName}`,
     html,
     text: `Hi ${subscriberName},\n\n${commenterName} replied in a thread you follow.\n\n${propertyName} · ${cityName}\n\n"${preview}"\n\nView the discussion: ${topicUrl}\n\nUnsubscribe: ${unsubscribeUrl}`,
+  })
+}
+
+// ── Weekly digest ────────────────────────────────────────────────────────────
+
+export interface DigestItem {
+  propertyName: string
+  cityName: string
+  url: string
+  newComments: number
+}
+
+export async function sendWeeklyDigest(params: {
+  email: string
+  name: string
+  items: DigestItem[]
+  unsubscribeUrl: string
+}): Promise<void> {
+  const { email, name, items, unsubscribeUrl } = params
+  const from = process.env.SMTP_FROM || process.env.SMTP_USER || 'noreply@indiapropertytalk.com'
+  const siteName = process.env.NEXT_PUBLIC_SITE_NAME || 'IndiaPropertyTalk'
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://indiapropertytalk.com'
+  const total = items.reduce((n, i) => n + i.newComments, 0)
+
+  const transporter = createTransporter()
+  if (!transporter) {
+    console.log(`[DEV EMAIL] Digest to: ${email} - ${total} new comments across ${items.length} projects`)
+    return
+  }
+
+  const rows = items
+    .map(
+      (i) => `<tr><td style="padding:12px 0;border-bottom:1px solid #eee;">
+        <a href="${i.url}" style="color:#1e3a5f;font-size:15px;font-weight:600;text-decoration:none;">${esc(i.propertyName)}</a>
+        <div style="color:#888;font-size:12px;margin-top:2px;">${esc(i.cityName)} · ${i.newComments} new comment${i.newComments !== 1 ? 's' : ''}</div>
+      </td></tr>`
+    )
+    .join('')
+
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f5f5f5;font-family:Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f5;padding:40px 0;"><tr><td align="center">
+    <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;">
+      <tr><td style="background:#1e3a5f;padding:24px 40px;text-align:center;"><h1 style="margin:0;color:#ffffff;font-size:20px;">${siteName}</h1></td></tr>
+      <tr><td style="padding:32px 40px;">
+        <h2 style="margin:0 0 6px;color:#1e3a5f;font-size:18px;">${total} new comment${total !== 1 ? 's' : ''} this week</h2>
+        <p style="margin:0 0 16px;color:#666;font-size:14px;">Hi ${esc(name)}, here is what buyers said on the projects you follow.</p>
+        <table width="100%" cellpadding="0" cellspacing="0">${rows}</table>
+      </td></tr>
+      <tr><td style="background:#f9fafb;padding:20px 40px;border-top:1px solid #eee;text-align:center;">
+        <p style="margin:0;color:#aaa;font-size:12px;">
+          <a href="${unsubscribeUrl}" style="color:#888;text-decoration:underline;">Stop weekly digests</a>
+          &nbsp;·&nbsp;<a href="${siteUrl}" style="color:#888;text-decoration:underline;">Visit ${siteName}</a>
+        </p>
+      </td></tr>
+    </table>
+  </td></tr></table>
+</body></html>`
+
+  const text = [
+    `Hi ${name},`,
+    '',
+    `${total} new comments this week on projects you follow:`,
+    '',
+    ...items.map((i) => `- ${i.propertyName} (${i.cityName}): ${i.newComments} new - ${i.url}`),
+    '',
+    `Stop weekly digests: ${unsubscribeUrl}`,
+  ].join('\n')
+
+  await transporter.sendMail({
+    from: `"${siteName}" <${from}>`,
+    to: email,
+    subject: `${total} new comment${total !== 1 ? 's' : ''} on projects you follow`,
+    html,
+    text,
   })
 }

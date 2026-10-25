@@ -8,6 +8,7 @@ import { isEmailVerificationEnabled } from '@/lib/features'
 import { generateUnsubscribeToken, sendCommentNotification, sendAdminNewCommentAlert } from '@/lib/email'
 import { checkRateLimit, getClientIp } from '@/lib/rateLimit'
 import { verifyTurnstile } from '@/lib/turnstile'
+import { REFERRAL_COOKIE } from '@/lib/visitor'
 
 export async function GET(req: NextRequest, { params }: { params: { topicId: string } }) {
   const comments = await prisma.comment.findMany({
@@ -56,19 +57,24 @@ export async function POST(req: NextRequest, { params }: { params: { topicId: st
   const parsed = createCommentSchema.safeParse(body)
   if (!parsed.success) return NextResponse.json({ error: parsed.error.errors[0].message }, { status: 400 })
 
-  const topic = await prisma.topic.findUnique({ where: { id: params.topicId }, select: { id: true } })
+  const topic = await prisma.topic.findUnique({ where: { id: params.topicId }, select: { id: true, userId: true } })
   if (!topic) return NextResponse.json({ error: 'Topic not found' }, { status: 404 })
 
   // Validate parentId belongs to this topic — prevents cross-topic reply injection
+  let parentAuthorId: string | null = null
   if (parsed.data.parentId) {
     const parent = await prisma.comment.findFirst({
       where: { id: parsed.data.parentId, topicId: params.topicId },
-      select: { id: true },
+      select: { id: true, userId: true },
     })
     if (!parent) {
       return NextResponse.json({ error: 'Parent comment not found in this topic.' }, { status: 400 })
     }
+    parentAuthorId = parent.userId
   }
+
+  const viaReferral =
+    req.cookies.get(REFERRAL_COOKIE)?.value === params.topicId && session.user.id !== topic.userId
 
   const comment = await prisma.comment.create({
     data: {
@@ -76,6 +82,7 @@ export async function POST(req: NextRequest, { params }: { params: { topicId: st
       userId:   session.user.id,
       content:  parsed.data.content,
       parentId: parsed.data.parentId || null,
+      viaReferral,
     },
     include: {
       user: { select: { id: true, name: true, username: true, image: true } },
@@ -138,6 +145,7 @@ export async function POST(req: NextRequest, { params }: { params: { topicId: st
           cityName: full.city.name,
           topicUrl,
           unsubscribeUrl,
+          isReplyToYou: sub.user.id === parentAuthorId,
         }).catch(() => {})
       }
     }

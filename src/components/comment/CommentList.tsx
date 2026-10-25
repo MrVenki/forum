@@ -5,16 +5,19 @@ import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import { CommentItem } from './CommentItem'
 import { CommentForm } from './CommentForm'
+import { GuestCommentBox } from './GuestCommentBox'
 import { Skeleton } from '@/components/ui/skeleton'
 import { MessageSquare } from 'lucide-react'
 import type { CommentWithRelations } from '@/types'
 
 interface CommentListProps {
   topicId: string
+  topicOwnerId?: string
+  prompt?: string
   initialComments?: CommentWithRelations[]
 }
 
-export function CommentList({ topicId, initialComments }: CommentListProps) {
+export function CommentList({ topicId, topicOwnerId, prompt, initialComments }: CommentListProps) {
   const { data: session } = useSession()
   const [comments, setComments] = useState<CommentWithRelations[]>(initialComments || [])
   const [loading, setLoading] = useState(!initialComments)
@@ -61,11 +64,17 @@ export function CommentList({ topicId, initialComments }: CommentListProps) {
   return (
     <div className="space-y-6">
       {session ? (
-        <CommentForm topicId={topicId} onSuccess={handleNewComment} />
+        <CommentForm topicId={topicId} onSuccess={handleNewComment} placeholder={prompt} />
       ) : (
-        <div className="rounded-xl border border-dashed border-neutral-300 p-5 text-center">
-          <p className="text-sm text-neutral-500">
-            <Link href="/login" className="font-semibold text-saffron-500 hover:text-saffron-600">Sign in</Link> to join the discussion
+        <div className="space-y-2">
+          <GuestCommentBox
+            topicId={topicId}
+            placeholder={prompt || 'Share what you saw on the site visit, pricing you were quoted, questions…'}
+            onSuccess={handleNewComment}
+          />
+          <p className="text-xs text-neutral-500 text-center">
+            Already have an account?{' '}
+            <Link href="/login" className="font-semibold text-saffron-500 hover:text-saffron-600">Sign in</Link>
           </p>
         </div>
       )}
@@ -82,6 +91,7 @@ export function CommentList({ topicId, initialComments }: CommentListProps) {
               key={comment.id}
               comment={comment}
               topicId={topicId}
+              topicOwnerId={topicOwnerId}
               onReply={(reply) => handleReply(comment.id, reply)}
             />
           ))}

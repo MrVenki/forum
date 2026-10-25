@@ -70,7 +70,7 @@ const nextConfig = {
             value: [
               "default-src 'self'",
               // Next.js inline scripts + Google Tag + Cloudflare Turnstile widget
-              "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://challenges.cloudflare.com",
+              `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === 'development' ? " 'unsafe-eval'" : ''} https://www.googletagmanager.com https://www.google-analytics.com https://challenges.cloudflare.com`,
               // Styles: inline is needed by Tailwind
               "style-src 'self' 'unsafe-inline'",
               // Images: Cloudinary + Google avatars + GitHub avatars + data URIs

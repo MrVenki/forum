@@ -12,7 +12,8 @@ import { formatAbsoluteDate, formatINR, formatNumber } from '@/lib/utils/format'
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs'
 import { StarRating } from '@/components/rating/StarRating'
 import { RatingForm } from '@/components/rating/RatingForm'
-import { CommentList } from '@/components/comment/CommentList'
+import { DiscussionSection } from '@/components/comment/DiscussionSection'
+import { ReferralTracker } from '@/components/topic/ReferralTracker'
 import { Badge } from '@/components/ui/badge'
 import { MapPin, Eye, MessageSquare, User, Calendar, Home, IndianRupee } from 'lucide-react'
 import type { CommentWithRelations } from '@/types'
@@ -217,6 +218,7 @@ export default async function TopicPage({ params }: Props) {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(schemas) }} />
+      <ReferralTracker topicId={topic.id} />
 
       <div className="container-forum py-6">
         <Breadcrumbs
@@ -376,7 +378,12 @@ export default async function TopicPage({ params }: Props) {
                 </h2>
                 <SubscriberCount count={subscriberCount} />
               </div>
-              <CommentList topicId={topic.id} initialComments={comments} />
+              <DiscussionSection
+                topicId={topic.id}
+                topicOwnerId={topic.user.id}
+                propertyName={topic.propertyName}
+                initialComments={comments}
+              />
             </div>
 
             {/* Q&A Section */}

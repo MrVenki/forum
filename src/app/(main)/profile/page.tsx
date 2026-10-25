@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { TopicCard } from '@/components/topic/TopicCard'
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs'
 import { formatAbsoluteDate } from '@/lib/utils/format'
-import { User, MessageSquare, Star, Calendar, Bookmark } from 'lucide-react'
+import { User, MessageSquare, Star, Calendar, Bookmark, Share2 } from 'lucide-react'
 import type { TopicWithRelations } from '@/types'
 import { EditNameForm } from '@/components/profile/EditNameForm'
 import { EditUsernameForm } from '@/components/profile/EditUsernameForm'
@@ -68,6 +68,11 @@ export default async function ProfilePage() {
             <Link href="/profile/watchlist" className="mt-4 flex items-center justify-center gap-1.5 text-sm text-neutral-600 hover:text-saffron-600 transition-colors">
               <Bookmark className="h-4 w-4" /> Watchlist ({bookmarkCount})
             </Link>
+            {topics.length > 0 && (
+              <Link href="/profile/share" className="mt-2 flex items-center justify-center gap-1.5 text-sm text-neutral-600 hover:text-saffron-600 transition-colors">
+                <Share2 className="h-4 w-4" /> Invite buyers to comment
+              </Link>
+            )}
 
             <div className="mt-4 border-t border-neutral-100 pt-4">
               <FlairPickerClient initialFlair={user.flairTag} />
