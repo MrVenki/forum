@@ -182,13 +182,14 @@ export async function POST(req: NextRequest) {
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://indiapropertytalk.com'
     const topicFullUrl = `${siteUrl}/${topic.city.slug}/${slug}`
     pingIndexNow([topicFullUrl]).catch(() => {})
-    sendAdminNewPostAlert({
+    // Awaited: on serverless the function can be frozen after the response, killing a detached send
+    await sendAdminNewPostAlert({
       posterName:   session.user.name || 'Anonymous',
       propertyName: topic.propertyName,
       cityName:     topic.city.name,
       description:  topic.description,
       topicUrl:     topicFullUrl,
-    }).catch(() => {})
+    }).catch(err => console.error('[Admin alert] failed to send new-post email', err))
 
     return NextResponse.json({ topic, slug: `/${topic.city.slug}/${slug}` }, { status: 201 })
   } catch (err: unknown) {

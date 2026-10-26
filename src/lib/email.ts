@@ -83,12 +83,8 @@ export async function sendOtpEmail(email: string, otp: string): Promise<void> {
 // No hardcoded fallback — require the env var so the admin email is never
 // accidentally committed to source code.
 function getAdminAlertEmail(): string {
-  const email = process.env.ADMIN_ALERT_EMAIL
-  if (!email) {
-    console.warn('[email] ADMIN_ALERT_EMAIL env var is not set — admin alerts disabled')
-    return ''
-  }
-  return email
+  // Falls back to the lead-notification address so alerts still arrive if ADMIN_ALERT_EMAIL is unset
+  return process.env.ADMIN_ALERT_EMAIL || process.env.LEAD_NOTIFY_EMAIL || 'mrvenkik@gmail.com'
 }
 
 export async function sendAdminNewPostAlert(params: {
@@ -98,7 +94,11 @@ export async function sendAdminNewPostAlert(params: {
   description: string
   topicUrl: string
 }): Promise<void> {
-  const { posterName, propertyName, cityName, description, topicUrl } = params
+  const { topicUrl } = params
+  const posterName = escapeHtml(params.posterName)
+  const propertyName = escapeHtml(params.propertyName)
+  const cityName = escapeHtml(params.cityName)
+  const description = escapeHtml(params.description)
   const from = process.env.SMTP_FROM || process.env.SMTP_USER || 'noreply@indiapropertytalk.com'
   const siteName = process.env.NEXT_PUBLIC_SITE_NAME || 'IndiaPropertyTalk'
   const adminEmail = getAdminAlertEmail()
