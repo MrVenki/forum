@@ -2,6 +2,7 @@ import { MetadataRoute } from 'next'
 import { prisma } from '@/lib/prisma'
 import { SITE_CONFIG } from '@/lib/constants/config'
 import { INDIAN_CITIES } from '@/lib/constants/cities'
+import { getCityAreas } from '@/lib/areaPrices'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 3600
@@ -35,6 +36,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }))
 
   let topicPages: MetadataRoute.Sitemap = []
+  let pricePages: MetadataRoute.Sitemap = []
   let developerPages: MetadataRoute.Sitemap = []
   try {
     const topics = await prisma.topic.findMany({
@@ -70,9 +72,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'weekly' as const,
       priority: 0.7,
     }))
+
+    for (const c of INDIAN_CITIES) {
+      const data = await getCityAreas(c.slug)
+      if (!data || data.areas.length < 2) continue
+      pricePages.push({ url: `${baseUrl}/${c.slug}/prices`, lastModified: new Date(), changeFrequency: 'weekly' as const, priority: 0.7 })
+      for (const a of data.areas) {
+        pricePages.push({ url: `${baseUrl}/${c.slug}/prices/${a.slug}`, lastModified: new Date(), changeFrequency: 'weekly' as const, priority: 0.6 })
+      }
+    }
   } catch {
     // DB not connected during build — skip dynamic pages
   }
 
-  return [...staticPages, ...cityPages, ...developerPages, ...topicPages]
+  return [...staticPages, ...cityPages, ...pricePages, ...developerPages, ...topicPages]
 }

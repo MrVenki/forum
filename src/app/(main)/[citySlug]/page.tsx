@@ -12,6 +12,7 @@ import { CityPropertySearch } from '@/components/city/CityPropertySearch'
 import { Badge } from '@/components/ui/badge'
 import { MapPin, TrendingUp, MessageSquare, Clock, PlusCircle } from 'lucide-react'
 import type { TopicWithRelations } from '@/types'
+import { getCityAreas } from '@/lib/areaPrices'
 
 export const revalidate = 3600
 
@@ -95,6 +96,7 @@ export default async function CityPage({ params, searchParams }: Props) {
   ])
 
   const totalPages = Math.ceil(total / limit)
+  const priceAreas = (await getCityAreas(city.slug))?.areas.length ?? 0
 
   const itemListSchema = {
     '@context': 'https://schema.org',
@@ -142,6 +144,11 @@ export default async function CityPage({ params, searchParams }: Props) {
               </div>
               <h1 className="font-heading text-3xl sm:text-4xl font-bold">{city.name} Property Forum</h1>
               <p className="mt-1 text-navy-200 text-sm">{city.state} · {city._count.topics} discussions</p>
+              {priceAreas > 0 && (
+                <Link href={`/${city.slug}/prices`} className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-saffron-300 hover:text-saffron-200">
+                  Property prices by area ({priceAreas} areas) →
+                </Link>
+              )}
             </div>
             <Link href="/new-topic" className="btn-primary shrink-0">
               <PlusCircle className="h-4 w-4" />

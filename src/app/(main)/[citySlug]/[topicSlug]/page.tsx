@@ -25,6 +25,7 @@ import { PollWidget } from '@/components/topic/PollWidget'
 import { UpdatesFeed } from '@/components/topic/UpdatesFeed'
 import { PriceHistoryWidget } from '@/components/topic/PriceHistoryWidget'
 import { QASection } from '@/components/topic/QASection'
+import { AreaPriceContext } from '@/components/topic/AreaPriceContext'
 import { EmiCalculator } from '@/components/tools/EmiCalculator'
 
 /** Safely serialise JSON-LD — escapes </script> injection sequences */
@@ -368,6 +369,15 @@ export default async function TopicPage({ params }: Props) {
                 priceMax={topic.priceMax ? Number(topic.priceMax) : null}
               />
             </div>
+
+            <AreaPriceContext
+              citySlug={topic.city.slug}
+              cityName={topic.city.name}
+              topicId={topic.id}
+              propertyType={topic.propertyType}
+              priceMin={topic.priceMin ? Number(topic.priceMin) : null}
+              priceMax={topic.priceMax ? Number(topic.priceMax) : null}
+            />
 
             {/* Discussion & Comments */}
             <div className="card-base p-6">
