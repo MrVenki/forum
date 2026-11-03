@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { SITE_CONFIG } from '@/lib/constants/config'
 import { INDIAN_CITIES } from '@/lib/constants/cities'
 import { getCityAreas } from '@/lib/areaPrices'
+import { getComparePairs } from '@/lib/compare'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 3600
@@ -37,6 +38,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   let topicPages: MetadataRoute.Sitemap = []
   let pricePages: MetadataRoute.Sitemap = []
+  let comparePages: MetadataRoute.Sitemap = []
   let developerPages: MetadataRoute.Sitemap = []
   try {
     const topics = await prisma.topic.findMany({
@@ -81,9 +83,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         pricePages.push({ url: `${baseUrl}/${c.slug}/prices/${a.slug}`, lastModified: new Date(), changeFrequency: 'weekly' as const, priority: 0.6 })
       }
     }
+
+    comparePages = (await getComparePairs()).map((c) => ({
+      url: `${baseUrl}/${c.city}/compare/${c.pair}`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly' as const,
+      priority: 0.5,
+    }))
   } catch {
     // DB not connected during build — skip dynamic pages
   }
 
-  return [...staticPages, ...cityPages, ...pricePages, ...developerPages, ...topicPages]
+  return [...staticPages, ...cityPages, ...pricePages, ...comparePages, ...developerPages, ...topicPages]
 }

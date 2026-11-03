@@ -25,6 +25,9 @@ import { PollWidget } from '@/components/topic/PollWidget'
 import { UpdatesFeed } from '@/components/topic/UpdatesFeed'
 import { PriceHistoryWidget } from '@/components/topic/PriceHistoryWidget'
 import { QASection } from '@/components/topic/QASection'
+import { buildTopicSeo } from '@/lib/topicSeo'
+import { ReviewInsights } from '@/components/rating/ReviewInsights'
+import { CompareLinks } from '@/components/topic/CompareLinks'
 import { AreaPriceContext } from '@/components/topic/AreaPriceContext'
 import { EmiCalculator } from '@/components/tools/EmiCalculator'
 
@@ -54,9 +57,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   })
   if (!topic) return {}
 
-  const title = topic.metaTitle || `${topic.propertyName}, ${topic.city.name} — Reviews & Discussion`
-  const description =
-    topic.metaDesc || topic.description.slice(0, 155).replace(/\n/g, ' ')
+  const seo = buildTopicSeo({
+    propertyName: topic.propertyName,
+    cityName: topic.city.name,
+    avgRating: Number(topic.avgRating),
+    ratingCount: topic.ratingCount,
+    commentCount: topic.commentCount,
+    priceMin: topic.priceMin ? Number(topic.priceMin) : null,
+    priceMax: topic.priceMax ? Number(topic.priceMax) : null,
+  })
+  const title = topic.metaTitle || seo.title
+  const description = topic.metaDesc || seo.description
   const url = `${SITE_CONFIG.url}/${params.citySlug}/${params.topicSlug}`
   const ogImage = topic.image1PubId
     ? getOgImageUrl(topic.image1PubId)
@@ -379,6 +390,8 @@ export default async function TopicPage({ params }: Props) {
               priceMax={topic.priceMax ? Number(topic.priceMax) : null}
             />
 
+            <ReviewInsights topicId={topic.id} propertyName={topic.propertyName} />
+
             {/* Discussion & Comments */}
             <div className="card-base p-6">
               <div className="flex items-center justify-between mb-4">
@@ -406,6 +419,19 @@ export default async function TopicPage({ params }: Props) {
           <aside className="space-y-5">
             {/* Rating Form */}
             <RatingForm topicId={topic.id} />
+
+            <CompareLinks
+              citySlug={topic.city.slug}
+              topic={{
+                id: topic.id,
+                slug: topic.slug,
+                cityId: topic.cityId,
+                propertyType: topic.propertyType,
+                propertyName: topic.propertyName,
+                priceMin: topic.priceMin ? Number(topic.priceMin) : null,
+                priceMax: topic.priceMax ? Number(topic.priceMax) : null,
+              }}
+            />
 
             {/* Property Info */}
             <div className="card-base p-5">

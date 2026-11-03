@@ -139,7 +139,7 @@ export function GuestCommentBox({ topicId, placeholder, onSuccess }: Props) {
             ))}
           </div>
           <div className="flex items-center justify-between gap-3">
-            <span className="text-xs text-neutral-400">Posts under your username. Your email stays private.</span>
+            <span className="text-xs text-neutral-400">Posts under your username. Your email is never shown or shared with builders or agents.</span>
             <Button type="button" size="sm" onClick={continueToEmail}>
               <Send className="h-3.5 w-3.5" /> Post comment
             </Button>

@@ -53,6 +53,9 @@ export default function AboutPage() {
           <p>
             The goal is simple: every Indian property buyer deserves the same quality of information that someone with 10 well-connected friends in the industry gets. IndiaPropertyTalk is that friend — for everyone.
           </p>
+          <p>
+            <strong>Your contact details stay yours.</strong> Commenting or reviewing needs only an email address, which is never shown on the site. Nothing you post passes your email or phone number to builders, agents, or other members, and posting never triggers a sales call.
+          </p>
         </div>
       </div>
 

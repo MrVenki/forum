@@ -294,6 +294,17 @@ model Rating {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  ownership           AudienceType?
+  constructionQuality Int?
+  maintenanceScore    Int?
+  amenitiesScore      Int?
+  builderScore        Int?
+  pros                String?
+  cons                String?
+  promisedPossession  DateTime?
+  actualPossession    DateTime?
+  maintenancePerSqFt  Decimal?      @db.Decimal(8, 2)
+
   topic Topic @relation(fields: [topicId], references: [id], onDelete: Cascade)
   user  User  @relation(fields: [userId], references: [id])
 

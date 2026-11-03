@@ -6,6 +6,7 @@ import { SITE_CONFIG } from '@/lib/constants/config'
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs'
 import { StarRating } from '@/components/rating/StarRating'
 import { TopicCard } from '@/components/topic/TopicCard'
+import { PossessionTracker } from '@/components/developer/PossessionTracker'
 import { Building2, MapPin, Calendar, Star, MessageSquare, Home } from 'lucide-react'
 import type { TopicWithRelations } from '@/types'
 
@@ -222,6 +223,8 @@ export default async function DeveloperPage({ params }: Props) {
               <p className="text-sm text-neutral-700 leading-relaxed">{developer.description}</p>
             </div>
           )}
+
+          <PossessionTracker developerSlug={developer.slug} developerName={developer.name} />
 
           {/* Projects */}
           <div>

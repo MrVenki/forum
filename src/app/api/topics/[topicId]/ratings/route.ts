@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth'
 import { revalidatePath } from 'next/cache'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { upsertRatingSchema } from '@/lib/validations/rating'
+import { upsertRatingSchema, monthToDate } from '@/lib/validations/rating'
 import { isEmailVerificationEnabled } from '@/lib/features'
 
 export async function POST(req: NextRequest, { params }: { params: { topicId: string } }) {
@@ -21,12 +21,26 @@ export async function POST(req: NextRequest, { params }: { params: { topicId: st
   if (!topic) return NextResponse.json({ error: 'Topic not found' }, { status: 404 })
   if (topic.userId === session.user.id) return NextResponse.json({ error: 'You cannot rate your own topic.' }, { status: 400 })
 
-  const { score, review } = parsed.data
+  const d = parsed.data
+  const details = {
+    score: d.score,
+    review: d.review,
+    ownership: d.ownership ?? null,
+    constructionQuality: d.constructionQuality ?? null,
+    maintenanceScore: d.maintenanceScore ?? null,
+    amenitiesScore: d.amenitiesScore ?? null,
+    builderScore: d.builderScore ?? null,
+    pros: d.pros || null,
+    cons: d.cons || null,
+    promisedPossession: monthToDate(d.promisedPossession),
+    actualPossession: monthToDate(d.actualPossession),
+    maintenancePerSqFt: d.maintenancePerSqFt ?? null,
+  }
 
   await prisma.rating.upsert({
     where: { topicId_userId: { topicId: params.topicId, userId: session.user.id } },
-    create: { topicId: params.topicId, userId: session.user.id, score, review },
-    update: { score, review },
+    create: { topicId: params.topicId, userId: session.user.id, ...details },
+    update: details,
   })
 
   // Recalculate avg rating
