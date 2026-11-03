@@ -5,7 +5,7 @@ import { FileText } from 'lucide-react'
 import { SITE_CONFIG } from '@/lib/constants/config'
 
 export const metadata: Metadata = {
-  title: 'Stamp Duty Calculator India 2025 — All States — IndiaPropertyTalk',
+  title: `Stamp Duty Calculator India ${new Date().getFullYear()} — All States`,
   description: 'Calculate stamp duty and registration charges for Maharashtra, Karnataka, Delhi, UP, Telangana, Tamil Nadu and 9 more states. Includes women buyer concessions and transfer duty.',
   alternates: { canonical: `${SITE_CONFIG.url}/tools/stamp-duty-calculator` },
   openGraph: {

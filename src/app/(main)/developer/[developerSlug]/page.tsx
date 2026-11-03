@@ -42,7 +42,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const shouldIndex = topicCount >= MIN_TOPICS_TO_INDEX
 
   return {
-    title: `${developer.name} — Developer Reputation Score | IndiaPropertyTalk`,
+    title: `${developer.name} — Developer Reputation Score`,
     description: `Community ratings, reviews and property listings for ${developer.name}. See what buyers say about build quality, delivery, and value.`,
     alternates: shouldIndex ? { canonical: `${SITE_CONFIG.url}/developer/${developer.slug}` } : undefined,
     robots: shouldIndex ? undefined : { index: false, follow: true },

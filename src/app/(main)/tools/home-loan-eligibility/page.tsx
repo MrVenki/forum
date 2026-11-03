@@ -5,7 +5,7 @@ import { TrendingUp } from 'lucide-react'
 import { SITE_CONFIG } from '@/lib/constants/config'
 
 export const metadata: Metadata = {
-  title: 'Home Loan Eligibility Calculator India 2025 — IndiaPropertyTalk',
+  title: `Home Loan Eligibility Calculator India ${new Date().getFullYear()}`,
   description: 'Find out how much home loan you qualify for based on your salary and existing EMIs. Compares SBI, HDFC, ICICI, Axis and 4 more banks using FOIR norms.',
   alternates: { canonical: `${SITE_CONFIG.url}/tools/home-loan-eligibility` },
   openGraph: {

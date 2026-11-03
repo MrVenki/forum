@@ -6,7 +6,7 @@ import { Bookmark } from 'lucide-react'
 import { TopicCard } from '@/components/topic/TopicCard'
 import type { TopicWithRelations } from '@/types'
 
-export const metadata = { title: 'My Watchlist — IndiaPropertyTalk' }
+export const metadata = { title: 'My Watchlist' }
 
 export default async function WatchlistPage() {
   const session = await getServerSession(authOptions)

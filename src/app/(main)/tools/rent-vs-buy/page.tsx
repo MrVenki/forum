@@ -5,7 +5,7 @@ import { Home } from 'lucide-react'
 import { SITE_CONFIG } from '@/lib/constants/config'
 
 export const metadata: Metadata = {
-  title: 'Rent vs Buy Calculator India 2025 — Is Buying Worth It? — IndiaPropertyTalk',
+  title: `Rent vs Buy Calculator India ${new Date().getFullYear()} — Is Buying Worth It?`,
   description: 'Should you rent or buy a home in India? Compare true long-term costs accounting for EMI, rent increases, property appreciation, and opportunity cost of down payment.',
   alternates: { canonical: `${SITE_CONFIG.url}/tools/rent-vs-buy` },
   openGraph: {

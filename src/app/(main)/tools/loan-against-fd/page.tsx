@@ -5,7 +5,7 @@ import { LoanAgainstFdCalculator } from '@/components/tools/LoanAgainstFdCalcula
 import { SITE_CONFIG } from '@/lib/constants/config'
 
 export const metadata: Metadata = {
-  title: 'Loan Against FD Calculator India 2025 — IndiaPropertyTalk',
+  title: `Loan Against FD Calculator India ${new Date().getFullYear()}`,
   description: 'Calculate EMI and true cost of a loan against your Fixed Deposit. Compare loan-against-FD vs breaking FD. Shows net borrowing cost, FD earnings, and year-by-year breakdown.',
   alternates: { canonical: `${SITE_CONFIG.url}/tools/loan-against-fd` },
   openGraph: {

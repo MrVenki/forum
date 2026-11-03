@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { SITE_CONFIG } from '@/lib/constants/config'
 
 export const metadata: Metadata = {
-  title: 'About Us — IndiaPropertyTalk',
+  title: 'About Us',
   description: 'IndiaPropertyTalk was built by Venkatesh, a Chennai-based professional who struggled to find genuine, unbiased property reviews. Our mission is to give every Indian buyer an honest forum to research, discuss and decide.',
   alternates: { canonical: `${SITE_CONFIG.url}/about` },
 }

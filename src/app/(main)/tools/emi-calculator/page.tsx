@@ -5,7 +5,7 @@ import { IndianRupee } from 'lucide-react'
 import { SITE_CONFIG } from '@/lib/constants/config'
 
 export const metadata: Metadata = {
-  title: 'Home Loan EMI Calculator India 2025 — IndiaPropertyTalk',
+  title: `Home Loan EMI Calculator India ${new Date().getFullYear()}`,
   description: 'Calculate your home loan EMI instantly. Includes affordability check, income multiple, double-burden analysis for under-construction properties, and EMI-to-income ratio.',
   alternates: { canonical: `${SITE_CONFIG.url}/tools/emi-calculator` },
   openGraph: {

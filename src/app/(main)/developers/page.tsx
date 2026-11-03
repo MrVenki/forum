@@ -5,7 +5,7 @@ import { DeveloperSearch } from '@/components/developer/DeveloperSearch'
 import { SITE_CONFIG } from '@/lib/constants/config'
 
 export const metadata: Metadata = {
-  title: 'Developer Reputation Scores — IndiaPropertyTalk',
+  title: 'Developer Reputation Scores',
   description: 'Compare Indian real estate developers by community ratings, review counts, and project quality scores based on verified buyer experiences.',
   alternates: { canonical: `${SITE_CONFIG.url}/developers` },
 }

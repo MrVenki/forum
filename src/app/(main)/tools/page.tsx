@@ -5,7 +5,7 @@ import { Breadcrumbs } from '@/components/layout/Breadcrumbs'
 import { SITE_CONFIG } from '@/lib/constants/config'
 
 export const metadata: Metadata = {
-  title: 'Free Property & Home Loan Calculators India 2025 — IndiaPropertyTalk',
+  title: `Free Property & Home Loan Calculators India ${new Date().getFullYear()}`,
   description: 'Free calculators for Indian home buyers: EMI calculator, affordability checker, stamp duty estimator, rent vs buy analysis and more. Make smarter property decisions.',
   alternates: { canonical: `${SITE_CONFIG.url}/tools` },
   openGraph: {
