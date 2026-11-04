@@ -10,7 +10,7 @@ import { makeUniqueUsername } from '@/lib/utils/username'
 
 const schema = z.object({
   email: z.string().trim().toLowerCase().email().max(254),
-  name: z.string().trim().min(2, 'Enter your name').max(50),
+  name: z.union([z.string().trim().min(2, 'Enter your name').max(50), z.literal('')]).optional(),
   cfToken: z.string().optional(),
 })
 
@@ -26,6 +26,15 @@ export async function POST(req: NextRequest) {
   }
   const { email, name, cfToken } = parsed.data
 
+  const existing = await prisma.user.findUnique({
+    where: { email },
+    select: { isActive: true, role: true },
+  })
+  // Checked before the bot check so the visitor can add a name without burning their security token
+  if (!existing && !name) {
+    return NextResponse.json({ error: 'New here? Add your name to create your account.', needsName: true }, { status: 400 })
+  }
+
   if (!(await verifyTurnstile(cfToken))) {
     return NextResponse.json({ error: 'Security check failed. Please try again.' }, { status: 403 })
   }
@@ -37,11 +46,6 @@ export async function POST(req: NextRequest) {
   if (recent >= config.maxResendPerHour) {
     return NextResponse.json({ error: 'Too many codes requested. Wait a bit and try again.' }, { status: 429 })
   }
-
-  const existing = await prisma.user.findUnique({
-    where: { email },
-    select: { isActive: true, role: true },
-  })
   if (existing && !existing.isActive) {
     return NextResponse.json({ error: 'This account is not available.' }, { status: 403 })
   }
@@ -49,7 +53,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Staff accounts must sign in with a password.' }, { status: 403 })
   }
 
-  if (!existing) {
+  if (!existing && name) {
     const username = await makeUniqueUsername(name, email)
     await prisma.user.create({ data: { name, username, email } })
   }

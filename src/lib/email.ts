@@ -512,7 +512,7 @@ export async function sendCommentNotification(params: NotificationParams): Promi
       ? `${commenterName} replied to your comment on ${propertyName}`
       : `New reply on ${propertyName} – ${cityName}`,
     html,
-    text: `Hi ${subscriberName},\n\n${commenterName} replied in a thread you follow.\n\n${propertyName} · ${cityName}\n\n"${preview}"\n\nView the discussion: ${topicUrl}\n\nUnsubscribe: ${unsubscribeUrl}`,
+    text: `Hi ${subscriberName},\n\n${isReplyToYou ? `${commenterName} replied to your comment.` : `${commenterName} replied in a thread you follow.`}\n\n${propertyName} · ${cityName}\n\n"${preview}"\n\nView the discussion: ${topicUrl}\n\nUnsubscribe: ${unsubscribeUrl}`,
   })
 }
 
@@ -575,7 +575,7 @@ export async function sendWeeklyDigest(params: {
   const text = [
     `Hi ${name},`,
     '',
-    `${total} new comments this week on projects you follow:`,
+    `${total} new comment${total !== 1 ? 's' : ''} this week on projects you follow:`,
     '',
     ...items.map((i) => `- ${i.propertyName} (${i.cityName}): ${i.newComments} new - ${i.url}`),
     '',

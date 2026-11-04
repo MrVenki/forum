@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
   const subs = await prisma.topicSubscription.findMany({
     where: {
       topicId: { in: topicIds },
-      user: { isActive: true, digestOptOut: false, emailVerified: { not: null } },
+      user: { isActive: true, digestOptOut: false, isSeeded: false, emailVerified: { not: null } },
     },
     select: { topicId: true, user: { select: { id: true, name: true, email: true } } },
   })

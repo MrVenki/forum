@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { LogIn, Eye, EyeOff } from 'lucide-react'
 import { TurnstileWidget } from '@/components/shared/TurnstileWidget'
+import { EmailCodeSignIn } from '@/components/auth/EmailCodeSignIn'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -21,6 +22,7 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [cfToken, setCfToken] = useState('')
+  const [mode, setMode] = useState<'password' | 'code'>(searchParams.get('mode') === 'code' ? 'code' : 'password')
 
   const { register, handleSubmit, formState: { errors } } = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
@@ -86,6 +88,9 @@ export default function LoginPage() {
           </div>
         </div>
 
+        {mode === 'code' ? (
+          <EmailCodeSignIn />
+        ) : (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-1.5">
             <Label htmlFor="email">Email address</Label>
@@ -111,6 +116,15 @@ export default function LoginPage() {
             {loading ? 'Signing in…' : 'Sign In'}
           </Button>
         </form>
+        )}
+
+        <button
+          type="button"
+          onClick={() => setMode(mode === 'code' ? 'password' : 'code')}
+          className="mt-4 w-full text-center text-sm font-medium text-saffron-600 hover:text-saffron-700"
+        >
+          {mode === 'code' ? 'Sign in with your password instead' : 'Forgot your password or never set one? Sign in with an email code'}
+        </button>
 
         <div className="mt-6 text-center text-sm text-neutral-500">
           Don&apos;t have an account?{' '}

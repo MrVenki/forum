@@ -52,6 +52,22 @@ export async function PATCH(
     data.image2PubId = null
   }
 
+  // Correct listed prices (rupees). priceMax may be null for "from" prices.
+  if ('priceMin' in body || 'priceMax' in body) {
+    const MIN = 100_000 // ₹1 lakh
+    const MAX = 10_000_000_000 // ₹1,000 crore
+    const min = body.priceMin === null ? null : Number(body.priceMin)
+    const max = body.priceMax === null || body.priceMax === undefined || body.priceMax === '' ? null : Number(body.priceMax)
+    if (min === null || !Number.isFinite(min) || min < MIN || min > MAX) {
+      return NextResponse.json({ error: 'Minimum price must be between ₹1 lakh and ₹1,000 crore.' }, { status: 400 })
+    }
+    if (max !== null && (!Number.isFinite(max) || max < min || max > MAX)) {
+      return NextResponse.json({ error: 'Maximum price must be at least the minimum price.' }, { status: 400 })
+    }
+    data.priceMin = Math.round(min)
+    data.priceMax = max === null ? null : Math.round(max)
+  }
+
   if (Object.keys(data).length === 0) {
     return NextResponse.json({ error: 'Nothing to update' }, { status: 400 })
   }
@@ -62,6 +78,7 @@ export async function PATCH(
   revalidatePath(`/${topic.city.slug}/${topic.slug}`)
   revalidatePath(`/${topic.city.slug}`)
   revalidatePath('/')
+  if ('priceMin' in data) revalidatePath(`/${topic.city.slug}/prices`, 'layout')
 
   return NextResponse.json({ success: true })
 }

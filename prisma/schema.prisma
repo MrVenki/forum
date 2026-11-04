@@ -123,6 +123,8 @@ model User {
 
   flairTag         FlairTag?
   digestOptOut     Boolean   @default(false)
+  // Demo accounts created by seed scripts. Their addresses may belong to real strangers, so they never get email.
+  isSeeded         Boolean   @default(false)
 
   accounts         Account[]
   sessions         Session[]

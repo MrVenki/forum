@@ -129,7 +129,7 @@ export async function POST(req: NextRequest, { params }: { params: { topicId: st
     const transporter = process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS
     if (transporter) {
       const subscribers = await prisma.topicSubscription.findMany({
-        where: { topicId: params.topicId, userId: { not: session.user.id } },
+        where: { topicId: params.topicId, userId: { not: session.user.id }, user: { isSeeded: false } },
         include: { user: { select: { id: true, name: true, email: true } } },
       })
 
