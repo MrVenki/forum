@@ -14,18 +14,8 @@ export const revalidate = 3600
 
 interface Props { params: { developerSlug: string } }
 
-export async function generateStaticParams() {
-  // Only pre-build developers that have published topics — topics link via developerSlug string.
-  // Thin/empty developer pages are noindexed anyway; others render on-demand via ISR.
-  const rows = await prisma.topic.findMany({
-    where: { isPublished: true, developerSlug: { not: null } },
-    select: { developerSlug: true },
-    distinct: ['developerSlug'],
-  })
-  return rows
-    .filter((r) => r.developerSlug)
-    .map((r) => ({ developerSlug: r.developerSlug! }))
-}
+// Rendered on first visit, not at build: pre-building ~130 pages over one pooled connection timed out the build
+export const dynamicParams = true
 
 const MIN_TOPICS_TO_INDEX = 3 // Noindex thin developer pages to preserve crawl budget
 
