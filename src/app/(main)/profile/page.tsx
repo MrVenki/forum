@@ -11,12 +11,13 @@ import type { TopicWithRelations } from '@/types'
 import { EditNameForm } from '@/components/profile/EditNameForm'
 import { EditUsernameForm } from '@/components/profile/EditUsernameForm'
 import { FlairPickerClient } from '@/components/profile/FlairPickerClient'
+import { getReviewGaps } from '@/lib/reviewGaps'
 
 export default async function ProfilePage() {
   const session = await getServerSession(authOptions)
   if (!session) redirect('/login')
 
-  const [user, topics, commentCount, ratingCount, bookmarkCount] = await Promise.all([
+  const [user, topics, commentCount, ratingCount, bookmarkCount, reviewGaps] = await Promise.all([
     prisma.user.findUnique({ where: { id: session.user.id }, select: { id: true, name: true, username: true, email: true, createdAt: true, image: true, flairTag: true } }),
     prisma.topic.findMany({
       where: { userId: session.user.id, isPublished: true },
@@ -30,6 +31,7 @@ export default async function ProfilePage() {
     prisma.comment.count({ where: { userId: session.user.id, isDeleted: false } }),
     prisma.rating.count({ where: { userId: session.user.id } }),
     prisma.bookmark.count({ where: { userId: session.user.id } }),
+    getReviewGaps(session.user.id),
   ])
 
   if (!user) redirect('/login')
@@ -86,6 +88,25 @@ export default async function ProfilePage() {
 
         {/* Topics */}
         <main className="lg:col-span-3">
+          {reviewGaps.length > 0 && (
+            <section id="improve-reviews" className="card-base mb-6 scroll-mt-24 p-5">
+              <h2 className="font-heading font-bold text-lg text-navy-500">Reviews you can improve</h2>
+              <p className="mt-1 text-sm text-neutral-500">
+                These details power each builder&apos;s possession tracker and the maintenance figures buyers rely on.
+              </p>
+              <ul className="mt-3 divide-y divide-neutral-100">
+                {reviewGaps.map((g) => (
+                  <li key={g.topicId} className="flex flex-wrap items-center justify-between gap-2 py-2.5 text-sm">
+                    <span>
+                      <span className="font-semibold text-neutral-800">{g.propertyName}</span>
+                      <span className="text-neutral-500"> · missing {g.missing.join(', ')}</span>
+                    </span>
+                    <Link href={g.url} className="text-xs font-semibold text-saffron-600 hover:underline">Add details →</Link>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
           <h2 className="font-heading font-bold text-lg text-navy-500 mb-4">My Discussions ({topics.length})</h2>
           {topics.length === 0 ? (
             <div className="card-base p-10 text-center text-neutral-400">

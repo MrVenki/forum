@@ -48,6 +48,7 @@ export function RatingForm({ topicId, existingScore, existingReview, onSuccess }
   const [promised, setPromised] = useState('')
   const [actual, setActual] = useState('')
   const [maintenance, setMaintenance] = useState('')
+  const [missingDetails, setMissingDetails] = useState(false)
 
   useEffect(() => {
     if (!session) return
@@ -71,7 +72,12 @@ export function RatingForm({ topicId, existingScore, existingReview, onSuccess }
         setPromised(dateToMonth(r.promisedPossession))
         setActual(dateToMonth(r.actualPossession))
         setMaintenance(r.maintenancePerSqFt ? String(Number(r.maintenancePerSqFt)) : '')
-        if (r.ownership || r.pros || r.cons || r.constructionQuality) setShowDetails(true)
+        const needsDetails =
+          !r.ownership ||
+          ((r.ownership === 'BOOKED' || r.ownership === 'RESIDENT') && !r.promisedPossession) ||
+          (r.ownership === 'RESIDENT' && (!r.actualPossession || !r.maintenancePerSqFt))
+        setMissingDetails(needsDetails)
+        if (needsDetails || r.ownership || r.pros || r.cons || r.constructionQuality) setShowDetails(true)
       })
       .catch(() => {})
   }, [session, topicId])
@@ -114,6 +120,11 @@ export function RatingForm({ topicId, existingScore, existingReview, onSuccess }
     setLoading(false)
     if (res.ok) {
       setHadRating(true)
+      setMissingDetails(
+        !ownership ||
+          ((ownership === 'BOOKED' || ownership === 'RESIDENT') && !promised) ||
+          (ownership === 'RESIDENT' && (!actual || !maintenance))
+      )
       toast({ title: hadRating ? 'Rating updated!' : 'Rating submitted!', description: 'Thank you for your review.' })
       onSuccess?.(data.avgRating, data.ratingCount)
     } else {
@@ -128,6 +139,12 @@ export function RatingForm({ topicId, existingScore, existingReview, onSuccess }
       <h3 className="font-heading font-bold text-navy-500">
         {hadRating ? 'Update Your Rating' : 'Rate This Property'}
       </h3>
+      {missingDetails && (
+        <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-900">
+          Your review is missing details other buyers look for: your connection to the project, possession dates and
+          maintenance. They power the builder&apos;s possession tracker. Add what you know below.
+        </p>
+      )}
       <div>
         <StarRating value={score} onChange={setScore} size="lg" showCount={false} />
         <p className="mt-1 text-xs text-neutral-500">

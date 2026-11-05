@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation'
 import { getServerSession } from 'next-auth'
 import Link from 'next/link'
 import { authOptions } from '@/lib/auth'
-import { LayoutDashboard, FileText, MessageSquare, Shield, ArrowLeft, HelpCircle, Construction, IndianRupee, TrendingUp } from 'lucide-react'
+import { LayoutDashboard, FileText, MessageSquare, Shield, ArrowLeft, HelpCircle, Construction, IndianRupee, TrendingUp, Send } from 'lucide-react'
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await getServerSession(authOptions)
@@ -34,6 +34,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             { href: '/admin/updates', label: 'Site Updates', icon: Construction },
             { href: '/admin/leads', label: 'Loan Leads', icon: IndianRupee },
             { href: '/admin/prices', label: 'Price Review', icon: TrendingUp },
+            { href: '/admin/share-kit', label: 'Sharing Kit', icon: Send },
           ].map(({ href, label, icon: Icon }) => (
             <Link
               key={href}

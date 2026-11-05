@@ -28,6 +28,7 @@ import { QASection } from '@/components/topic/QASection'
 import { buildTopicSeo } from '@/lib/topicSeo'
 import { ReviewInsights } from '@/components/rating/ReviewInsights'
 import { CompareLinks } from '@/components/topic/CompareLinks'
+import { WhatsAppSummaryButton } from '@/components/topic/WhatsAppSummaryButton'
 import { AreaPriceContext } from '@/components/topic/AreaPriceContext'
 import { EmiCalculator } from '@/components/tools/EmiCalculator'
 
@@ -261,6 +262,7 @@ export default async function TopicPage({ params }: Props) {
                     text={topic.description.slice(0, 100).replace(/\n/g, ' ') + '…'}
                     url={topicUrl}
                   />
+                  <WhatsAppSummaryButton topicId={topic.id} />
                   <SubscribeButton topicId={topic.id} initialCount={subscriberCount} />
                 </div>
               </div>
@@ -417,8 +419,9 @@ export default async function TopicPage({ params }: Props) {
 
           {/* Sidebar */}
           <aside className="space-y-5">
-            {/* Rating Form */}
-            <RatingForm topicId={topic.id} />
+            <div id="rate" className="scroll-mt-24">
+              <RatingForm topicId={topic.id} />
+            </div>
 
             <CompareLinks
               citySlug={topic.city.slug}
