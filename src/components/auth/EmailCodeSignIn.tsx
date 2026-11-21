@@ -9,7 +9,14 @@ import { Label } from '@/components/ui/label'
 import { TurnstileWidget } from '@/components/shared/TurnstileWidget'
 import { Mail } from 'lucide-react'
 
-export function EmailCodeSignIn({ callbackUrl = '/' }: { callbackUrl?: string }) {
+export function EmailCodeSignIn({
+  callbackUrl = '/',
+  onSignedIn,
+}: {
+  callbackUrl?: string
+  /** When set, called after a successful sign-in instead of navigating to callbackUrl. */
+  onSignedIn?: () => void | Promise<void>
+}) {
   const router = useRouter()
   const [step, setStep] = useState<'email' | 'code'>('email')
   const [email, setEmail] = useState('')
@@ -57,6 +64,10 @@ export function EmailCodeSignIn({ callbackUrl = '/' }: { callbackUrl?: string })
     setBusy(false)
     if (!res || res.error) {
       setError(res?.error && res.error !== 'CredentialsSignin' ? res.error : 'That code did not work. Request a new one.')
+      return
+    }
+    if (onSignedIn) {
+      await onSignedIn()
       return
     }
     router.push(callbackUrl)

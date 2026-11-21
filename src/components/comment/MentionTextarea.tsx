@@ -16,9 +16,10 @@ interface Props {
   maxLength?: number
   className?: string
   disabled?: boolean
+  autoFocus?: boolean
 }
 
-export function MentionTextarea({ value, onChange, placeholder, rows = 3, maxLength, className, disabled }: Props) {
+export function MentionTextarea({ value, onChange, placeholder, rows = 3, maxLength, className, disabled, autoFocus }: Props) {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined)
 
@@ -162,6 +163,12 @@ export function MentionTextarea({ value, onChange, placeholder, rows = 3, maxLen
         rows={rows}
         maxLength={maxLength}
         disabled={disabled}
+        autoFocus={autoFocus}
+        onFocus={(e) => {
+          // Start typing after any prefilled @mention
+          const end = e.currentTarget.value.length
+          e.currentTarget.setSelectionRange(end, end)
+        }}
         className={cn(
           'flex min-h-[80px] w-full rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm ring-offset-white placeholder:text-neutral-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-saffron-400 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none',
           className,

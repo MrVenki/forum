@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { StarRating } from './StarRating'
 import { formatRelativeTime } from '@/lib/utils/format'
+import { ReviewReplies, type ReviewReply } from './ReviewReplies'
 
 const DIMENSIONS = [
   { key: 'constructionQuality', label: 'Construction quality' },
@@ -50,6 +51,23 @@ export async function ReviewInsights({ topicId, propertyName }: { topicId: strin
 
   const written = ratings.filter((r) => r.review || r.pros || r.cons).slice(0, 8)
 
+  // Replies live in their own table; if it is not there yet the reviews still show.
+  const repliesByRating = new Map<string, ReviewReply[]>()
+  try {
+    const rows = await prisma.ratingReply.findMany({
+      where: { ratingId: { in: written.map((r) => r.id) }, isDeleted: false },
+      orderBy: { createdAt: 'asc' },
+      select: { id: true, ratingId: true, content: true, createdAt: true, user: { select: { name: true, username: true } } },
+    })
+    for (const { ratingId, createdAt, ...rest } of rows) {
+      const list = repliesByRating.get(ratingId) ?? []
+      list.push({ ...rest, createdAt: createdAt.toISOString() })
+      repliesByRating.set(ratingId, list)
+    }
+  } catch (err) {
+    console.error('ReviewInsights: could not load review replies', err)
+  }
+
   return (
     <div className="card-base p-6">
       <h2 className="font-heading font-bold text-lg text-navy-500">
@@ -97,7 +115,7 @@ export async function ReviewInsights({ topicId, propertyName }: { topicId: strin
       {written.length > 0 && (
         <ul className="mt-5 divide-y divide-neutral-100">
           {written.map((r) => (
-            <li key={r.id} className="py-4 first:pt-0">
+            <li key={r.id} id={`review-${r.id}`} className="scroll-mt-24 py-4 first:pt-0">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-sm font-semibold text-neutral-800">{r.user.username ? `@${r.user.username}` : r.user.name}</span>
                 {r.ownership && OWNERSHIP_LABEL[r.ownership] && (
@@ -115,6 +133,12 @@ export async function ReviewInsights({ topicId, propertyName }: { topicId: strin
                   {r.cons && <p className="text-red-700"><span className="font-semibold">Con:</span> <span className="text-neutral-700">{r.cons}</span></p>}
                 </div>
               )}
+              <ReviewReplies
+                topicId={topicId}
+                ratingId={r.id}
+                reviewerHandle={r.user.username ? `@${r.user.username}` : r.user.name}
+                initialReplies={repliesByRating.get(r.id) ?? []}
+              />
             </li>
           ))}
         </ul>

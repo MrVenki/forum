@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { formatRelativeTime, formatAbsoluteDate } from '@/lib/utils/format'
 import { REACTION_TYPES } from '@/lib/constants/config'
@@ -10,6 +10,7 @@ import { CornerDownRight } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
 import type { CommentWithRelations, ReactionType } from '@/types'
 import { FlairBadge } from '@/components/topic/FlairBadge'
+import { SignInDialog, consumeReplyMarker, replyCallbackUrl } from '@/components/auth/SignInDialog'
 
 interface CommentItemProps {
   comment: CommentWithRelations
@@ -17,11 +18,30 @@ interface CommentItemProps {
   topicOwnerId?: string
   onReply?: (reply: CommentWithRelations) => void
   isReply?: boolean
+  /** For a reply: the top-level comment its thread hangs off (replies stay one level deep) */
+  threadRootId?: string
 }
 
-export function CommentItem({ comment, topicId, topicOwnerId, onReply, isReply = false }: CommentItemProps) {
-  const { data: session } = useSession()
+export function CommentItem({ comment, topicId, topicOwnerId, onReply, isReply = false, threadRootId }: CommentItemProps) {
+  const { data: session, status } = useSession()
   const [showReplyForm, setShowReplyForm] = useState(false)
+  const [signInOpen, setSignInOpen] = useState(false)
+  const replyKey = `c_${comment.id}`
+  const anchorId = `comment-${comment.id}`
+
+  // Back from Google sign-in with ?reply=…: reopen this reply box
+  useEffect(() => {
+    if (status !== 'authenticated') return
+    if (consumeReplyMarker(replyKey)) {
+      setShowReplyForm(true)
+      document.getElementById(anchorId)?.scrollIntoView({ block: 'center' })
+    }
+  }, [status, replyKey, anchorId])
+
+  const openReply = () => {
+    if (session) setShowReplyForm((v) => !v)
+    else setSignInOpen(true)
+  }
   const [reactions, setReactions] = useState(comment.reactions)
   const handle = comment.user.username ? `@${comment.user.username}` : comment.user.name
   const initials = (comment.user.username ?? comment.user.name).charAt(0).toUpperCase()
@@ -57,7 +77,7 @@ export function CommentItem({ comment, topicId, topicOwnerId, onReply, isReply =
   }
 
   return (
-    <div className={cn('group', isReply && 'ml-10 pl-4 border-l-2 border-neutral-100')}>
+    <div id={anchorId} className={cn('group scroll-mt-24', isReply && 'ml-10 pl-4 border-l-2 border-neutral-100')}>
       <div className="flex gap-3">
         {/* Avatar */}
         <div className="h-9 w-9 rounded-full bg-saffron-100 flex items-center justify-center text-saffron-700 font-bold text-sm shrink-0 mt-0.5">
@@ -111,14 +131,14 @@ export function CommentItem({ comment, topicId, topicOwnerId, onReply, isReply =
                   </button>
                 )
               })}
-              {!isReply && session && (
-                <button
-                  onClick={() => setShowReplyForm(!showReplyForm)}
-                  className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium bg-neutral-100 text-neutral-500 hover:bg-neutral-200 transition-all"
-                >
-                  <CornerDownRight className="h-3 w-3" /> Reply
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={openReply}
+                aria-expanded={showReplyForm}
+                className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium bg-neutral-100 text-neutral-500 hover:bg-neutral-200 transition-all"
+              >
+                <CornerDownRight className="h-3 w-3" /> Reply
+              </button>
             </div>
           )}
 
@@ -126,21 +146,42 @@ export function CommentItem({ comment, topicId, topicOwnerId, onReply, isReply =
             <div className="mt-3">
               <CommentForm
                 topicId={topicId}
-                parentId={comment.id}
+                parentId={threadRootId ?? comment.id}
                 onSuccess={handleReplySuccess}
                 onCancel={() => setShowReplyForm(false)}
                 placeholder={`Reply to ${handle}…`}
+                initialContent={isReply && comment.user.username ? `@${comment.user.username} ` : ''}
+                autoFocus
               />
             </div>
           )}
         </div>
       </div>
 
+      <SignInDialog
+        open={signInOpen}
+        onClose={() => setSignInOpen(false)}
+        onSignedIn={() => {
+          setSignInOpen(false)
+          setShowReplyForm(true)
+        }}
+        callbackUrl={signInOpen ? replyCallbackUrl(replyKey, anchorId) : '/'}
+        subtitle={`Sign in to reply to ${handle}. You will come straight back to your reply.`}
+      />
+
       {/* Replies */}
       {comment.replies && comment.replies.length > 0 && (
         <div className="mt-3 space-y-3">
           {comment.replies.map((reply) => (
-            <CommentItem key={reply.id} comment={reply} topicId={topicId} topicOwnerId={topicOwnerId} isReply />
+            <CommentItem
+              key={reply.id}
+              comment={reply}
+              topicId={topicId}
+              topicOwnerId={topicOwnerId}
+              isReply
+              threadRootId={comment.id}
+              onReply={onReply}
+            />
           ))}
         </div>
       )}

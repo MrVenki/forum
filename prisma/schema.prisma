@@ -121,16 +121,17 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  flairTag         FlairTag?
-  digestOptOut     Boolean   @default(false)
+  flairTag     FlairTag?
+  digestOptOut Boolean   @default(false)
   // Demo accounts created by seed scripts. Their addresses may belong to real strangers, so they never get email.
-  isSeeded         Boolean   @default(false)
+  isSeeded     Boolean   @default(false)
 
   accounts         Account[]
   sessions         Session[]
   topics           Topic[]
   comments         Comment[]
   ratings          Rating[]
+  ratingReplies    RatingReply[]
   commentReactions CommentReaction[]
   subscriptions    TopicSubscription[]
   bookmarks        Bookmark[]
@@ -161,47 +162,47 @@ model City {
 }
 
 model Topic {
-  id            String       @id @default(cuid())
-  cityId        String
-  userId        String
-  title         String
-  slug          String
-  propertyName  String
-  propertyType  PropertyType
-  description   String       @db.Text
-  address       String?
-  priceMin      Decimal?     @db.Decimal(15, 2)
-  priceMax      Decimal?     @db.Decimal(15, 2)
-  image1Url     String?
-  image1PubId   String?
-  image2Url     String?
-  image2PubId   String?
-  avgRating     Decimal      @default(0) @db.Decimal(3, 2)
-  ratingCount   Int          @default(0)
-  commentCount  Int          @default(0)
-  viewCount     Int          @default(0)
-  isPublished   Boolean      @default(true)
-  metaTitle     String?
-  metaDesc      String?
+  id                 String              @id @default(cuid())
+  cityId             String
+  userId             String
+  title              String
+  slug               String
+  propertyName       String
+  propertyType       PropertyType
+  description        String              @db.Text
+  address            String?
+  priceMin           Decimal?            @db.Decimal(15, 2)
+  priceMax           Decimal?            @db.Decimal(15, 2)
+  image1Url          String?
+  image1PubId        String?
+  image2Url          String?
+  image2PubId        String?
+  avgRating          Decimal             @default(0) @db.Decimal(3, 2)
+  ratingCount        Int                 @default(0)
+  commentCount       Int                 @default(0)
+  viewCount          Int                 @default(0)
+  isPublished        Boolean             @default(true)
+  metaTitle          String?
+  metaDesc           String?
   developerSlug      String?
   developerName      String?
   constructionStatus ConstructionStatus?
   expectedPossession DateTime?
   actualPossession   DateTime?
-  createdAt          DateTime     @default(now())
-  updatedAt          DateTime     @updatedAt
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
 
-  city          City                @relation(fields: [cityId], references: [id])
-  user          User                @relation(fields: [userId], references: [id])
-  comments      Comment[]
-  ratings       Rating[]
-  subscriptions TopicSubscription[]
-  bookmarks     Bookmark[]
-  updates       TopicUpdate[]
-  statusVotes   StatusVote[]
-  polls         Poll[]
-  priceLogs     PriceLog[]
-  questions     Question[]
+  city           City                @relation(fields: [cityId], references: [id])
+  user           User                @relation(fields: [userId], references: [id])
+  comments       Comment[]
+  ratings        Rating[]
+  subscriptions  TopicSubscription[]
+  bookmarks      Bookmark[]
+  updates        TopicUpdate[]
+  statusVotes    StatusVote[]
+  polls          Poll[]
+  priceLogs      PriceLog[]
+  questions      Question[]
   buyIntentVotes BuyIntentVote[]
   referralVisits ReferralVisit[]
 
@@ -226,20 +227,20 @@ model Developer {
 }
 
 model Comment {
-  id        String   @id @default(cuid())
-  topicId   String
-  userId    String
-  parentId  String?
-  content   String   @db.Text
-  isDeleted Boolean  @default(false)
-  viaReferral Boolean @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(cuid())
+  topicId     String
+  userId      String
+  parentId    String?
+  content     String   @db.Text
+  isDeleted   Boolean  @default(false)
+  viaReferral Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  topic    Topic             @relation(fields: [topicId], references: [id], onDelete: Cascade)
-  user     User              @relation(fields: [userId], references: [id])
-  parent   Comment?          @relation("CommentReplies", fields: [parentId], references: [id])
-  replies  Comment[]         @relation("CommentReplies")
+  topic     Topic             @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  user      User              @relation(fields: [userId], references: [id])
+  parent    Comment?          @relation("CommentReplies", fields: [parentId], references: [id])
+  replies   Comment[]         @relation("CommentReplies")
   reactions CommentReaction[]
 
   @@index([topicId, createdAt(sort: Asc)])
@@ -307,11 +308,29 @@ model Rating {
   actualPossession    DateTime?
   maintenancePerSqFt  Decimal?      @db.Decimal(8, 2)
 
-  topic Topic @relation(fields: [topicId], references: [id], onDelete: Cascade)
-  user  User  @relation(fields: [userId], references: [id])
+  topic   Topic         @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  user    User          @relation(fields: [userId], references: [id])
+  replies RatingReply[]
 
   @@unique([topicId, userId])
   @@map("ratings")
+}
+
+/// A reply posted under a star-rating review
+model RatingReply {
+  id        String   @id @default(cuid())
+  ratingId  String
+  userId    String
+  content   String   @db.Text
+  isDeleted Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  rating Rating @relation(fields: [ratingId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@index([ratingId, createdAt])
+  @@map("rating_replies")
 }
 
 // ─── Phase 1 Models ───────────────────────────────────────────────────────────
@@ -331,14 +350,14 @@ model Bookmark {
 }
 
 model TopicUpdate {
-  id          String   @id @default(cuid())
-  topicId     String
-  userId      String
-  content     String   @db.Text
-  imageUrl    String?
-  imagePubId  String?
-  visitedAt   DateTime
-  createdAt   DateTime @default(now())
+  id         String   @id @default(cuid())
+  topicId    String
+  userId     String
+  content    String   @db.Text
+  imageUrl   String?
+  imagePubId String?
+  visitedAt  DateTime
+  createdAt  DateTime @default(now())
 
   topic Topic @relation(fields: [topicId], references: [id], onDelete: Cascade)
   user  User  @relation(fields: [userId], references: [id])
@@ -363,12 +382,12 @@ model StatusVote {
 }
 
 model Poll {
-  id        String     @id @default(cuid())
-  topicId   String     @unique
+  id        String   @id @default(cuid())
+  topicId   String   @unique
   userId    String
   question  String
   options   String[]
-  createdAt DateTime   @default(now())
+  createdAt DateTime @default(now())
 
   topic Topic      @relation(fields: [topicId], references: [id], onDelete: Cascade)
   user  User       @relation(fields: [userId], references: [id])
@@ -398,8 +417,8 @@ model PriceLog {
   topicId       String
   userId        String
   pricePerSqFt  Decimal  @db.Decimal(10, 2)
-  configuration String?  // e.g. "2BHK", "3BHK", "Plot"
-  source        String?  // e.g. "Builder website", "Site visit", "Broker"
+  configuration String? // e.g. "2BHK", "3BHK", "Plot"
+  source        String? // e.g. "Builder website", "Site visit", "Broker"
   loggedAt      DateTime
   createdAt     DateTime @default(now())
 
@@ -466,10 +485,10 @@ model BuyIntentVote {
 }
 
 model ReferralVisit {
-  id        String   @id @default(cuid())
-  topicId   String
+  id         String   @id @default(cuid())
+  topicId    String
   visitorKey String
-  createdAt DateTime @default(now())
+  createdAt  DateTime @default(now())
 
   topic Topic @relation(fields: [topicId], references: [id], onDelete: Cascade)
 

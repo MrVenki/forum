@@ -15,10 +15,13 @@ interface CommentFormProps {
   onSuccess: (comment: CommentWithRelations) => void
   onCancel?: () => void
   placeholder?: string
+  /** Text the box starts with, e.g. an @mention when replying to a reply */
+  initialContent?: string
+  autoFocus?: boolean
 }
 
-export function CommentForm({ topicId, parentId, onSuccess, onCancel, placeholder }: CommentFormProps) {
-  const [content, setContent] = useState('')
+export function CommentForm({ topicId, parentId, onSuccess, onCancel, placeholder, initialContent = '', autoFocus = false }: CommentFormProps) {
+  const [content, setContent] = useState(initialContent)
   const [loading, setLoading] = useState(false)
   const [cfToken, setCfToken] = useState('')
 
@@ -82,6 +85,7 @@ export function CommentForm({ topicId, parentId, onSuccess, onCancel, placeholde
         rows={3}
         maxLength={5000}
         disabled={loading}
+        autoFocus={autoFocus}
       />
       <div className="flex items-center justify-between">
         <span className="text-xs text-neutral-400">{content.length}/5000</span>
