@@ -28,3 +28,9 @@ jobs:
 
       - name: Check the live site
         run: curl -fsS -o /dev/null -w "indiapropertytalk.com responded %{http_code} in %{time_total}s\n" https://indiapropertytalk.com/
+
+      - name: Check the database schema
+        run: |
+          body=$(curl -fsS https://indiapropertytalk.com/api/health)
+          echo "health: $body"
+          echo "$body" | grep -q '"reviewReplies":true' || { echo "::warning::rating_replies table is missing on the live database"; }
