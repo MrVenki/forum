@@ -250,14 +250,14 @@ export default async function TopicPage(props: Props) {
           <div className="lg:col-span-2 space-y-6">
             {/* Topic Header */}
             <div className="card-base p-6">
-              <div className="flex items-start justify-between gap-3 mb-3">
+              <div className="flex flex-wrap items-start justify-between gap-3 mb-3">
                 <div className="flex items-center gap-2 flex-wrap">
                   <Badge variant={topic.city.tier === 'METRO' ? 'metro' : 'tier1'}>
                     <MapPin className="h-3 w-3 mr-1" />{topic.city.name}
                   </Badge>
                   <Badge variant="outline">{propTypeLabel}</Badge>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <BookmarkButton topicId={topic.id} />
                   <ShareButton
                     title={`${topic.propertyName}, ${topic.city.name} — Reviews & Discussion`}
