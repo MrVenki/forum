@@ -9,10 +9,11 @@ import { cityMedian, getCityAreas, percentVs, typeLabel } from '@/lib/areaPrices
 export const revalidate = 3600
 
 interface Props {
-  params: { citySlug: string }
+  params: Promise<{ citySlug: string }>
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata(props: Props): Promise<Metadata> {
+  const params = await props.params
   const data = await getCityAreas(params.citySlug)
   if (!data) return {}
   const { city, areas } = data
@@ -27,7 +28,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-export default async function CityPricesPage({ params }: Props) {
+export default async function CityPricesPage(props: Props) {
+  const params = await props.params
   const data = await getCityAreas(params.citySlug)
   if (!data) notFound()
   const { city, areas } = data

@@ -11,7 +11,8 @@ const voteSchema = z.object({
   audience: z.enum(['CONSIDERING', 'BOOKED', 'RESIDENT', 'EXPLORING']).nullable().optional(),
 })
 
-export async function GET(_req: NextRequest, { params }: { params: { topicId: string } }) {
+export async function GET(_req: NextRequest, { params: paramsPromise }: { params: Promise<{ topicId: string }> }) {
+  const params = await paramsPromise
   const session = await getServerSession(authOptions)
 
   const [grouped, ownKeys] = await Promise.all([
@@ -20,7 +21,7 @@ export async function GET(_req: NextRequest, { params }: { params: { topicId: st
       where: { topicId: params.topicId },
       _count: { _all: true },
     }),
-    Promise.resolve([session ? `u:${session.user.id}` : null, peekVisitorKey()].filter(Boolean) as string[]),
+    peekVisitorKey().then((anon) => [session ? `u:${session.user.id}` : null, anon].filter(Boolean) as string[]),
   ])
 
   const counts = { YES: 0, MAYBE: 0, NO: 0 }
@@ -37,7 +38,8 @@ export async function GET(_req: NextRequest, { params }: { params: { topicId: st
   return NextResponse.json({ counts, total, mine })
 }
 
-export async function POST(req: NextRequest, { params }: { params: { topicId: string } }) {
+export async function POST(req: NextRequest, { params: paramsPromise }: { params: Promise<{ topicId: string }> }) {
+  const params = await paramsPromise
   if (!checkRateLimit(`buy-intent:${getClientIp(req)}`, 30, 60 * 60 * 1000)) {
     return NextResponse.json({ error: 'Too many votes from this network. Try again later.' }, { status: 429 })
   }
@@ -49,10 +51,10 @@ export async function POST(req: NextRequest, { params }: { params: { topicId: st
   if (!topic) return NextResponse.json({ error: 'Topic not found' }, { status: 404 })
 
   const session = await getServerSession(authOptions)
-  const voterKey = session ? `u:${session.user.id}` : getVisitorKey()
+  const voterKey = session ? `u:${session.user.id}` : await getVisitorKey()
 
   // A signed-in voter replaces any anonymous vote from the same browser instead of counting twice
-  const anonKey = session ? peekVisitorKey() : null
+  const anonKey = session ? await peekVisitorKey() : null
   if (anonKey) {
     await prisma.buyIntentVote.deleteMany({ where: { topicId: params.topicId, voterKey: anonKey } })
   }

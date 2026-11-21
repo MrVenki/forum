@@ -3,7 +3,8 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
-export async function GET(req: NextRequest, { params }: { params: { topicId: string } }) {
+export async function GET(req: NextRequest, { params: paramsPromise }: { params: Promise<{ topicId: string }> }) {
+  const params = await paramsPromise
   const topic = await prisma.topic.findUnique({
     where: { id: params.topicId },
     include: {
@@ -23,7 +24,8 @@ export async function GET(req: NextRequest, { params }: { params: { topicId: str
   return NextResponse.json(topic)
 }
 
-export async function PATCH(req: NextRequest, { params }: { params: { topicId: string } }) {
+export async function PATCH(req: NextRequest, { params: paramsPromise }: { params: Promise<{ topicId: string }> }) {
+  const params = await paramsPromise
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
@@ -46,7 +48,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { topicId: s
   return NextResponse.json({ description: updated.description })
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { topicId: string } }) {
+export async function DELETE(req: NextRequest, { params: paramsPromise }: { params: Promise<{ topicId: string }> }) {
+  const params = await paramsPromise
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 

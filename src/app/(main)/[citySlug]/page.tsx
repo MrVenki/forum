@@ -21,11 +21,12 @@ export async function generateStaticParams() {
 }
 
 interface Props {
-  params: { citySlug: string }
-  searchParams: { page?: string; sort?: string; type?: string }
+  params: Promise<{ citySlug: string }>
+  searchParams: Promise<{ page?: string; sort?: string; type?: string }>
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata(props: Props): Promise<Metadata> {
+  const params = await props.params
   const city = await prisma.city.findUnique({ where: { slug: params.citySlug, isActive: true } })
   if (!city) return {}
 
@@ -47,7 +48,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export const dynamicParams = true
 
-export default async function CityPage({ params, searchParams }: Props) {
+export default async function CityPage(props: Props) {
+  const params = await props.params
+  const searchParams = await props.searchParams
   const city = await prisma.city.findUnique({
     where: { slug: params.citySlug, isActive: true },
     include: { _count: { select: { topics: { where: { isPublished: true } } } } },

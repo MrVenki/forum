@@ -6,7 +6,8 @@ import { ShareKitCard } from '@/components/admin/ShareKitCard'
 
 export const revalidate = 0
 
-export default async function ShareKitPage({ searchParams }: { searchParams: { city?: string } }) {
+export default async function ShareKitPage(props: { searchParams: Promise<{ city?: string }> }) {
+  const searchParams = await props.searchParams
   const city = INDIAN_CITIES.find((c) => c.slug === searchParams.city)?.slug
   const summaries = await getShareSummaries({ citySlug: city, take: 30 })
 

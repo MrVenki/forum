@@ -12,14 +12,15 @@ import type { TopicWithRelations } from '@/types'
 
 export const revalidate = 3600
 
-interface Props { params: { developerSlug: string } }
+interface Props { params: Promise<{ developerSlug: string }> }
 
 // Rendered on first visit, not at build: pre-building ~130 pages over one pooled connection timed out the build
 export const dynamicParams = true
 
 const MIN_TOPICS_TO_INDEX = 3 // Noindex thin developer pages to preserve crawl budget
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata(props: Props): Promise<Metadata> {
+  const params = await props.params
   const developer = await prisma.developer.findUnique({ where: { slug: params.developerSlug } })
   if (!developer) return {}
 
@@ -39,7 +40,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-export default async function DeveloperPage({ params }: Props) {
+export default async function DeveloperPage(props: Props) {
+  const params = await props.params
   const developer = await prisma.developer.findUnique({ where: { slug: params.developerSlug } })
   if (!developer) notFound()
 

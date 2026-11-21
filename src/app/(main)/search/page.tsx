@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 }
 
 interface Props {
-  searchParams: { q?: string; page?: string; city?: string }
+  searchParams: Promise<{ q?: string; page?: string; city?: string }>
 }
 
 async function searchTopics(q: string, page: number, citySlug?: string) {
@@ -45,7 +45,8 @@ async function searchTopics(q: string, page: number, citySlug?: string) {
   return { topics, total, totalPages: Math.ceil(total / limit) }
 }
 
-export default async function SearchPage({ searchParams }: Props) {
+export default async function SearchPage(props: Props) {
+  const searchParams = await props.searchParams
   const q = searchParams.q?.trim() || ''
   const page = Math.max(1, parseInt(searchParams.page || '1'))
 

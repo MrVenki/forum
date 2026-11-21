@@ -8,8 +8,9 @@ const schema = z.object({ reactionType: z.enum(['LIKE', 'HELPFUL', 'INFORMATIVE'
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { topicId: string; commentId: string } }
+  { params: paramsPromise }: { params: Promise<{ topicId: string; commentId: string }> }
 ) {
+  const params = await paramsPromise
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 

@@ -22,7 +22,7 @@ export function EditUsernameForm({ initialUsername }: Props) {
   const [available, setAvailable] = useState<boolean | null>(null)
   const [formatError, setFormatError] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>()
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined)
 
   useEffect(() => {
     if (editing) inputRef.current?.focus()

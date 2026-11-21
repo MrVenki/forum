@@ -10,7 +10,7 @@ import { percentVs, typeLabel } from '@/lib/areaPrices'
 export const revalidate = 3600
 
 interface Props {
-  params: { citySlug: string; pair: string }
+  params: Promise<{ citySlug: string; pair: string }>
 }
 
 const STATUS_LABEL: Record<string, string> = {
@@ -27,7 +27,8 @@ const shorten = (s: string, n: number) => {
   return (space > 8 ? cut.slice(0, space) : cut).trim()
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata(props: Props): Promise<Metadata> {
+  const params = await props.params
   const data = await getComparison(params.citySlug, params.pair)
   if (!data) return {}
   const { city, a, b, canonical } = data
@@ -43,7 +44,8 @@ function priceText(p: CompareProject) {
   return p.priceMax && p.priceMax !== p.priceMin ? `${formatINR(p.priceMin)} – ${formatINR(p.priceMax)}` : `from ${formatINR(p.priceMin)}`
 }
 
-export default async function ComparePage({ params }: Props) {
+export default async function ComparePage(props: Props) {
+  const params = await props.params
   const data = await getComparison(params.citySlug, params.pair)
   if (!data) notFound()
   const { city, a, b, canonical } = data

@@ -23,7 +23,7 @@ export async function PATCH(req: Request) {
   if ('username' in body) {
     const parsed = usernameUpdateSchema.safeParse(body)
     if (!parsed.success) {
-      return NextResponse.json({ error: parsed.error.errors[0].message }, { status: 400 })
+      return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 })
     }
     const { username } = parsed.data
     const existing = await prisma.user.findUnique({ where: { username }, select: { id: true } })
@@ -41,7 +41,7 @@ export async function PATCH(req: Request) {
   // Name update
   const parsed = nameSchema.safeParse(body)
   if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.errors[0].message }, { status: 400 })
+    return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 })
   }
   const user = await prisma.user.update({
     where: { id: session.user.id },

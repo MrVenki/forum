@@ -16,8 +16,9 @@ const voteSchema = z.object({
 /** GET — fetch poll + vote counts + caller's vote */
 export async function GET(
   req: NextRequest,
-  { params }: { params: { topicId: string } }
+  { params: paramsPromise }: { params: Promise<{ topicId: string }> }
 ) {
+  const params = await paramsPromise
   const session = await getServerSession(authOptions)
 
   const poll = await prisma.poll.findUnique({
@@ -54,8 +55,9 @@ export async function GET(
 /** POST — create a poll (topic owner or admin only; replaces existing) */
 export async function POST(
   req: NextRequest,
-  { params }: { params: { topicId: string } }
+  { params: paramsPromise }: { params: Promise<{ topicId: string }> }
 ) {
+  const params = await paramsPromise
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
@@ -68,7 +70,7 @@ export async function POST(
 
   const body = await req.json()
   const parsed = createSchema.safeParse(body)
-  if (!parsed.success) return NextResponse.json({ error: parsed.error.errors[0].message }, { status: 400 })
+  if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 })
 
   // Delete existing poll first (one poll per topic)
   await prisma.poll.deleteMany({ where: { topicId: params.topicId } })
@@ -88,8 +90,9 @@ export async function POST(
 /** PATCH — cast or change a vote */
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { topicId: string } }
+  { params: paramsPromise }: { params: Promise<{ topicId: string }> }
 ) {
+  const params = await paramsPromise
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 

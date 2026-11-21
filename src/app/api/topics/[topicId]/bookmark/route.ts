@@ -6,8 +6,9 @@ import { prisma } from '@/lib/prisma'
 /** GET — is this topic bookmarked by the current user? */
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { topicId: string } }
+  { params: paramsPromise }: { params: Promise<{ topicId: string }> }
 ) {
+  const params = await paramsPromise
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ bookmarked: false })
 
@@ -21,8 +22,9 @@ export async function GET(
 /** POST — toggle bookmark on/off */
 export async function POST(
   _req: NextRequest,
-  { params }: { params: { topicId: string } }
+  { params: paramsPromise }: { params: Promise<{ topicId: string }> }
 ) {
+  const params = await paramsPromise
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 

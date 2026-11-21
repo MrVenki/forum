@@ -10,7 +10,8 @@ import { checkRateLimit, getClientIp } from '@/lib/rateLimit'
 import { verifyTurnstile } from '@/lib/turnstile'
 import { REFERRAL_COOKIE } from '@/lib/visitor'
 
-export async function GET(req: NextRequest, { params }: { params: { topicId: string } }) {
+export async function GET(req: NextRequest, { params: paramsPromise }: { params: Promise<{ topicId: string }> }) {
+  const params = await paramsPromise
   const comments = await prisma.comment.findMany({
     where: { topicId: params.topicId, parentId: null, isDeleted: false },
     orderBy: { createdAt: 'asc' },
@@ -30,7 +31,8 @@ export async function GET(req: NextRequest, { params }: { params: { topicId: str
   return NextResponse.json(comments)
 }
 
-export async function POST(req: NextRequest, { params }: { params: { topicId: string } }) {
+export async function POST(req: NextRequest, { params: paramsPromise }: { params: Promise<{ topicId: string }> }) {
+  const params = await paramsPromise
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   if (isEmailVerificationEnabled() && !session.user.emailVerified) {
@@ -55,7 +57,7 @@ export async function POST(req: NextRequest, { params }: { params: { topicId: st
   }
 
   const parsed = createCommentSchema.safeParse(body)
-  if (!parsed.success) return NextResponse.json({ error: parsed.error.errors[0].message }, { status: 400 })
+  if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 })
 
   const topic = await prisma.topic.findUnique({ where: { id: params.topicId }, select: { id: true, userId: true } })
   if (!topic) return NextResponse.json({ error: 'Topic not found' }, { status: 404 })

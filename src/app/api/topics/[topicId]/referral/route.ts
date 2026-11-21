@@ -6,7 +6,8 @@ import { checkRateLimit, getClientIp } from '@/lib/rateLimit'
 import { getVisitorKey, REFERRAL_COOKIE } from '@/lib/visitor'
 
 /** Records one unique visit that arrived through the poster's share link (?ref=owner). */
-export async function POST(req: NextRequest, { params }: { params: { topicId: string } }) {
+export async function POST(req: NextRequest, { params: paramsPromise }: { params: Promise<{ topicId: string }> }) {
+  const params = await paramsPromise
   if (!checkRateLimit(`referral:${getClientIp(req)}`, 60, 60 * 60 * 1000)) {
     return NextResponse.json({ success: false }, { status: 429 })
   }
@@ -20,7 +21,7 @@ export async function POST(req: NextRequest, { params }: { params: { topicId: st
   const session = await getServerSession(authOptions)
   if (session?.user.id === topic.userId) return NextResponse.json({ success: true, counted: false })
 
-  const visitorKey = session ? `u:${session.user.id}` : getVisitorKey()
+  const visitorKey = session ? `u:${session.user.id}` : await getVisitorKey()
   await prisma.referralVisit.upsert({
     where: { topicId_visitorKey: { topicId: topic.id, visitorKey } },
     create: { topicId: topic.id, visitorKey },

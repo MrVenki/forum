@@ -13,8 +13,9 @@ const createSchema = z.object({
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { topicId: string; questionId: string } }
+  { params: paramsPromise }: { params: Promise<{ topicId: string; questionId: string }> }
 ) {
+  const params = await paramsPromise
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
@@ -37,7 +38,7 @@ export async function POST(
   }
 
   const parsed = createSchema.safeParse(body)
-  if (!parsed.success) return NextResponse.json({ error: parsed.error.errors[0].message }, { status: 400 })
+  if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 })
 
   const answer = await prisma.answer.create({
     data: {

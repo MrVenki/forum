@@ -44,10 +44,11 @@ import { ShareButton } from '@/components/topic/ShareButton'
 export const revalidate = 60
 
 interface Props {
-  params: { citySlug: string; topicSlug: string }
+  params: Promise<{ citySlug: string; topicSlug: string }>
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata(props: Props): Promise<Metadata> {
+  const params = await props.params
   const topic = await prisma.topic.findFirst({
     where: {
       slug: params.topicSlug,
@@ -98,7 +99,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-export default async function TopicPage({ params }: Props) {
+export default async function TopicPage(props: Props) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
 
   const topic = await prisma.topic.findFirst({

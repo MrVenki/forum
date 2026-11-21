@@ -20,7 +20,7 @@ interface Props {
 
 export function MentionTextarea({ value, onChange, placeholder, rows = 3, maxLength, className, disabled }: Props) {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>()
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined)
 
   const [suggestions, setSuggestions] = useState<User[]>([])
   const [mentionQuery, setMentionQuery] = useState<string | null>(null)
