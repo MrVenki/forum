@@ -113,19 +113,10 @@ export default async function DeveloperPage(props: Props) {
     },
   }
 
-  const breadcrumbSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Home', item: SITE_CONFIG.url },
-      { '@type': 'ListItem', position: 2, name: 'Developer Reputation Scores', item: `${SITE_CONFIG.url}/developers` },
-      { '@type': 'ListItem', position: 3, name: developer.name, item: developerUrl },
-    ],
-  }
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify([profileSchema, breadcrumbSchema]) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(profileSchema) }} />
 
     <div className="container-forum py-8">
       <Breadcrumbs items={[

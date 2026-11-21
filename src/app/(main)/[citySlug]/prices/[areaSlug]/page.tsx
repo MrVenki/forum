@@ -39,20 +39,9 @@ export default async function AreaPricesPage(props: Props) {
   const stats = Object.values(area.byType).sort((a, b) => b.n - a.n)
   const others = areas.filter((a) => a.slug !== area.slug).slice(0, 6)
 
-  const breadcrumbSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Home', item: SITE_CONFIG.url },
-      { '@type': 'ListItem', position: 2, name: city.name, item: `${SITE_CONFIG.url}/${city.slug}` },
-      { '@type': 'ListItem', position: 3, name: 'Property prices by area', item: `${SITE_CONFIG.url}/${city.slug}/prices` },
-      { '@type': 'ListItem', position: 4, name: area.label, item: `${SITE_CONFIG.url}/${city.slug}/prices/${area.slug}` },
-    ],
-  }
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
 
       <div className="container-forum py-8">
         <Breadcrumbs

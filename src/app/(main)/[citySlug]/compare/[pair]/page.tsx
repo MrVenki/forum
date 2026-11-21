@@ -95,19 +95,9 @@ export default async function ComparePage(props: Props) {
       : []),
   ]
 
-  const breadcrumbSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Home', item: SITE_CONFIG.url },
-      { '@type': 'ListItem', position: 2, name: city.name, item: `${SITE_CONFIG.url}/${city.slug}` },
-      { '@type': 'ListItem', position: 3, name: `${a.name} vs ${b.name}`, item: `${SITE_CONFIG.url}/${city.slug}/compare/${canonical}` },
-    ],
-  }
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
       <div className="container-forum py-8">
         <Breadcrumbs items={[{ label: city.name, href: `/${city.slug}` }, { label: `${a.name} vs ${b.name}` }]} />
 

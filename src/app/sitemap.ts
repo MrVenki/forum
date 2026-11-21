@@ -12,26 +12,26 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = SITE_CONFIG.url
 
   const staticPages: MetadataRoute.Sitemap = [
-    { url: baseUrl,                                          lastModified: new Date(), changeFrequency: 'daily',   priority: 1.0 },
-    { url: `${baseUrl}/cities`,                              lastModified: new Date(), changeFrequency: 'weekly',  priority: 0.8 },
-    { url: `${baseUrl}/developers`,                          lastModified: new Date(), changeFrequency: 'weekly',  priority: 0.8 },
+    { url: baseUrl, changeFrequency: 'daily',   priority: 1.0 },
+    { url: `${baseUrl}/cities`, changeFrequency: 'weekly',  priority: 0.8 },
+    { url: `${baseUrl}/developers`, changeFrequency: 'weekly',  priority: 0.8 },
     // Tools hub + individual calculators — high-value SEO pages
-    { url: `${baseUrl}/tools`,                               lastModified: new Date(), changeFrequency: 'monthly', priority: 0.8 },
-    { url: `${baseUrl}/tools/emi-calculator`,                lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
-    { url: `${baseUrl}/tools/stamp-duty-calculator`,         lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
-    { url: `${baseUrl}/tools/home-loan-eligibility`,         lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
-    { url: `${baseUrl}/tools/rent-vs-buy`,                   lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
-    { url: `${baseUrl}/tools/loan-against-fd`,               lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
-    { url: `${baseUrl}/about`,                               lastModified: new Date(), changeFrequency: 'monthly', priority: 0.6 },
-    { url: `${baseUrl}/contact`,                             lastModified: new Date(), changeFrequency: 'monthly', priority: 0.5 },
-    { url: `${baseUrl}/privacy-policy`,                      lastModified: new Date(), changeFrequency: 'monthly', priority: 0.3 },
-    { url: `${baseUrl}/terms-of-use`,                        lastModified: new Date(), changeFrequency: 'monthly', priority: 0.3 },
-    { url: `${baseUrl}/disclaimer`,                          lastModified: new Date(), changeFrequency: 'monthly', priority: 0.3 },
+    { url: `${baseUrl}/tools`, changeFrequency: 'monthly', priority: 0.8 },
+    { url: `${baseUrl}/tools/emi-calculator`, changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${baseUrl}/tools/stamp-duty-calculator`, changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${baseUrl}/tools/home-loan-eligibility`, changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${baseUrl}/tools/rent-vs-buy`, changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${baseUrl}/tools/loan-against-fd`, changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${baseUrl}/about`, changeFrequency: 'monthly', priority: 0.6 },
+    { url: `${baseUrl}/contact`, changeFrequency: 'monthly', priority: 0.5 },
+    { url: `${baseUrl}/privacy-policy`, changeFrequency: 'monthly', priority: 0.3 },
+    { url: `${baseUrl}/terms-of-use`, changeFrequency: 'monthly', priority: 0.3 },
+    { url: `${baseUrl}/disclaimer`, changeFrequency: 'monthly', priority: 0.3 },
   ]
 
+  // lastModified is only sent when it is real: Google ignores lastmod on sites where it is always "now".
   const cityPages: MetadataRoute.Sitemap = INDIAN_CITIES.map((city) => ({
     url: `${baseUrl}/${city.slug}`,
-    lastModified: new Date(),
     changeFrequency: 'daily' as const,
     priority: 0.9,
   }))
@@ -53,6 +53,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'daily' as const,
       priority: 0.8,
     }))
+
+    // A city page changes when one of its topics does; the home page when any topic does.
+    const latestByCity = new Map<string, Date>()
+    for (const t of topics) {
+      const prev = latestByCity.get(t.city.slug)
+      if (!prev || t.updatedAt > prev) latestByCity.set(t.city.slug, t.updatedAt)
+    }
+    for (const page of cityPages) {
+      const slug = page.url.slice(baseUrl.length + 1)
+      const latest = latestByCity.get(slug)
+      if (latest) page.lastModified = latest
+    }
+    if (topics[0]) staticPages[0].lastModified = topics[0].updatedAt
 
     // Only include developer pages with ≥3 published topics.
     // Thin developer pages (0-2 topics) waste crawl budget and dilute quality signals —
@@ -78,15 +91,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     for (const c of INDIAN_CITIES) {
       const data = await getCityAreas(c.slug)
       if (!data || data.areas.length < 2) continue
-      pricePages.push({ url: `${baseUrl}/${c.slug}/prices`, lastModified: new Date(), changeFrequency: 'weekly' as const, priority: 0.7 })
+      pricePages.push({ url: `${baseUrl}/${c.slug}/prices`, changeFrequency: 'weekly' as const, priority: 0.7 })
       for (const a of data.areas) {
-        pricePages.push({ url: `${baseUrl}/${c.slug}/prices/${a.slug}`, lastModified: new Date(), changeFrequency: 'weekly' as const, priority: 0.6 })
+        pricePages.push({ url: `${baseUrl}/${c.slug}/prices/${a.slug}`, changeFrequency: 'weekly' as const, priority: 0.6 })
       }
     }
 
     comparePages = (await getComparePairs()).map((c) => ({
       url: `${baseUrl}/${c.city}/compare/${c.pair}`,
-      lastModified: new Date(),
       changeFrequency: 'weekly' as const,
       priority: 0.5,
     }))

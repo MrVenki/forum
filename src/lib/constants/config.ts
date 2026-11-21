@@ -4,7 +4,7 @@ export const SITE_CONFIG = {
   description:
     'India\'s most trusted property forum. Honest reviews and ratings from real buyers across Mumbai, Delhi, Bengaluru, Hyderabad and 18 more cities.',
   url: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
-  ogImage: '/og-default.jpg',
+  ogImage: '/og-default.png',
   twitterHandle: '@IndiaPropertyTalk',
   keywords: [
     'India property forum',
