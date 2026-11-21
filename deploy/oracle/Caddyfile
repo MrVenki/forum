@@ -1,0 +1,14 @@
+indiapropertytalk.com {
+	encode zstd gzip
+	reverse_proxy 127.0.0.1:3000
+}
+
+www.indiapropertytalk.com {
+	redir https://indiapropertytalk.com{uri} permanent
+}
+
+# Temporary hostname for testing before the DNS switch; remove after cutover
+new.indiapropertytalk.com {
+	encode zstd gzip
+	reverse_proxy 127.0.0.1:3000
+}

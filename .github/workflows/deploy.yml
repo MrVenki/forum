@@ -1,0 +1,30 @@
+name: Deploy to Oracle
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+# Never run two deploys at once; a newer push waits for the running one
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Prepare SSH
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "${{ secrets.ORACLE_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "${{ secrets.ORACLE_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+
+      # The key is locked on the server to running deploy.sh only, so no command is sent
+      - name: Build and switch on the server
+        run: ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes -o ServerAliveInterval=30 ubuntu@${{ secrets.ORACLE_HOST }}
+
+      - name: Check the live site
+        run: curl -fsS -o /dev/null -w "indiapropertytalk.com responded %{http_code} in %{time_total}s\n" https://indiapropertytalk.com/
