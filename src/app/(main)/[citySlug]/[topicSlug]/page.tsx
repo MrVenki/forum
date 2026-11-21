@@ -46,7 +46,7 @@ import { ShareButton } from '@/components/topic/ShareButton'
 export const revalidate = 60
 
 interface Props {
-  params: { citySlug: string; topicSlug: string }
+  params: Promise<{ citySlug: string; topicSlug: string }>
 }
 
 // Shared by generateMetadata and the page so a request runs this lookup once.
@@ -71,7 +71,8 @@ function absoluteUrl(url: string): string {
   return url.startsWith('http') ? url : `${SITE_CONFIG.url}${url}`
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata(props: Props): Promise<Metadata> {
+  const params = await props.params
   const topic = await getTopic(params.citySlug, params.topicSlug)
   if (!topic) return {}
 
@@ -115,7 +116,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-export default async function TopicPage({ params }: Props) {
+export default async function TopicPage(props: Props) {
+  const params = await props.params
   const session = await getServerSession(authOptions)
 
   const topic = await getTopic(params.citySlug, params.topicSlug)

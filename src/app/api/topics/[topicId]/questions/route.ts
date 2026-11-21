@@ -13,8 +13,9 @@ const createSchema = z.object({
 
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { topicId: string } }
+  { params: paramsPromise }: { params: Promise<{ topicId: string }> }
 ) {
+  const params = await paramsPromise
   const topic = await prisma.topic.findUnique({ where: { id: params.topicId }, select: { id: true } })
   if (!topic) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
@@ -37,8 +38,9 @@ export async function GET(
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { topicId: string } }
+  { params: paramsPromise }: { params: Promise<{ topicId: string }> }
 ) {
+  const params = await paramsPromise
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
@@ -61,7 +63,7 @@ export async function POST(
   }
 
   const parsed = createSchema.safeParse(body)
-  if (!parsed.success) return NextResponse.json({ error: parsed.error.errors[0].message }, { status: 400 })
+  if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 })
 
   const question = await prisma.question.create({
     data: {

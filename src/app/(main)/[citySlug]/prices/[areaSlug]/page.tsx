@@ -9,17 +9,18 @@ import { cityMedian, getCityAreas, percentVs, typeLabel } from '@/lib/areaPrices
 export const revalidate = 3600
 
 interface Props {
-  params: { citySlug: string; areaSlug: string }
+  params: Promise<{ citySlug: string; areaSlug: string }>
 }
 
-async function load(params: Props['params']) {
+async function load(params: Awaited<Props['params']>) {
   const data = await getCityAreas(params.citySlug)
   if (!data) return null
   const area = data.areas.find((a) => a.slug === params.areaSlug)
   return area ? { ...data, area } : null
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata(props: Props): Promise<Metadata> {
+  const params = await props.params
   const data = await load(params)
   if (!data) return {}
   const { city, area } = data
@@ -29,7 +30,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title, description, alternates: { canonical: url }, openGraph: { title, description, url, type: 'website' } }
 }
 
-export default async function AreaPricesPage({ params }: Props) {
+export default async function AreaPricesPage(props: Props) {
+  const params = await props.params
   const data = await load(params)
   if (!data) notFound()
   const { city, areas, area } = data

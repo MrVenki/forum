@@ -16,8 +16,9 @@ const createSchema = z.object({
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { topicId: string } }
+  { params: paramsPromise }: { params: Promise<{ topicId: string }> }
 ) {
+  const params = await paramsPromise
   const { searchParams } = new URL(req.url)
   const page  = Math.max(1, parseInt(searchParams.get('page') || '1'))
   const limit = 10
@@ -41,8 +42,9 @@ export async function GET(
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { topicId: string } }
+  { params: paramsPromise }: { params: Promise<{ topicId: string }> }
 ) {
+  const params = await paramsPromise
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
@@ -69,7 +71,7 @@ export async function POST(
   }
 
   const parsed = createSchema.safeParse(body)
-  if (!parsed.success) return NextResponse.json({ error: parsed.error.errors[0].message }, { status: 400 })
+  if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 })
 
   const update = await prisma.topicUpdate.create({
     data: {

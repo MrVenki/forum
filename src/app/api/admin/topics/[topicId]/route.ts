@@ -12,8 +12,9 @@ function isAdmin(session: Awaited<ReturnType<typeof getServerSession<typeof auth
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { topicId: string } }
+  { params: paramsPromise }: { params: Promise<{ topicId: string }> }
 ) {
+  const params = await paramsPromise
   const session = await getServerSession(authOptions)
   if (!session || !isAdmin(session)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })

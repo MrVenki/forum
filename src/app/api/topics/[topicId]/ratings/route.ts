@@ -6,7 +6,8 @@ import { prisma } from '@/lib/prisma'
 import { upsertRatingSchema, monthToDate } from '@/lib/validations/rating'
 import { isEmailVerificationEnabled } from '@/lib/features'
 
-export async function POST(req: NextRequest, { params }: { params: { topicId: string } }) {
+export async function POST(req: NextRequest, { params: paramsPromise }: { params: Promise<{ topicId: string }> }) {
+  const params = await paramsPromise
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   if (isEmailVerificationEnabled() && !session.user.emailVerified) {
@@ -15,7 +16,7 @@ export async function POST(req: NextRequest, { params }: { params: { topicId: st
 
   const body = await req.json()
   const parsed = upsertRatingSchema.safeParse(body)
-  if (!parsed.success) return NextResponse.json({ error: parsed.error.errors[0].message }, { status: 400 })
+  if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 })
 
   const topic = await prisma.topic.findUnique({ where: { id: params.topicId }, select: { userId: true } })
   if (!topic) return NextResponse.json({ error: 'Topic not found' }, { status: 404 })
@@ -67,7 +68,8 @@ export async function POST(req: NextRequest, { params }: { params: { topicId: st
   return NextResponse.json({ success: true, avgRating: agg._avg.score, ratingCount: agg._count.score })
 }
 
-export async function GET(req: NextRequest, { params }: { params: { topicId: string } }) {
+export async function GET(req: NextRequest, { params: paramsPromise }: { params: Promise<{ topicId: string }> }) {
+  const params = await paramsPromise
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ userRating: null })
 

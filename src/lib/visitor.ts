@@ -10,8 +10,8 @@ function hash(id: string): string {
 }
 
 /** Stable anonymous key for a browser; sets the cookie when missing. Route handlers only. */
-export function getVisitorKey(): string {
-  const store = cookies()
+export async function getVisitorKey(): Promise<string> {
+  const store = await cookies()
   let id = store.get(VISITOR_COOKIE)?.value
   if (!id || !/^[a-f0-9]{32}$/.test(id)) {
     id = randomBytes(16).toString('hex')
@@ -27,7 +27,7 @@ export function getVisitorKey(): string {
 }
 
 /** Read-only variant: returns null instead of minting a new cookie. */
-export function peekVisitorKey(): string | null {
-  const id = cookies().get(VISITOR_COOKIE)?.value
+export async function peekVisitorKey(): Promise<string | null> {
+  const id = (await cookies()).get(VISITOR_COOKIE)?.value
   return id && /^[a-f0-9]{32}$/.test(id) ? `a:${hash(id)}` : null
 }

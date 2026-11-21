@@ -18,8 +18,9 @@ const updateSchema = z.object({
 /** GET — return tally of all votes + topic's current status fields */
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { topicId: string } }
+  { params: paramsPromise }: { params: Promise<{ topicId: string }> }
 ) {
+  const params = await paramsPromise
   const [topic, votes] = await Promise.all([
     prisma.topic.findUnique({
       where: { id: params.topicId },
@@ -51,8 +52,9 @@ export async function GET(
 /** POST — cast or change your status vote (toggles off if same) */
 export async function POST(
   req: NextRequest,
-  { params }: { params: { topicId: string } }
+  { params: paramsPromise }: { params: Promise<{ topicId: string }> }
 ) {
+  const params = await paramsPromise
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
@@ -109,8 +111,9 @@ export async function POST(
 /** PATCH — topic owner or admin sets possession dates */
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { topicId: string } }
+  { params: paramsPromise }: { params: Promise<{ topicId: string }> }
 ) {
+  const params = await paramsPromise
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
@@ -126,7 +129,7 @@ export async function PATCH(
 
   const body = await req.json()
   const parsed = updateSchema.safeParse(body)
-  if (!parsed.success) return NextResponse.json({ error: parsed.error.errors[0].message }, { status: 400 })
+  if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 })
 
   const updated = await prisma.topic.update({
     where: { id: params.topicId },

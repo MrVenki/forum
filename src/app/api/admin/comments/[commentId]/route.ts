@@ -11,8 +11,9 @@ function isAdmin(session: Awaited<ReturnType<typeof getServerSession<typeof auth
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { commentId: string } }
+  { params: paramsPromise }: { params: Promise<{ commentId: string }> }
 ) {
+  const params = await paramsPromise
   const session = await getServerSession(authOptions)
   if (!session || !isAdmin(session)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
@@ -48,8 +49,9 @@ export async function PATCH(
 // Soft-delete shortcut (used by the Delete button)
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { commentId: string } }
+  { params: paramsPromise }: { params: Promise<{ commentId: string }> }
 ) {
+  const params = await paramsPromise
   const session = await getServerSession(authOptions)
   if (!session || !isAdmin(session)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })

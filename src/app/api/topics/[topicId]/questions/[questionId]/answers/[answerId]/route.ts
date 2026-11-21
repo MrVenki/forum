@@ -7,8 +7,9 @@ import { prisma } from '@/lib/prisma'
 // Mark an answer as best (only question author can do this)
 export async function PATCH(
   _req: NextRequest,
-  { params }: { params: { topicId: string; questionId: string; answerId: string } }
+  { params: paramsPromise }: { params: Promise<{ topicId: string; questionId: string; answerId: string }> }
 ) {
+  const params = await paramsPromise
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 

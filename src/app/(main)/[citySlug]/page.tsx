@@ -21,17 +21,19 @@ export async function generateStaticParams() {
 }
 
 interface Props {
-  params: { citySlug: string }
-  searchParams: { page?: string; sort?: string; type?: string }
+  params: Promise<{ citySlug: string }>
+  searchParams: Promise<{ page?: string; sort?: string; type?: string }>
 }
 
-export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
+export async function generateMetadata(props: Props): Promise<Metadata> {
+  const params = await props.params
   const city = await prisma.city.findUnique({ where: { slug: params.citySlug, isActive: true } })
   if (!city) return {}
 
   // Page 2+ lists different topics, so each page is its own canonical (Google advises against
   // pointing every page of a series at page 1). Sort and type filters only reorder the same
   // topics, so those stay canonical to the plain list.
+  const searchParams = await props.searchParams
   const page = Math.max(1, parseInt(searchParams.page || '1') || 1)
   const canonical = `${SITE_CONFIG.url}/${city.slug}${page > 1 ? `?page=${page}` : ''}`
 
@@ -53,7 +55,9 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
 
 export const dynamicParams = true
 
-export default async function CityPage({ params, searchParams }: Props) {
+export default async function CityPage(props: Props) {
+  const params = await props.params
+  const searchParams = await props.searchParams
   const city = await prisma.city.findUnique({
     where: { slug: params.citySlug, isActive: true },
     include: { _count: { select: { topics: { where: { isPublished: true } } } } },

@@ -22,8 +22,9 @@ async function getAnswerWithTopic(answerId: string) {
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { answerId: string } }
+  { params: paramsPromise }: { params: Promise<{ answerId: string }> }
 ) {
+  const params = await paramsPromise
   const session = await getServerSession(authOptions)
   if (!session || !isAdmin(session)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
@@ -43,8 +44,9 @@ export async function PATCH(
 
 export async function DELETE(
   _req: NextRequest,
-  { params }: { params: { answerId: string } }
+  { params: paramsPromise }: { params: Promise<{ answerId: string }> }
 ) {
+  const params = await paramsPromise
   const session = await getServerSession(authOptions)
   if (!session || !isAdmin(session)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
