@@ -25,21 +25,27 @@ interface Props {
   searchParams: { page?: string; sort?: string; type?: string }
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const city = await prisma.city.findUnique({ where: { slug: params.citySlug, isActive: true } })
   if (!city) return {}
 
-  const title = `${city.name} Property Reviews & Discussion Forum`
+  // Page 2+ lists different topics, so each page is its own canonical (Google advises against
+  // pointing every page of a series at page 1). Sort and type filters only reorder the same
+  // topics, so those stay canonical to the plain list.
+  const page = Math.max(1, parseInt(searchParams.page || '1') || 1)
+  const canonical = `${SITE_CONFIG.url}/${city.slug}${page > 1 ? `?page=${page}` : ''}`
+
+  const title = `${city.name} Property Reviews & Discussion Forum${page > 1 ? ` – Page ${page}` : ''}`
   const description = `Join ${city.name}'s property community. Read honest reviews, ratings, and discussions about real estate projects in ${city.name}, ${city.state}. Powered by real buyers and residents.`
 
   return {
     title,
     description,
-    alternates: { canonical: `${SITE_CONFIG.url}/${city.slug}` },
+    alternates: { canonical },
     openGraph: {
       title,
       description,
-      url: `${SITE_CONFIG.url}/${city.slug}`,
+      url: canonical,
       type: 'website',
     },
   }
@@ -112,14 +118,6 @@ export default async function CityPage({ params, searchParams }: Props) {
     })),
   }
 
-  const breadcrumbSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Home', item: SITE_CONFIG.url },
-      { '@type': 'ListItem', position: 2, name: city.name, item: `${SITE_CONFIG.url}/${city.slug}` },
-    ],
-  }
 
   const SORT_OPTIONS = [
     { value: 'latest', label: 'Latest', icon: Clock },
@@ -129,7 +127,7 @@ export default async function CityPage({ params, searchParams }: Props) {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify([itemListSchema, breadcrumbSchema]) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListSchema) }} />
 
       <div className="bg-gradient-to-br from-navy-500 to-navy-700 text-white">
         <div className="container-forum py-10">

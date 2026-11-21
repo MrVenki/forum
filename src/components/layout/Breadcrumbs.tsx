@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { ChevronRight, Home } from 'lucide-react'
+import { SITE_CONFIG } from '@/lib/constants/config'
 
 interface BreadcrumbItem {
   label: string
@@ -13,6 +14,7 @@ interface BreadcrumbsProps {
 export function Breadcrumbs({ items }: BreadcrumbsProps) {
   const all = [{ label: 'Home', href: '/' }, ...items]
 
+  // The single BreadcrumbList for the page. Pages should not emit their own copy.
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
@@ -20,13 +22,13 @@ export function Breadcrumbs({ items }: BreadcrumbsProps) {
       '@type': 'ListItem',
       position: i + 1,
       name: item.label,
-      ...(item.href ? { item: `${process.env.NEXT_PUBLIC_SITE_URL}${item.href}` } : {}),
+      ...(item.href ? { item: item.href === '/' ? SITE_CONFIG.url : `${SITE_CONFIG.url}${item.href}` } : {}),
     })),
   }
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }} />
       <nav aria-label="breadcrumb">
         <ol className="flex items-center gap-1 text-sm text-neutral-500 flex-wrap">
           {all.map((item, i) => (

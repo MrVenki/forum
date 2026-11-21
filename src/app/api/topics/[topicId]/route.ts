@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { recordTopicView } from '@/lib/topicViews'
 
 export async function GET(req: NextRequest, { params }: { params: { topicId: string } }) {
   const topic = await prisma.topic.findUnique({
@@ -18,7 +19,7 @@ export async function GET(req: NextRequest, { params }: { params: { topicId: str
   }
 
   // Increment view count (fire and forget)
-  prisma.topic.update({ where: { id: params.topicId }, data: { viewCount: { increment: 1 } } }).catch(() => {})
+  recordTopicView(params.topicId)
 
   return NextResponse.json(topic)
 }

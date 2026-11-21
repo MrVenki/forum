@@ -1,10 +1,12 @@
 ﻿import { notFound } from 'next/navigation'
+import { cache } from 'react'
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { recordTopicView } from '@/lib/topicViews'
 import { SITE_CONFIG, PROPERTY_TYPES } from '@/lib/constants/config'
 import { getCityDefaultImage } from '@/lib/constants/cityImages'
 import { getOgImageUrl } from '@/lib/cloudinary'
@@ -47,15 +49,30 @@ interface Props {
   params: { citySlug: string; topicSlug: string }
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const topic = await prisma.topic.findFirst({
-    where: {
-      slug: params.topicSlug,
-      isPublished: true,
-      city: { slug: params.citySlug },
+// Shared by generateMetadata and the page so a request runs this lookup once.
+const getTopic = cache((citySlug: string, topicSlug: string) =>
+  prisma.topic.findFirst({
+    where: { slug: topicSlug, isPublished: true, city: { slug: citySlug } },
+    include: {
+      city: true,
+      user: { select: { id: true, name: true, username: true, image: true, createdAt: true } },
+      _count: { select: { comments: true, ratings: true } },
     },
-    include: { city: true },
   })
+)
+
+/** The root layout's title template already appends the site name; drop a copy typed into metaTitle. */
+function stripSiteName(title: string): string {
+  const escaped = SITE_CONFIG.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  return title.replace(new RegExp(`\\s*[|\\-–—]\\s*${escaped}\\s*$`, 'i'), '').trim() || title
+}
+
+function absoluteUrl(url: string): string {
+  return url.startsWith('http') ? url : `${SITE_CONFIG.url}${url}`
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const topic = await getTopic(params.citySlug, params.topicSlug)
   if (!topic) return {}
 
   const seo = buildTopicSeo({
@@ -67,7 +84,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     priceMin: topic.priceMin ? Number(topic.priceMin) : null,
     priceMax: topic.priceMax ? Number(topic.priceMax) : null,
   })
-  const title = topic.metaTitle || seo.title
+  const title = topic.metaTitle ? stripSiteName(topic.metaTitle) : seo.title
   const description = topic.metaDesc || seo.description
   const url = `${SITE_CONFIG.url}/${params.citySlug}/${params.topicSlug}`
   const ogImage = topic.image1PubId
@@ -101,25 +118,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function TopicPage({ params }: Props) {
   const session = await getServerSession(authOptions)
 
-  const topic = await prisma.topic.findFirst({
-    where: {
-      slug: params.topicSlug,
-      isPublished: true,
-      city: { slug: params.citySlug },
-    },
-    include: {
-      city: true,
-      user: { select: { id: true, name: true, username: true, image: true, createdAt: true } },
-      _count: { select: { comments: true, ratings: true } },
-    },
-  })
+  const topic = await getTopic(params.citySlug, params.topicSlug)
 
   if (!topic) notFound()
 
   const isOwner = session?.user.id === topic.user.id
 
   // Increment view count (fire and forget)
-  prisma.topic.update({ where: { id: topic.id }, data: { viewCount: { increment: 1 } } }).catch(() => {})
+  recordTopicView(topic.id)
 
   const [comments, relatedTopics, subscriberCount] = await Promise.all([
     prisma.comment.findMany({
@@ -161,7 +167,7 @@ export default async function TopicPage({ params }: Props) {
     '@type': 'DiscussionForumPosting',
     headline: `${topic.propertyName}, ${topic.city.name} — Reviews & Discussion`,
     text: topic.description,           // FIXED: text (or image/video) is required
-    image: topicImage,                 // FIXED: always present
+    image: absoluteUrl(topicImage),    // always present; must be an absolute URL
     url: topicUrl,
     datePublished: topic.createdAt.toISOString(),
     dateModified: topic.updatedAt.toISOString(),
@@ -175,17 +181,21 @@ export default async function TopicPage({ params }: Props) {
       interactionType: 'https://schema.org/CommentAction',
       userInteractionCount: topic._count.comments,
     },
-    // FIXED: include top comments so Google sees discussion content
+    // Google's forum guidelines ask for the visible comments, with replies nested under their parent.
     ...(comments.length > 0 && {
-      comment: comments.slice(0, 5).map((c) => ({
+      comment: comments.slice(0, 50).map((c) => ({
         '@type': 'Comment',
         text: c.content,
-        dateCreated: c.createdAt.toISOString(),
-        author: {
-          '@type': 'Person',
-          name: c.user.name,
-          url: SITE_CONFIG.url,
-        },
+        datePublished: c.createdAt.toISOString(),
+        author: { '@type': 'Person', name: c.user.name, url: SITE_CONFIG.url },
+        ...(c.replies && c.replies.length > 0 && {
+          comment: c.replies.slice(0, 20).map((r) => ({
+            '@type': 'Comment',
+            text: r.content,
+            datePublished: r.createdAt.toISOString(),
+            author: { '@type': 'Person', name: r.user.name, url: SITE_CONFIG.url },
+          })),
+        }),
       })),
     }),
   }
@@ -200,7 +210,7 @@ export default async function TopicPage({ params }: Props) {
         name: `${topic.propertyName}, ${topic.city.name}`,
         description: topic.description.slice(0, 300).replace(/\n/g, ' '),
         url: topicUrl,
-        image: topicImage,
+        image: absoluteUrl(topicImage),
         aggregateRating: {
           '@type': 'AggregateRating',
           ratingValue: avgRating.toFixed(1),
@@ -212,20 +222,10 @@ export default async function TopicPage({ params }: Props) {
       }
     : null
 
-  const breadcrumbSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Home', item: SITE_CONFIG.url },
-      { '@type': 'ListItem', position: 2, name: topic.city.name, item: `${SITE_CONFIG.url}/${params.citySlug}` },
-      { '@type': 'ListItem', position: 3, name: topic.propertyName, item: topicUrl },
-    ],
-  }
 
   const schemas = [
     discussionSchema,
     ...(ratingSchema ? [ratingSchema] : []),
-    breadcrumbSchema,
   ]
 
   return (
