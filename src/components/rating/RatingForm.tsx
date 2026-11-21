@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import { StarRating } from './StarRating'
 import { Button } from '@/components/ui/button'
@@ -84,10 +85,15 @@ export function RatingForm({ topicId, existingScore, existingReview, onSuccess }
 
   if (!session) {
     return (
-      <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-5 text-center">
-        <p className="text-sm text-neutral-600">
-          <a href="/login" className="font-semibold text-saffron-500 hover:text-saffron-600">Sign in</a> to rate this property
-        </p>
+      <div className="rounded-xl border border-saffron-200 bg-saffron-50 p-5 text-center">
+        <h3 className="font-heading font-bold text-navy-500">Write a review</h3>
+        <p className="mt-1 text-sm text-neutral-600">Visited, booked or living here? Rate it and help other buyers decide.</p>
+        <Link
+          href="/login"
+          className="mt-3 inline-flex items-center justify-center rounded-lg bg-saffron-500 px-4 py-2 text-sm font-semibold text-white hover:bg-saffron-600 transition-colors"
+        >
+          Sign in to write a review
+        </Link>
       </div>
     )
   }
@@ -137,7 +143,7 @@ export function RatingForm({ topicId, existingScore, existingReview, onSuccess }
   return (
     <div className="rounded-xl border border-neutral-200 bg-white p-5 space-y-4">
       <h3 className="font-heading font-bold text-navy-500">
-        {hadRating ? 'Update Your Rating' : 'Rate This Property'}
+        {hadRating ? 'Update your review' : 'Write a review'}
       </h3>
       {missingDetails && (
         <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-900">
@@ -229,7 +235,7 @@ export function RatingForm({ topicId, existingScore, existingReview, onSuccess }
       )}
 
       <Button onClick={handleSubmit} disabled={loading || score === 0} className="w-full">
-        {loading ? 'Submitting…' : hadRating ? 'Update Rating' : 'Submit Rating'}
+        {loading ? 'Submitting…' : hadRating ? 'Update review' : 'Post review'}
       </Button>
     </div>
   )

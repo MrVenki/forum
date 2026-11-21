@@ -17,7 +17,7 @@ import { RatingForm } from '@/components/rating/RatingForm'
 import { DiscussionSection } from '@/components/comment/DiscussionSection'
 import { ReferralTracker } from '@/components/topic/ReferralTracker'
 import { Badge } from '@/components/ui/badge'
-import { MapPin, Eye, MessageSquare, User, Calendar, Home, IndianRupee } from 'lucide-react'
+import { MapPin, Eye, MessageSquare, User, Calendar, Home, IndianRupee, PenLine } from 'lucide-react'
 import type { CommentWithRelations } from '@/types'
 import { SubscribeButton, SubscriberCount } from '@/components/topic/SubscribeButton'
 import { EditDescriptionForm } from '@/components/topic/EditDescriptionForm'
@@ -156,6 +156,8 @@ export default async function TopicPage(props: Props) {
   ])
 
   const avgRating = Number(topic.avgRating)
+  // Star ratings plus top-level buyer comments, which the page also presents as reviews
+  const reviewCount = topic.ratingCount + comments.length
   const propTypeLabel = PROPERTY_TYPES.find((p) => p.value === topic.propertyType)?.label || topic.propertyType
   const topicUrl = `${SITE_CONFIG.url}/${params.citySlug}/${params.topicSlug}`
 
@@ -300,6 +302,26 @@ export default async function TopicPage(props: Props) {
                 </div>
               )}
 
+              {/* Review calls to action: most visitors come to read or write a review */}
+              <div className="mt-4 grid grid-cols-2 items-center gap-2 sm:flex sm:flex-wrap">
+                <a
+                  href="#rate"
+                  className="inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-lg bg-saffron-500 px-3 py-2.5 text-sm font-semibold text-white shadow-sm sm:px-4 transition-colors hover:bg-saffron-600"
+                >
+                  <PenLine className="h-4 w-4" /> Write a review
+                </a>
+                {reviewCount > 0 ? (
+                  <a
+                    href={topic.ratingCount > 0 ? '#reviews' : '#discussion'}
+                    className="inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-neutral-200 bg-white px-3 py-2.5 text-sm font-semibold text-navy-500 sm:px-4 transition-colors hover:border-saffron-300 hover:text-saffron-600"
+                  >
+                    <MessageSquare className="h-4 w-4" /> Read {reviewCount} review{reviewCount !== 1 ? 's' : ''}
+                  </a>
+                ) : (
+                  <span className="text-xs text-neutral-500">No reviews yet. Be the first to help other buyers.</span>
+                )}
+              </div>
+
               {/* Meta */}
               <div className="mt-4 flex items-center gap-4 text-xs text-neutral-500 flex-wrap border-t border-neutral-100 pt-4">
                 <span className="flex items-center gap-1">
@@ -318,86 +340,17 @@ export default async function TopicPage(props: Props) {
               </div>
             </div>
 
-            {/* Construction Status */}
-            <ConstructionStatus
-              topicId={topic.id}
-              initialStatus={topic.constructionStatus}
-              initialExpected={topic.expectedPossession?.toISOString() ?? null}
-              initialActual={topic.actualPossession?.toISOString() ?? null}
-            />
+            {/* Reviews first: ratings, the review form, then the discussion */}
+            <section id="reviews" aria-label="Reviews" className="scroll-mt-24 space-y-6">
+              <ReviewInsights topicId={topic.id} propertyName={topic.propertyName} />
 
-            {/* Images */}
-            {(() => {
-              const propertyImages = [topic.image1Url, topic.image2Url].filter(Boolean) as string[]
-              const images = propertyImages.length > 0
-                ? propertyImages.map((url) => ({ url, isDefault: false }))
-                : [{ url: getCityDefaultImage(topic.city.slug), isDefault: true }]
-              return (
-                <div className={`grid gap-3 ${images.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
-                  {images.map(({ url, isDefault }, i) => (
-                    <figure key={i} className="relative rounded-xl overflow-hidden aspect-video bg-neutral-100">
-                      <Image
-                        src={url}
-                        alt={isDefault ? `${topic.city.name} cityscape` : `${topic.propertyName} — property image ${i + 1}`}
-                        fill
-                        className="object-cover"
-                        sizes="(max-width: 768px) 100vw, 50vw"
-                        priority={i === 0}
-                        unoptimized={isDefault}
-                      />
-                      {isDefault && (
-                        <div className="absolute bottom-2 right-3 bg-black/50 text-white text-xs px-2 py-0.5 rounded-full">
-                          {topic.city.name}
-                        </div>
-                      )}
-                      <figcaption className="sr-only">
-                        {isDefault ? `${topic.city.name} city image` : `${topic.propertyName} property image ${i + 1}`}
-                      </figcaption>
-                    </figure>
-                  ))}
-                </div>
-              )
-            })()}
-
-            {/* Description */}
-            <div className="card-base p-6">
-              <h2 className="font-heading font-bold text-lg text-navy-500 mb-3">About {topic.propertyName}</h2>
-              {isOwner ? (
-                <EditDescriptionForm topicId={topic.id} initialDescription={topic.description} />
-              ) : (
-                <div className="prose prose-sm max-w-none text-neutral-700 leading-relaxed whitespace-pre-line">
-                  {topic.description}
-                </div>
-              )}
-            </div>
-
-            {/* Construction Updates Feed */}
-            <div className="card-base p-6">
-              <UpdatesFeed topicId={topic.id} />
-            </div>
-
-            {/* Price History */}
-            <div className="card-base p-6">
-              <PriceHistoryWidget
-                topicId={topic.id}
-                priceMin={topic.priceMin ? Number(topic.priceMin) : null}
-                priceMax={topic.priceMax ? Number(topic.priceMax) : null}
-              />
-            </div>
-
-            <AreaPriceContext
-              citySlug={topic.city.slug}
-              cityName={topic.city.name}
-              topicId={topic.id}
-              propertyType={topic.propertyType}
-              priceMin={topic.priceMin ? Number(topic.priceMin) : null}
-              priceMax={topic.priceMax ? Number(topic.priceMax) : null}
-            />
-
-            <ReviewInsights topicId={topic.id} propertyName={topic.propertyName} />
+              <div id="rate" className="scroll-mt-24">
+                <RatingForm topicId={topic.id} />
+              </div>
+            </section>
 
             {/* Discussion & Comments */}
-            <div className="card-base p-6">
+            <div id="discussion" className="card-base p-6 scroll-mt-24">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="font-heading font-bold text-lg text-navy-500">
                   {topic.propertyName} — Buyer Reviews &amp; Discussion
@@ -417,12 +370,91 @@ export default async function TopicPage(props: Props) {
             <div className="card-base p-6">
               <QASection topicId={topic.id} />
             </div>
+
+            {/* Project details: still in the page HTML for search engines, just below the reviews */}
+            <section className="card-base p-6 space-y-4" aria-labelledby="about-heading">
+              <h2 id="about-heading" className="font-heading font-bold text-lg text-navy-500">About {topic.propertyName}</h2>
+              {/* Images */}
+              {(() => {
+                const propertyImages = [topic.image1Url, topic.image2Url].filter(Boolean) as string[]
+                const images = propertyImages.length > 0
+                  ? propertyImages.map((url) => ({ url, isDefault: false }))
+                  : [{ url: getCityDefaultImage(topic.city.slug), isDefault: true }]
+                return (
+                  <div className={`grid gap-3 ${images.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                    {images.map(({ url, isDefault }, i) => (
+                      <figure key={i} className="relative rounded-xl overflow-hidden aspect-video bg-neutral-100">
+                        <Image
+                          src={url}
+                          alt={isDefault ? `${topic.city.name} cityscape` : `${topic.propertyName} — property image ${i + 1}`}
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 1024px) 100vw, 33vw"
+                          unoptimized={isDefault}
+                        />
+                        {isDefault && (
+                          <div className="absolute bottom-2 right-3 bg-black/50 text-white text-xs px-2 py-0.5 rounded-full">
+                            {topic.city.name}
+                          </div>
+                        )}
+                        <figcaption className="sr-only">
+                          {isDefault ? `${topic.city.name} city image` : `${topic.propertyName} property image ${i + 1}`}
+                        </figcaption>
+                      </figure>
+                    ))}
+                  </div>
+                )
+              })()}
+
+              {isOwner ? (
+                <EditDescriptionForm topicId={topic.id} initialDescription={topic.description} />
+              ) : (
+                <div className="prose prose-sm max-w-none text-neutral-700 leading-relaxed whitespace-pre-line">
+                  {topic.description}
+                </div>
+              )}
+            </section>
+
+            {/* Construction status and builder updates */}
+            <ConstructionStatus
+              topicId={topic.id}
+              initialStatus={topic.constructionStatus}
+              initialExpected={topic.expectedPossession?.toISOString() ?? null}
+              initialActual={topic.actualPossession?.toISOString() ?? null}
+            />
+
+            <div className="card-base p-6">
+              <UpdatesFeed topicId={topic.id} />
+            </div>
+
+            {/* Price history and area prices */}
+            <div className="card-base p-6">
+              <PriceHistoryWidget
+                topicId={topic.id}
+                priceMin={topic.priceMin ? Number(topic.priceMin) : null}
+                priceMax={topic.priceMax ? Number(topic.priceMax) : null}
+              />
+            </div>
+
+            <AreaPriceContext
+              citySlug={topic.city.slug}
+              cityName={topic.city.name}
+              topicId={topic.id}
+              propertyType={topic.propertyType}
+              priceMin={topic.priceMin ? Number(topic.priceMin) : null}
+              priceMax={topic.priceMax ? Number(topic.priceMax) : null}
+            />
           </div>
 
           {/* Sidebar */}
           <aside className="space-y-5">
-            <div id="rate" className="scroll-mt-24">
-              <RatingForm topicId={topic.id} />
+            {/* Write-a-review prompt (the form itself sits under the reviews) */}
+            <div className="rounded-xl bg-gradient-to-br from-saffron-500 to-saffron-600 p-5 text-white text-center">
+              <h3 className="font-heading font-bold mb-1">Know {topic.propertyName}?</h3>
+              <p className="text-sm text-saffron-100 mb-3">Visited, booked or living here? Your review helps other buyers decide.</p>
+              <a href="#rate" className="inline-flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-saffron-600 hover:bg-saffron-50 transition-colors">
+                <PenLine className="h-4 w-4" /> Write a review
+              </a>
             </div>
 
             <CompareLinks
@@ -516,15 +548,6 @@ export default async function TopicPage(props: Props) {
                 <EmiCalculator prefillPrice={Number(topic.priceMin)} compact />
               </div>
             )}
-
-            {/* CTA */}
-            <div className="rounded-xl bg-gradient-to-br from-saffron-500 to-saffron-600 p-5 text-white text-center">
-              <h3 className="font-heading font-bold mb-1">Know this property?</h3>
-              <p className="text-sm text-saffron-100 mb-3">Share your experience to help other buyers.</p>
-              <Link href={`/${topic.city.slug}`} className="inline-flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-saffron-600 hover:bg-saffron-50 transition-colors">
-                Browse {topic.city.name} Properties
-              </Link>
-            </div>
           </aside>
         </div>
       </div>
