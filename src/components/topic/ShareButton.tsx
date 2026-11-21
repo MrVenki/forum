@@ -8,9 +8,12 @@ interface ShareButtonProps {
   title: string
   text: string
   url: string
+  /** Show only the icon (the label stays available to screen readers) */
+  iconOnly?: boolean
+  className?: string
 }
 
-export function ShareButton({ title, text, url }: ShareButtonProps) {
+export function ShareButton({ title, text, url, iconOnly = false, className }: ShareButtonProps) {
   const [state, setState] = useState<'idle' | 'copied'>('idle')
 
   async function handleShare() {
@@ -47,17 +50,19 @@ export function ShareButton({ title, text, url }: ShareButtonProps) {
     <button
       onClick={handleShare}
       title="Share this property"
+      aria-label="Share this property"
       className={cn(
         'inline-flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-all shadow-sm focus:outline-none',
         state === 'copied'
           ? 'bg-emerald-500 text-white'
           : 'border border-neutral-200 bg-white text-neutral-600 hover:border-saffron-300 hover:text-saffron-700',
+        className,
       )}
     >
       {state === 'copied' ? (
-        <><Check className="h-3.5 w-3.5" /> Copied!</>
+        <><Check className="h-3.5 w-3.5" /> {iconOnly ? <span className="sr-only">Copied</span> : 'Copied!'}</>
       ) : (
-        <><Share2 className="h-3.5 w-3.5" /> Share</>
+        <><Share2 className={iconOnly ? 'h-4 w-4' : 'h-3.5 w-3.5'} /> {!iconOnly && 'Share'}</>
       )}
     </button>
   )

@@ -17,7 +17,8 @@ import { RatingForm } from '@/components/rating/RatingForm'
 import { DiscussionSection } from '@/components/comment/DiscussionSection'
 import { ReferralTracker } from '@/components/topic/ReferralTracker'
 import { Badge } from '@/components/ui/badge'
-import { MapPin, Eye, MessageSquare, User, Calendar, Home, IndianRupee, PenLine } from 'lucide-react'
+import { MapPin, Eye, MessageSquare, User, Calendar, Home, PenLine, Star, ChevronRight, CheckCircle2, Clock, XCircle, HelpCircle, type LucideIcon } from 'lucide-react'
+import type { ConstructionStatus as ConstructionStatusValue } from '@prisma/client'
 import type { CommentWithRelations } from '@/types'
 import { SubscribeButton, SubscriberCount } from '@/components/topic/SubscribeButton'
 import { EditDescriptionForm } from '@/components/topic/EditDescriptionForm'
@@ -44,6 +45,30 @@ function safeJsonLd(data: unknown): string {
 import { ShareButton } from '@/components/topic/ShareButton'
 
 export const revalidate = 60
+
+const STATUS_STRIP: Record<ConstructionStatusValue, { label: string; Icon: LucideIcon; box: string; icon: string; text: string }> = {
+  ON_TRACK: { label: 'On Track', Icon: CheckCircle2, box: 'border-emerald-200 bg-emerald-50 hover:bg-emerald-100/70', icon: 'text-emerald-600', text: 'text-emerald-800' },
+  DELAYED: { label: 'Delayed', Icon: Clock, box: 'border-amber-200 bg-amber-50 hover:bg-amber-100/70', icon: 'text-amber-600', text: 'text-amber-800' },
+  STALLED: { label: 'Stalled', Icon: XCircle, box: 'border-red-200 bg-red-50 hover:bg-red-100/70', icon: 'text-red-600', text: 'text-red-800' },
+  POSSESSION_DONE: { label: 'Possession Done', Icon: CheckCircle2, box: 'border-blue-200 bg-blue-50 hover:bg-blue-100/70', icon: 'text-blue-600', text: 'text-blue-800' },
+}
+
+function getStatusStrip(status: ConstructionStatusValue | null, votes: number) {
+  const voteText = votes > 0 ? `Based on ${votes} community vote${votes !== 1 ? 's' : ''}` : 'No community votes yet'
+  if (!status || !STATUS_STRIP[status]) {
+    return {
+      label: 'Project status: not reported yet',
+      sub: 'Know how construction is going? Tell other buyers.',
+      cta: 'Vote',
+      Icon: HelpCircle,
+      box: 'border-neutral-200 bg-neutral-50 hover:bg-neutral-100',
+      icon: 'text-neutral-400',
+      text: 'text-neutral-700',
+    }
+  }
+  const c = STATUS_STRIP[status]
+  return { ...c, label: `Project Status: ${c.label}`, sub: voteText, cta: 'View details' }
+}
 
 interface Props {
   params: Promise<{ citySlug: string; topicSlug: string }>
@@ -129,7 +154,7 @@ export default async function TopicPage(props: Props) {
   // Increment view count (fire and forget)
   recordTopicView(topic.id)
 
-  const [comments, relatedTopics, subscriberCount] = await Promise.all([
+  const [comments, relatedTopics, subscriberCount, statusVoteCount] = await Promise.all([
     prisma.comment.findMany({
       where: { topicId: topic.id, parentId: null, isDeleted: false },
       orderBy: { createdAt: 'asc' },
@@ -153,6 +178,7 @@ export default async function TopicPage(props: Props) {
       select: { id: true, propertyName: true, slug: true, avgRating: true, ratingCount: true },
     }),
     prisma.topicSubscription.count({ where: { topicId: topic.id } }),
+    prisma.statusVote.count({ where: { topicId: topic.id } }),
   ])
 
   const avgRating = Number(topic.avgRating)
@@ -160,6 +186,11 @@ export default async function TopicPage(props: Props) {
   const reviewCount = topic.ratingCount + comments.length
   const propTypeLabel = PROPERTY_TYPES.find((p) => p.value === topic.propertyType)?.label || topic.propertyType
   const topicUrl = `${SITE_CONFIG.url}/${params.citySlug}/${params.topicSlug}`
+
+  const heroImage = topic.image1Url
+    ? { url: topic.image1Url, isDefault: false }
+    : { url: getCityDefaultImage(topic.city.slug), isDefault: true }
+  const statusStrip = getStatusStrip(topic.constructionStatus, statusVoteCount)
 
   // Always have an image (property photo or city default)
   const topicImage = topic.image1Url || getCityDefaultImage(topic.city.slug)
@@ -250,94 +281,184 @@ export default async function TopicPage(props: Props) {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Topic Header */}
-            <div className="card-base p-6">
-              <div className="flex flex-wrap items-start justify-between gap-3 mb-3">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <Badge variant={topic.city.tier === 'METRO' ? 'metro' : 'tier1'}>
-                    <MapPin className="h-3 w-3 mr-1" />{topic.city.name}
-                  </Badge>
-                  <Badge variant="outline">{propTypeLabel}</Badge>
+            {/* Topic Header: photo banner, key facts, actions, then straight on to the reviews */}
+            <div className="card-base overflow-hidden p-0">
+              <figure className="relative aspect-[2/1] sm:aspect-[4/1] bg-neutral-100">
+                <Image
+                  src={heroImage.url}
+                  alt={heroImage.isDefault ? `${topic.city.name} cityscape` : `${topic.propertyName} — property image`}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 1024px) 100vw, 66vw"
+                  priority
+                  unoptimized={heroImage.isDefault}
+                />
+                <div className="absolute left-3 top-3 flex flex-wrap gap-2">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-xs font-semibold text-emerald-700 shadow-sm">
+                    <MapPin className="h-3.5 w-3.5" />{topic.city.name}
+                  </span>
+                  <span className="rounded-full bg-white/95 px-2.5 py-1 text-xs font-semibold text-neutral-800 shadow-sm">{propTypeLabel}</span>
                 </div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <BookmarkButton topicId={topic.id} />
+                <figcaption className="sr-only">
+                  {heroImage.isDefault ? `${topic.city.name} city image` : `${topic.propertyName} property image`}
+                </figcaption>
+              </figure>
+
+              <div className="p-5 sm:p-6">
+                <h1 className="font-heading text-2xl sm:text-3xl font-bold text-navy-500 leading-snug">
+                  {topic.propertyName}
+                  <span className="block text-base sm:text-lg font-normal text-neutral-600 mt-1">
+                    Reviews &amp; Ratings — {topic.city.name}, {topic.city.state}
+                  </span>
+                </h1>
+                {topic.address && (
+                  <p className="mt-1.5 text-sm text-neutral-600 flex items-center gap-1.5">
+                    <MapPin className="h-4 w-4 shrink-0 text-neutral-500" /> {topic.address}
+                  </p>
+                )}
+
+                {/* Price | rating */}
+                <div className="mt-4 grid grid-cols-[3fr_2fr] sm:grid-cols-2 divide-x divide-neutral-200">
+                  <div className="pr-3">
+                    {topic.priceMin ? (
+                      <p className="font-heading text-base sm:text-xl font-bold tracking-tight text-navy-500">
+                        {formatINR(Number(topic.priceMin))}
+                        {topic.priceMax ? ` – ${formatINR(Number(topic.priceMax))}` : '+'}
+                      </p>
+                    ) : (
+                      <p className="font-heading text-lg font-bold text-neutral-500">Price not listed</p>
+                    )}
+                    <p className="text-xs text-neutral-500">Indicative price range</p>
+                  </div>
+                  <a href={topic.ratingCount > 0 ? '#reviews' : '#rate'} className="pl-3 text-center group">
+                    {avgRating > 0 ? (
+                      <>
+                        <p className="flex items-center justify-center gap-1.5 font-heading text-lg sm:text-xl font-bold text-navy-500">
+                          <Star className="h-5 w-5 fill-amber-400 text-amber-400" aria-hidden="true" />
+                          {avgRating.toFixed(1)}
+                          <span className="text-sm font-normal text-neutral-500">({topic.ratingCount})</span>
+                        </p>
+                        <p className="text-xs text-neutral-500 group-hover:text-saffron-600">
+                          {topic.ratingCount} rating{topic.ratingCount !== 1 ? 's' : ''}
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="font-heading text-base font-bold text-neutral-500">No ratings yet</p>
+                        <p className="text-xs text-saffron-600 group-hover:underline">Be the first to rate</p>
+                      </>
+                    )}
+                  </a>
+                </div>
+
+                {/* Actions */}
+                <div className="mt-4 flex items-center gap-2">
+                  <BookmarkButton
+                    topicId={topic.id}
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-neutral-200 p-0"
+                  />
                   <ShareButton
                     title={`${topic.propertyName}, ${topic.city.name} — Reviews & Discussion`}
                     text={topic.description.slice(0, 100).replace(/\n/g, ' ') + '…'}
                     url={topicUrl}
+                    iconOnly
+                    className="h-11 w-11 shrink-0 justify-center rounded-full p-0"
                   />
-                  <WhatsAppSummaryButton topicId={topic.id} />
-                  <SubscribeButton topicId={topic.id} initialCount={subscriberCount} />
+                  <WhatsAppSummaryButton topicId={topic.id} className="h-11 w-11 rounded-full" />
+                  <SubscribeButton
+                    topicId={topic.id}
+                    initialCount={subscriberCount}
+                    className="h-11 flex-1 justify-center rounded-full text-sm sm:max-w-[220px]"
+                  />
                 </div>
-              </div>
 
-              <h1 className="font-heading text-2xl sm:text-3xl font-bold text-navy-500 leading-snug">
-                {topic.propertyName}
-                <span className="block text-base sm:text-lg font-normal text-neutral-500 mt-1">
-                  Reviews &amp; Ratings — {topic.city.name}, {topic.city.state}
-                </span>
-              </h1>
-              {topic.address && (
-                <p className="mt-1.5 text-sm text-neutral-500 flex items-center gap-1">
-                  <MapPin className="h-3.5 w-3.5 shrink-0" /> {topic.address}
-                </p>
-              )}
+                {/* Construction status in one line; the voting panel sits further down */}
+                <a
+                  href="#construction"
+                  className={`mt-4 flex items-center gap-3 rounded-xl border px-4 py-3 transition-colors ${statusStrip.box}`}
+                >
+                  <statusStrip.Icon className={`h-6 w-6 shrink-0 ${statusStrip.icon}`} aria-hidden="true" />
+                  <span className="min-w-0 flex-1">
+                    <span className={`block text-sm font-semibold ${statusStrip.text}`}>{statusStrip.label}</span>
+                    <span className="block text-xs text-neutral-600">{statusStrip.sub}</span>
+                  </span>
+                  <span className={`flex shrink-0 items-center text-xs font-semibold ${statusStrip.text}`}>
+                    <span className="hidden sm:inline">{statusStrip.cta}</span>
+                    <span className="sr-only sm:hidden">{statusStrip.cta}</span>
+                    <ChevronRight className="h-5 w-5 sm:h-4 sm:w-4" />
+                  </span>
+                </a>
 
-              {/* Rating Summary */}
-              {avgRating > 0 && (
-                <div className="mt-3 flex items-center gap-3">
-                  <StarRating value={avgRating} readonly size="md" count={topic.ratingCount} />
-                  <span className="text-xs text-neutral-500">based on {topic.ratingCount} rating{topic.ratingCount !== 1 ? 's' : ''}</span>
+                {/* Review calls to action: most visitors come to read or write a review */}
+                <div className="mt-4 grid grid-cols-2 items-center gap-2 sm:flex sm:flex-wrap">
+                  <a
+                    href="#rate"
+                    className="inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-lg bg-saffron-500 px-3 py-2.5 text-sm font-semibold text-white shadow-sm sm:px-4 transition-colors hover:bg-saffron-600"
+                  >
+                    <PenLine className="h-4 w-4" /> Write a review
+                  </a>
+                  {reviewCount > 0 ? (
+                    <a
+                      href={topic.ratingCount > 0 ? '#reviews' : '#discussion'}
+                      className="inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-neutral-200 bg-white px-3 py-2.5 text-sm font-semibold text-navy-500 sm:px-4 transition-colors hover:border-saffron-300 hover:text-saffron-600"
+                    >
+                      <MessageSquare className="h-4 w-4" /> Read {reviewCount} review{reviewCount !== 1 ? 's' : ''}
+                    </a>
+                  ) : (
+                    <span className="text-xs text-neutral-500">No reviews yet. Be the first to help other buyers.</span>
+                  )}
                 </div>
-              )}
 
-              {/* Price */}
-              {topic.priceMin && (
-                <div className="mt-3 flex items-center gap-1.5 text-teal-DEFAULT font-semibold">
-                  <IndianRupee className="h-4 w-4" />
-                  <span>
-                    {formatINR(Number(topic.priceMin))}
-                    {topic.priceMax ? ` – ${formatINR(Number(topic.priceMax))}` : '+'}
+                {/* Meta */}
+                <div className="mt-4 flex items-center gap-x-4 gap-y-2 text-xs text-neutral-500 flex-wrap border-t border-neutral-100 pt-4">
+                  <span className="flex items-center gap-1">
+                    <User className="h-3.5 w-3.5" /> {topic.user.name}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Calendar className="h-3.5 w-3.5" />
+                    <time dateTime={topic.createdAt.toISOString()}>{formatAbsoluteDate(topic.createdAt)}</time>
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Eye className="h-3.5 w-3.5" /> {formatNumber(topic.viewCount)} views
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <MessageSquare className="h-3.5 w-3.5" /> {topic._count.comments} comment{topic._count.comments !== 1 ? 's' : ''}
                   </span>
                 </div>
-              )}
-
-              {/* Review calls to action: most visitors come to read or write a review */}
-              <div className="mt-4 grid grid-cols-2 items-center gap-2 sm:flex sm:flex-wrap">
-                <a
-                  href="#rate"
-                  className="inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-lg bg-saffron-500 px-3 py-2.5 text-sm font-semibold text-white shadow-sm sm:px-4 transition-colors hover:bg-saffron-600"
-                >
-                  <PenLine className="h-4 w-4" /> Write a review
-                </a>
-                {reviewCount > 0 ? (
-                  <a
-                    href={topic.ratingCount > 0 ? '#reviews' : '#discussion'}
-                    className="inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-neutral-200 bg-white px-3 py-2.5 text-sm font-semibold text-navy-500 sm:px-4 transition-colors hover:border-saffron-300 hover:text-saffron-600"
-                  >
-                    <MessageSquare className="h-4 w-4" /> Read {reviewCount} review{reviewCount !== 1 ? 's' : ''}
-                  </a>
-                ) : (
-                  <span className="text-xs text-neutral-500">No reviews yet. Be the first to help other buyers.</span>
-                )}
               </div>
 
-              {/* Meta */}
-              <div className="mt-4 flex items-center gap-4 text-xs text-neutral-500 flex-wrap border-t border-neutral-100 pt-4">
-                <span className="flex items-center gap-1">
-                  <User className="h-3.5 w-3.5" /> {topic.user.name}
-                </span>
-                <span className="flex items-center gap-1">
-                  <Calendar className="h-3.5 w-3.5" />
-                  <time dateTime={topic.createdAt.toISOString()}>{formatAbsoluteDate(topic.createdAt)}</time>
-                </span>
-                <span className="flex items-center gap-1">
-                  <Eye className="h-3.5 w-3.5" /> {formatNumber(topic.viewCount)} views
-                </span>
-                <span className="flex items-center gap-1">
-                  <MessageSquare className="h-3.5 w-3.5" /> {topic._count.comments} comments
-                </span>
-              </div>
+              {/* About: folded to keep the reviews close, but the full text is in the page HTML */}
+              <details className="group border-t border-neutral-100 bg-neutral-50/70" open={isOwner}>
+                <summary className="flex cursor-pointer list-none items-center justify-between px-5 py-4 sm:px-6 [&::-webkit-details-marker]:hidden">
+                  <h2 className="font-heading font-bold text-lg text-navy-500">About {topic.propertyName}</h2>
+                  <span className="flex items-center text-sm font-semibold text-blue-600">
+                    <span className="group-open:hidden">Read more</span>
+                    <span className="hidden group-open:inline">Show less</span>
+                    <ChevronRight className="h-4 w-4 transition-transform group-open:rotate-90" />
+                  </span>
+                </summary>
+                <div className="space-y-4 px-5 pb-5 sm:px-6">
+                  {isOwner ? (
+                    <EditDescriptionForm topicId={topic.id} initialDescription={topic.description} />
+                  ) : (
+                    <div className="prose prose-sm max-w-none text-neutral-700 leading-relaxed whitespace-pre-line">
+                      {topic.description}
+                    </div>
+                  )}
+                  {topic.image2Url && (
+                    <figure className="relative aspect-video overflow-hidden rounded-xl bg-neutral-100">
+                      <Image
+                        src={topic.image2Url}
+                        alt={`${topic.propertyName} — property image 2`}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 1024px) 100vw, 66vw"
+                      />
+                      <figcaption className="sr-only">{topic.propertyName} property image 2</figcaption>
+                    </figure>
+                  )}
+                </div>
+              </details>
             </div>
 
             {/* Reviews first: ratings, the review form, then the discussion */}
@@ -371,57 +492,15 @@ export default async function TopicPage(props: Props) {
               <QASection topicId={topic.id} />
             </div>
 
-            {/* Project details: still in the page HTML for search engines, just below the reviews */}
-            <section className="card-base p-6 space-y-4" aria-labelledby="about-heading">
-              <h2 id="about-heading" className="font-heading font-bold text-lg text-navy-500">About {topic.propertyName}</h2>
-              {/* Images */}
-              {(() => {
-                const propertyImages = [topic.image1Url, topic.image2Url].filter(Boolean) as string[]
-                const images = propertyImages.length > 0
-                  ? propertyImages.map((url) => ({ url, isDefault: false }))
-                  : [{ url: getCityDefaultImage(topic.city.slug), isDefault: true }]
-                return (
-                  <div className={`grid gap-3 ${images.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
-                    {images.map(({ url, isDefault }, i) => (
-                      <figure key={i} className="relative rounded-xl overflow-hidden aspect-video bg-neutral-100">
-                        <Image
-                          src={url}
-                          alt={isDefault ? `${topic.city.name} cityscape` : `${topic.propertyName} — property image ${i + 1}`}
-                          fill
-                          className="object-cover"
-                          sizes="(max-width: 1024px) 100vw, 33vw"
-                          unoptimized={isDefault}
-                        />
-                        {isDefault && (
-                          <div className="absolute bottom-2 right-3 bg-black/50 text-white text-xs px-2 py-0.5 rounded-full">
-                            {topic.city.name}
-                          </div>
-                        )}
-                        <figcaption className="sr-only">
-                          {isDefault ? `${topic.city.name} city image` : `${topic.propertyName} property image ${i + 1}`}
-                        </figcaption>
-                      </figure>
-                    ))}
-                  </div>
-                )
-              })()}
-
-              {isOwner ? (
-                <EditDescriptionForm topicId={topic.id} initialDescription={topic.description} />
-              ) : (
-                <div className="prose prose-sm max-w-none text-neutral-700 leading-relaxed whitespace-pre-line">
-                  {topic.description}
-                </div>
-              )}
-            </section>
-
             {/* Construction status and builder updates */}
-            <ConstructionStatus
-              topicId={topic.id}
-              initialStatus={topic.constructionStatus}
-              initialExpected={topic.expectedPossession?.toISOString() ?? null}
-              initialActual={topic.actualPossession?.toISOString() ?? null}
-            />
+            <div id="construction" className="scroll-mt-24">
+              <ConstructionStatus
+                topicId={topic.id}
+                initialStatus={topic.constructionStatus}
+                initialExpected={topic.expectedPossession?.toISOString() ?? null}
+                initialActual={topic.actualPossession?.toISOString() ?? null}
+              />
+            </div>
 
             <div className="card-base p-6">
               <UpdatesFeed topicId={topic.id} />

@@ -4,13 +4,15 @@ import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { Bookmark } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { cn } from '@/lib/utils/cn'
 
 interface Props {
   topicId: string
   size?: 'sm' | 'md'
+  className?: string
 }
 
-export function BookmarkButton({ topicId, size = 'md' }: Props) {
+export function BookmarkButton({ topicId, size = 'md', className }: Props) {
   const { data: session } = useSession()
   const router = useRouter()
   const [bookmarked, setBookmarked] = useState(false)
@@ -46,11 +48,15 @@ export function BookmarkButton({ topicId, size = 'md' }: Props) {
       onClick={toggle}
       disabled={loading}
       title={bookmarked ? 'Remove from watchlist' : 'Save to watchlist'}
-      className={`${btnSize} rounded-lg transition-all ${
+      className={cn(
+        btnSize,
+        'rounded-lg transition-all disabled:opacity-50',
         bookmarked
           ? 'bg-saffron-50 text-saffron-600 hover:bg-saffron-100'
-          : 'bg-neutral-100 text-neutral-400 hover:bg-neutral-200 hover:text-neutral-600'
-      } disabled:opacity-50`}
+          : 'bg-neutral-100 text-neutral-400 hover:bg-neutral-200 hover:text-neutral-600',
+        className,
+      )}
+      aria-label={bookmarked ? 'Remove from watchlist' : 'Save to watchlist'}
     >
       <Bookmark className={`${iconSize} ${bookmarked ? 'fill-saffron-500' : ''}`} />
     </button>

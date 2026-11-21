@@ -10,9 +10,10 @@ interface Props {
   topicId: string
   initialSubscribed?: boolean
   initialCount?: number
+  className?: string
 }
 
-export function SubscribeButton({ topicId, initialSubscribed = false, initialCount = 0 }: Props) {
+export function SubscribeButton({ topicId, initialSubscribed = false, initialCount = 0, className }: Props) {
   const { data: session } = useSession()
   const router = useRouter()
   const [subscribed, setSubscribed] = useState(initialSubscribed)
@@ -56,6 +57,7 @@ export function SubscribeButton({ topicId, initialSubscribed = false, initialCou
           ? 'border border-saffron-300 bg-saffron-50 text-saffron-700 hover:bg-saffron-100'
           : 'bg-saffron-500 text-white hover:bg-saffron-600 active:bg-saffron-700',
         loading && 'opacity-60 cursor-not-allowed',
+        className,
       )}
     >
       {subscribed
