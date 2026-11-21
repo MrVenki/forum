@@ -2,13 +2,13 @@
 
 import { useEffect, useState } from 'react'
 import { signIn } from 'next-auth/react'
-import { Send } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { TurnstileWidget } from '@/components/shared/TurnstileWidget'
 import { toast } from '@/hooks/use-toast'
 import type { CommentWithRelations } from '@/types'
+import { ComposerField, ComposerFooter, DetailStarters, addStarter as appendStarter, composerTextareaClass, COMMENT_MAX_LENGTH } from './ComposerParts'
 
 type Step = 'compose' | 'email' | 'code'
 
@@ -17,8 +17,6 @@ interface Props {
   placeholder: string
   onSuccess: (comment: CommentWithRelations) => void
 }
-
-const STARTERS = ['Price: ', 'Possession date: ', 'Location: ', 'Builder track record: ']
 
 export function GuestCommentBox({ topicId, placeholder, onSuccess }: Props) {
   const draftKey = `ipt-draft-${topicId}`
@@ -48,7 +46,7 @@ export function GuestCommentBox({ topicId, placeholder, onSuccess }: Props) {
   }
 
   function addStarter(starter: string) {
-    updateDraft(draft ? `${draft.replace(/\s+$/, '')}\n${starter}` : starter)
+    updateDraft(appendStarter(draft, starter))
   }
 
   function continueToEmail() {
@@ -115,35 +113,22 @@ export function GuestCommentBox({ topicId, placeholder, onSuccess }: Props) {
   }
 
   return (
-    <div className="rounded-xl border border-neutral-200 p-4 space-y-3">
+    <div className={step === 'compose' ? 'space-y-4' : 'rounded-xl border border-neutral-200 p-4 space-y-3'}>
       {step === 'compose' && (
         <>
-          <Textarea
-            value={draft}
-            onChange={(e) => updateDraft(e.target.value)}
-            placeholder={placeholder}
-            rows={3}
-            maxLength={5000}
-            className="min-h-[88px]"
-          />
-          <div className="flex flex-wrap gap-2">
-            {STARTERS.map((s) => (
-              <button
-                key={s}
-                type="button"
-                onClick={() => addStarter(s)}
-                className="rounded-full border border-neutral-200 bg-white px-3 py-1 text-xs text-neutral-600 hover:border-saffron-300"
-              >
-                {s.replace(': ', '')}
-              </button>
-            ))}
-          </div>
-          <div className="flex items-center justify-between gap-3">
-            <span className="text-xs text-neutral-400">Posts under your username. Your email is never shown or shared with builders or agents.</span>
-            <Button type="button" size="sm" onClick={continueToEmail}>
-              <Send className="h-3.5 w-3.5" /> Post comment
-            </Button>
-          </div>
+          <ComposerField length={draft.length}>
+            <Textarea
+              value={draft}
+              onChange={(e) => updateDraft(e.target.value)}
+              placeholder={placeholder}
+              rows={4}
+              maxLength={COMMENT_MAX_LENGTH}
+              aria-label="Your comment"
+              className={composerTextareaClass}
+            />
+          </ComposerField>
+          <DetailStarters onAdd={addStarter} />
+          <ComposerFooter type="button" onClick={continueToEmail} />
         </>
       )}
 

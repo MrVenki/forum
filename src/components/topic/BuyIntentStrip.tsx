@@ -2,21 +2,22 @@
 
 import { useEffect, useState } from 'react'
 import { cn } from '@/lib/utils/cn'
+import { CalendarCheck, CheckCircle2, Compass, HelpCircle, Home, MessageCircleMore, ShoppingCart, X, type LucideIcon } from 'lucide-react'
 
 export type BuyIntent = 'YES' | 'MAYBE' | 'NO'
 export type Audience = 'CONSIDERING' | 'BOOKED' | 'RESIDENT' | 'EXPLORING'
 
-const AUDIENCES: { value: Audience; label: string }[] = [
-  { value: 'CONSIDERING', label: 'Considering buying' },
-  { value: 'BOOKED', label: 'Already booked' },
-  { value: 'RESIDENT', label: 'Resident' },
-  { value: 'EXPLORING', label: 'Just exploring' },
+const AUDIENCES: { value: Audience; label: string; Icon: LucideIcon }[] = [
+  { value: 'CONSIDERING', label: 'Considering buying', Icon: ShoppingCart },
+  { value: 'BOOKED', label: 'Already booked', Icon: CalendarCheck },
+  { value: 'RESIDENT', label: 'Resident', Icon: Home },
+  { value: 'EXPLORING', label: 'Just exploring', Icon: Compass },
 ]
 
-const INTENTS: { value: BuyIntent; label: string; bar: string }[] = [
-  { value: 'YES', label: 'Yes', bar: 'bg-emerald-500' },
-  { value: 'MAYBE', label: 'Maybe', bar: 'bg-amber-400' },
-  { value: 'NO', label: 'No', bar: 'bg-red-400' },
+const INTENTS: { value: BuyIntent; label: string; bar: string; Icon: LucideIcon }[] = [
+  { value: 'YES', label: 'Yes', bar: 'bg-emerald-500', Icon: CheckCircle2 },
+  { value: 'MAYBE', label: 'Maybe', bar: 'bg-amber-400', Icon: HelpCircle },
+  { value: 'NO', label: 'No', bar: 'bg-red-400', Icon: X },
 ]
 
 const MIN_VOTES_FOR_PERCENT = 5
@@ -98,46 +99,57 @@ export function BuyIntentStrip({ topicId, propertyName, onChange }: Props) {
   const pct = (n: number) => (results.total ? Math.round((n / results.total) * 100) : 0)
 
   return (
-    <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-4 mb-5">
-      <p className="text-sm font-semibold text-navy-500">What do you think of {propertyName}?</p>
+    <div className="mb-5">
+      <div className="flex items-start gap-3 rounded-xl border border-navy-100 bg-navy-50 p-4">
+        <MessageCircleMore className="h-8 w-8 shrink-0 fill-navy-500 text-white" aria-hidden="true" />
+        <div>
+          <p className="font-heading text-base font-bold leading-snug text-navy-500">What do you think of {propertyName}?</p>
+          <p className="mt-0.5 text-sm text-navy-400">Share your experience, opinion or ask a question</p>
+        </div>
+      </div>
 
-      <p className="mt-3 text-xs text-neutral-500">I am a…</p>
-      <div className="mt-1.5 flex flex-wrap gap-2">
-        {AUDIENCES.map((a) => (
+      <p className="mt-4 text-sm font-semibold text-navy-500">I am a…</p>
+      <div className="mt-2 flex flex-wrap gap-1.5 sm:gap-2">
+        {AUDIENCES.map(({ value, label, Icon }) => (
           <button
-            key={a.value}
+            key={value}
             type="button"
-            onClick={() => pickAudience(a.value)}
-            aria-pressed={audience === a.value}
+            onClick={() => pickAudience(value)}
+            aria-pressed={audience === value}
             className={cn(
-              'rounded-full border px-3 py-1 text-xs font-medium transition-colors',
-              audience === a.value
-                ? 'border-saffron-400 bg-saffron-50 text-saffron-700'
-                : 'border-neutral-200 bg-white text-neutral-600 hover:border-neutral-300'
+              'inline-flex items-center gap-1.5 rounded-full border px-3 py-2 text-[13px] font-medium transition-colors sm:px-3.5 sm:text-sm',
+              audience === value
+                ? 'border-navy-500 bg-navy-500 text-white'
+                : 'border-neutral-200 bg-white text-neutral-700 hover:border-navy-300'
             )}
           >
-            {a.label}
+            <Icon className="h-4 w-4" aria-hidden="true" />
+            {label}
           </button>
         ))}
       </div>
 
-      <p className="mt-3 text-xs text-neutral-500">Would you buy here?</p>
-      <div className="mt-1.5 flex gap-2">
-        {INTENTS.map((i) => (
+      <p className="mt-4 text-sm font-semibold text-navy-500">Would you buy here?</p>
+      <div className="mt-2 grid grid-cols-3 gap-2 sm:flex">
+        {INTENTS.map(({ value, label, Icon }) => (
           <button
-            key={i.value}
+            key={value}
             type="button"
             disabled={busy}
-            onClick={() => vote(i.value)}
-            aria-pressed={intent === i.value}
+            onClick={() => vote(value)}
+            aria-pressed={intent === value}
             className={cn(
-              'rounded-lg border px-4 py-1.5 text-sm font-semibold transition-colors disabled:opacity-60',
-              intent === i.value
-                ? 'border-saffron-400 bg-saffron-50 text-saffron-700'
-                : 'border-neutral-200 bg-white text-neutral-700 hover:border-saffron-300'
+              'inline-flex items-center justify-center gap-1.5 rounded-full border px-4 py-2 text-sm font-semibold transition-colors disabled:opacity-60 sm:min-w-[96px]',
+              intent === value
+                ? 'border-navy-300 bg-navy-50 text-navy-600'
+                : 'border-neutral-200 bg-white text-neutral-700 hover:border-navy-300'
             )}
           >
-            {i.label}
+            <Icon
+              className={cn('h-4 w-4', intent === value && value === 'YES' ? 'fill-navy-500 text-white' : '')}
+              aria-hidden="true"
+            />
+            {label}
           </button>
         ))}
       </div>

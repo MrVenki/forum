@@ -472,10 +472,10 @@ export default async function TopicPage(props: Props) {
 
             {/* Discussion & Comments */}
             <div id="discussion" className="card-base p-6 scroll-mt-24">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="font-heading font-bold text-lg text-navy-500">
+              <div className="flex items-start justify-between gap-3 mb-4">
+                <h2 className="font-heading font-bold text-xl leading-snug text-navy-500">
                   {topic.propertyName} — Buyer Reviews &amp; Discussion
-                  {comments.length > 0 && <span className="ml-2 text-sm font-normal text-neutral-400">({comments.length})</span>}
+                  {comments.length > 0 && <span className="ml-1">({comments.length})</span>}
                 </h2>
                 <SubscriberCount count={subscriberCount} />
               </div>

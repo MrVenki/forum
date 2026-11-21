@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { Bell, BellOff } from 'lucide-react'
+import { Bell, BellOff, Users } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 
 interface Props {
@@ -71,9 +71,9 @@ export function SubscribeButton({ topicId, initialSubscribed = false, initialCou
 export function SubscriberCount({ count }: { count: number }) {
   if (count === 0) return null
   return (
-    <span className="inline-flex items-center gap-1 text-xs text-neutral-400">
-      <Bell className="h-3 w-3" />
-      {count} {count === 1 ? 'person' : 'people'} following
+    <span className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-navy-100 bg-navy-50 px-3 py-1.5 text-xs font-medium leading-tight text-navy-500">
+      <Users className="h-4 w-4 shrink-0" aria-hidden="true" />
+      <span>{count} {count === 1 ? 'person' : 'people'}<br />following</span>
     </span>
   )
 }

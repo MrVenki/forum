@@ -7,6 +7,7 @@ import { Send } from 'lucide-react'
 import type { CommentWithRelations } from '@/types'
 import { TurnstileWidget } from '@/components/shared/TurnstileWidget'
 import { MentionTextarea } from './MentionTextarea'
+import { ComposerField, ComposerFooter, DetailStarters, addStarter, composerTextareaClass, COMMENT_MAX_LENGTH } from './ComposerParts'
 
 interface CommentFormProps {
   topicId: string
@@ -47,6 +48,28 @@ export function CommentForm({ topicId, parentId, onSuccess, onCancel, placeholde
     } else {
       toast({ title: data.error || 'Failed to post comment', variant: 'destructive' })
     }
+  }
+
+  // Top-level comments get the full composer; replies keep the compact form below.
+  if (!parentId) {
+    return (
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <TurnstileWidget onSuccess={setCfToken} onExpire={() => setCfToken('')} />
+        <ComposerField length={content.length}>
+          <MentionTextarea
+            value={content}
+            onChange={setContent}
+            placeholder={placeholder || 'Share your thoughts… type @ to mention someone'}
+            rows={4}
+            maxLength={COMMENT_MAX_LENGTH}
+            disabled={loading}
+            className={composerTextareaClass}
+          />
+        </ComposerField>
+        <DetailStarters onAdd={(starter) => setContent((c) => addStarter(c, starter))} />
+        <ComposerFooter busy={loading} disabled={content.trim().length < 10} />
+      </form>
+    )
   }
 
   return (
