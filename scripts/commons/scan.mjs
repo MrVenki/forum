@@ -8,12 +8,15 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 
 async function api(params) {
   const url = API + '?' + new URLSearchParams({ format: 'json', formatversion: '2', origin: '*', ...params })
-  for (let i = 0; i < 4; i++) {
+  for (let i = 0; i < 5; i++) {
     const res = await fetch(url, { headers: { 'User-Agent': UA } })
     if (res.ok) return res.json()
-    await sleep(2000 * (i + 1))
+    const wait = Number(res.headers.get('retry-after')) * 1000 || 5000 * (i + 1)
+    console.error(`HTTP ${res.status}, waiting ${wait}ms`)
+    await sleep(wait)
   }
-  throw new Error('Commons API failed: ' + url)
+  console.error('giving up on ' + url)
+  return null
 }
 
 // Project names: seed list plus every topic slug in the live sitemap
@@ -41,16 +44,15 @@ console.error(`scanning ${names.size} projects`)
 const results = []
 for (const entry of names.values()) {
   const q = `"${entry.name}"`
-  const [files, cats] = await Promise.all([
-    api({ action: 'query', list: 'search', srsearch: q, srnamespace: '6', srlimit: '6' }),
-    api({ action: 'query', list: 'search', srsearch: q, srnamespace: '14', srlimit: '3' }),
-  ])
-  const titles = (files.query?.search || []).map((s) => s.title)
-  const categories = (cats.query?.search || []).map((s) => s.title)
-  if (!titles.length && !categories.length) { await sleep(150); continue }
+  const files = await api({ action: 'query', list: 'search', srsearch: q, srnamespace: '6|14', srlimit: '8' })
+  if (!files) { results.push({ ...entry, error: true }); continue }
+  const hits = (files.query?.search || []).map((s) => s.title)
+  const titles = hits.filter((t) => t.startsWith('File:'))
+  const categories = hits.filter((t) => t.startsWith('Category:'))
+  if (!hits.length) { await sleep(600); continue }
   let images = []
   if (titles.length) {
-    const info = await api({ action: 'query', prop: 'imageinfo', titles: titles.join('|'), iiprop: 'url|extmetadata|size', iiurlwidth: '1200' })
+    const info = (await api({ action: 'query', prop: 'imageinfo', titles: titles.join('|'), iiprop: 'url|extmetadata|size', iiurlwidth: '1200' })) || {}
     images = (info.query?.pages || []).map((p) => {
       const ii = p.imageinfo?.[0] || {}
       const m = ii.extmetadata || {}
@@ -63,7 +65,7 @@ for (const entry of names.values()) {
     })
   }
   results.push({ ...entry, images, categories })
-  await sleep(150)
+  await sleep(600)
 }
 console.log('COMMONS_SCAN_JSON_START')
 console.log(JSON.stringify(results))
