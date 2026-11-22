@@ -74,15 +74,14 @@ export function UpdatesFeed({ topicId }: Props) {
         body: JSON.stringify({ folder: 'property-forum/updates' }),
       })
       if (!sigRes.ok) throw new Error('Failed to get upload signature')
-      const { signature, timestamp, cloudName, apiKey, folder, upload_preset } = await sigRes.json()
+      const { signature, cloudName, apiKey, params } = await sigRes.json()
 
       const fd = new FormData()
       fd.append('file', file)
-      fd.append('signature', signature)
-      fd.append('timestamp', timestamp)
       fd.append('api_key', apiKey)
-      fd.append('folder', folder)
-      if (upload_preset) fd.append('upload_preset', upload_preset)
+      fd.append('signature', signature)
+      // Send every signed parameter (folder, formats, watermark...) exactly as signed
+      for (const [key, value] of Object.entries(params as Record<string, string | number>)) fd.append(key, String(value))
 
       const upRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
         method: 'POST',

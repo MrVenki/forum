@@ -24,14 +24,16 @@ async function getUploadSignature() {
   return res.json()
 }
 
-async function uploadToCloudinary(file: File, sigData: Record<string, string>): Promise<UploadedImage> {
+async function uploadToCloudinary(
+  file: File,
+  sigData: { signature: string; apiKey: string; cloudName: string; params: Record<string, string | number> },
+): Promise<UploadedImage> {
   const formData = new FormData()
   formData.append('file', file)
-  formData.append('signature', sigData.signature)
-  formData.append('timestamp', sigData.timestamp)
   formData.append('api_key', sigData.apiKey)
-  formData.append('folder', sigData.folder)
-  if (sigData.uploadPreset) formData.append('upload_preset', sigData.uploadPreset)
+  formData.append('signature', sigData.signature)
+  // Send every signed parameter (folder, formats, watermark...) exactly as signed
+  for (const [key, value] of Object.entries(sigData.params)) formData.append(key, String(value))
 
   const res = await fetch(
     `https://api.cloudinary.com/v1_1/${sigData.cloudName}/image/upload`,
