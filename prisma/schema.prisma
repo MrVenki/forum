@@ -12,6 +12,7 @@ datasource db {
 enum CityTier {
   METRO
   TIER1
+  TIER2
 }
 
 enum PropertyType {

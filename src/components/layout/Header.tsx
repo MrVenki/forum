@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { useSession, signOut } from 'next-auth/react'
 import { useState, useEffect, useRef } from 'react'
 import { Home, Building2, PlusCircle, LogIn, LogOut, User, Menu, X, Search, ChevronDown, Shield, Bookmark, Calculator, IndianRupee, FileText, TrendingUp } from 'lucide-react'
-import { METRO_CITIES, TIER1_CITIES } from '@/lib/constants/cities'
+import { METRO_CITIES, TIER1_CITIES, TIER2_CITIES } from '@/lib/constants/cities'
 import { cn } from '@/lib/utils/cn'
 
 export function Header({ newTopicEnabled = false }: { newTopicEnabled?: boolean }) {
@@ -74,6 +74,16 @@ export function Header({ newTopicEnabled = false }: { newTopicEnabled?: boolean 
                       <p className="mb-2 text-xs font-bold uppercase tracking-wider text-teal">Tier 1 Cities</p>
                       <ul className="space-y-0.5 columns-2">
                         {TIER1_CITIES.map((c) => (
+                          <li key={c.slug}>
+                            <Link href={`/${c.slug}`} onClick={() => setCitiesOpen(false)} className="block rounded-md px-2 py-1.5 text-sm text-neutral-700 hover:bg-teal-light hover:text-teal-dark transition-colors">
+                              {c.name}
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                      <p className="mb-2 mt-3 text-xs font-bold uppercase tracking-wider text-navy-500">Tier 2 Cities</p>
+                      <ul className="space-y-0.5 columns-2">
+                        {TIER2_CITIES.map((c) => (
                           <li key={c.slug}>
                             <Link href={`/${c.slug}`} onClick={() => setCitiesOpen(false)} className="block rounded-md px-2 py-1.5 text-sm text-neutral-700 hover:bg-teal-light hover:text-teal-dark transition-colors">
                               {c.name}

@@ -2,7 +2,7 @@
 import { prisma } from '@/lib/prisma'
 import { TopicCard } from '@/components/topic/TopicCard'
 import { SITE_CONFIG } from '@/lib/constants/config'
-import { METRO_CITIES, TIER1_CITIES } from '@/lib/constants/cities'
+import { METRO_CITIES, TIER1_CITIES, TIER2_CITIES } from '@/lib/constants/cities'
 import { Badge } from '@/components/ui/badge'
 import { Building2, TrendingUp, Star, MapPin, ArrowRight, PlusCircle } from 'lucide-react'
 import { isNewTopicEnabled } from '@/lib/features'
@@ -195,6 +195,25 @@ export default async function HomePage() {
           <h3 className="text-sm font-bold uppercase tracking-wider text-teal mb-3">Tier 1 Cities</h3>
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2">
             {TIER1_CITIES.map((city) => (
+              <Link
+                key={city.slug}
+                href={`/${city.slug}`}
+                className="group flex flex-col items-center gap-1.5 rounded-xl border border-neutral-200 bg-white p-3 text-center hover:border-teal hover:shadow-md transition-all"
+              >
+                <div className="h-8 w-8 rounded-full bg-teal-light flex items-center justify-center group-hover:bg-teal transition-colors">
+                  <MapPin className="h-4 w-4 text-teal-dark group-hover:text-white transition-colors" />
+                </div>
+                <p className="font-heading font-bold text-xs text-navy-500">{city.name}</p>
+                <p className="text-[10px] text-neutral-400">{cityCountMap[city.slug] || 0} topics</p>
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-6">
+          <h3 className="text-sm font-bold uppercase tracking-wider text-teal mb-3">Tier 2 Cities</h3>
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2">
+            {TIER2_CITIES.map((city) => (
               <Link
                 key={city.slug}
                 href={`/${city.slug}`}

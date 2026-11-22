@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import { SITE_CONFIG } from '@/lib/constants/config'
-import { METRO_CITIES, TIER1_CITIES } from '@/lib/constants/cities'
+import { METRO_CITIES, TIER1_CITIES, TIER2_CITIES } from '@/lib/constants/cities'
 import { Badge } from '@/components/ui/badge'
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs'
 import { MapPin, Building2, MessageSquare } from 'lucide-react'
@@ -33,7 +33,7 @@ export default async function CitiesPage() {
     '@type': 'ItemList',
     name: 'Indian Property Forum Cities',
     description: metadata.description,
-    itemListElement: [...METRO_CITIES, ...TIER1_CITIES].map((city, i) => ({
+    itemListElement: [...METRO_CITIES, ...TIER1_CITIES, ...TIER2_CITIES].map((city, i) => ({
       '@type': 'ListItem',
       position: i + 1,
       name: `${city.name} Property Forum`,
@@ -50,7 +50,7 @@ export default async function CitiesPage() {
           <Breadcrumbs items={[{ label: 'Cities' }]} />
           <h1 className="font-heading text-3xl sm:text-4xl font-bold mt-4">Browse by City</h1>
           <p className="mt-2 text-navy-200 max-w-lg">
-            Explore property discussions in {METRO_CITIES.length + TIER1_CITIES.length} Indian cities — from metro hubs to emerging Tier 1 markets.
+            Explore property discussions in {METRO_CITIES.length + TIER1_CITIES.length + TIER2_CITIES.length} Indian cities — from metro hubs to fast-growing Tier 1 and Tier 2 markets.
           </p>
         </div>
       </div>
@@ -96,6 +96,34 @@ export default async function CitiesPage() {
           </h2>
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
             {TIER1_CITIES.map((city) => {
+              const count = countMap[city.slug] || 0
+              return (
+                <Link
+                  key={city.slug}
+                  href={`/${city.slug}`}
+                  className="group flex flex-col items-center gap-2 rounded-xl border border-neutral-200 bg-white p-4 text-center hover:border-teal hover:shadow-md transition-all"
+                >
+                  <div className="h-10 w-10 rounded-xl bg-teal-light flex items-center justify-center group-hover:bg-teal transition-colors">
+                    <MapPin className="h-5 w-5 text-teal-dark group-hover:text-white transition-colors" />
+                  </div>
+                  <div>
+                    <p className="font-heading font-bold text-sm text-navy-500">{city.name}</p>
+                    <p className="text-[10px] text-neutral-400">{city.state}</p>
+                  </div>
+                  <p className="text-[10px] text-neutral-400">{count} topics</p>
+                </Link>
+              )
+            })}
+          </div>
+        </section>
+        {/* Tier 2 Cities */}
+        <section>
+          <h2 className="font-heading text-xl font-bold text-navy-500 mb-4 flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-teal" />
+            Tier 2 Cities
+          </h2>
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+            {TIER2_CITIES.map((city) => {
               const count = countMap[city.slug] || 0
               return (
                 <Link

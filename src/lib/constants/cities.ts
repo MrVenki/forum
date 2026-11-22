@@ -22,7 +22,15 @@ export const INDIAN_CITIES = [
   { name: 'Agra', slug: 'agra', state: 'Uttar Pradesh', tier: 'TIER1' as const },
   { name: 'Nashik', slug: 'nashik', state: 'Maharashtra', tier: 'TIER1' as const },
   { name: 'Vijayawada', slug: 'vijayawada', state: 'Andhra Pradesh', tier: 'TIER1' as const },
+  { name: 'Nellore', slug: 'nellore', state: 'Andhra Pradesh', tier: 'TIER2' as const },
+  { name: 'Tirupati', slug: 'tirupati', state: 'Andhra Pradesh', tier: 'TIER2' as const },
+  { name: 'Guntur', slug: 'guntur', state: 'Andhra Pradesh', tier: 'TIER2' as const },
+  { name: 'Kakinada', slug: 'kakinada', state: 'Andhra Pradesh', tier: 'TIER2' as const },
+  { name: 'Rajahmundry', slug: 'rajahmundry', state: 'Andhra Pradesh', tier: 'TIER2' as const },
+  { name: 'Warangal', slug: 'warangal', state: 'Telangana', tier: 'TIER2' as const },
+  { name: 'Karimnagar', slug: 'karimnagar', state: 'Telangana', tier: 'TIER2' as const },
 ]
 
 export const METRO_CITIES = INDIAN_CITIES.filter((c) => c.tier === 'METRO')
 export const TIER1_CITIES = INDIAN_CITIES.filter((c) => c.tier === 'TIER1')
+export const TIER2_CITIES = INDIAN_CITIES.filter((c) => c.tier === 'TIER2')

@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { Building2, MapPin, Mail } from 'lucide-react'
-import { METRO_CITIES, TIER1_CITIES } from '@/lib/constants/cities'
+import { METRO_CITIES, TIER1_CITIES, TIER2_CITIES } from '@/lib/constants/cities'
 import { SITE_CONFIG } from '@/lib/constants/config'
 
 export function Footer() {
@@ -46,6 +46,19 @@ export function Footer() {
             <h3 className="mb-3 text-sm font-bold uppercase tracking-wider text-teal-400">Tier 1 Cities</h3>
             <ul className="grid grid-cols-2 gap-1.5">
               {TIER1_CITIES.map((city) => (
+                <li key={city.slug}>
+                  <Link
+                    href={`/${city.slug}`}
+                    className="text-sm text-navy-200 hover:text-white transition-colors"
+                  >
+                    {city.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+            <h3 className="mb-3 mt-5 text-sm font-bold uppercase tracking-wider text-teal-400">Tier 2 Cities</h3>
+            <ul className="grid grid-cols-2 gap-1.5">
+              {TIER2_CITIES.map((city) => (
                 <li key={city.slug}>
                   <Link
                     href={`/${city.slug}`}

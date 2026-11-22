@@ -138,6 +138,10 @@ export default function NewTopicForm() {
                         {cities.filter((c) => c.tier === 'TIER1').map((c) => (
                           <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
                         ))}
+                        <SelectItem value="__tier2" disabled>── Tier 2 Cities ──</SelectItem>
+                        {cities.filter((c) => c.tier === 'TIER2').map((c) => (
+                          <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   )}

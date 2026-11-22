@@ -36,6 +36,11 @@ export async function ensureSchema(): Promise<void> {
   console.log('[ensureSchema] created table rating_replies')
 }
 
+/** Adds the TIER2 city tier (Nov 2026). Idempotent; ADD VALUE must run outside a transaction. */
+export async function ensureCityTiers(): Promise<void> {
+  await prisma.$executeRawUnsafe(`ALTER TYPE "public"."CityTier" ADD VALUE IF NOT EXISTS 'TIER2'`)
+}
+
 export async function reviewRepliesTableExists(): Promise<boolean> {
   const rows = await prisma.$queryRaw<{ exists: boolean }[]>`SELECT to_regclass('public.rating_replies') IS NOT NULL AS "exists"`
   return rows[0]?.exists === true

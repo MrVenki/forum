@@ -17,7 +17,9 @@ import { getCityAreas } from '@/lib/areaPrices'
 export const revalidate = 3600
 
 export async function generateStaticParams() {
-  return INDIAN_CITIES.map((city) => ({ citySlug: city.slug }))
+  // Tier 2 cities are added to the database when the new server starts, after the build,
+  // so they render on first request instead of being pre-built as "not found".
+  return INDIAN_CITIES.filter((city) => city.tier !== 'TIER2').map((city) => ({ citySlug: city.slug }))
 }
 
 interface Props {
@@ -140,8 +142,8 @@ export default async function CityPage(props: Props) {
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <MapPin className="h-5 w-5 text-saffron-400" />
-                <Badge variant={city.tier === 'METRO' ? 'metro' : 'tier1'} className="text-xs">
-                  {city.tier === 'METRO' ? 'Metro City' : 'Tier 1 City'}
+                <Badge variant={city.tier === 'METRO' ? 'metro' : city.tier === 'TIER2' ? 'tier2' : 'tier1'} className="text-xs">
+                  {city.tier === 'METRO' ? 'Metro City' : city.tier === 'TIER2' ? 'Tier 2 City' : 'Tier 1 City'}
                 </Badge>
               </div>
               <h1 className="font-heading text-3xl sm:text-4xl font-bold">{city.name} Property Forum</h1>
