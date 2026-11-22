@@ -3,17 +3,29 @@ name: Commons image scan (temporary)
 on:
   push:
     branches: [claude/project-thread-oo94zi]
-    paths: [scripts/commons/**, .github/workflows/commons-scan.yml]
+    paths: [scripts/commons/download.txt, .github/workflows/commons-scan.yml]
+
+permissions:
+  contents: write
 
 jobs:
-  scan:
+  download:
     runs-on: ubuntu-latest
-    timeout-minutes: 50
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-      - run: node scripts/commons/scan.mjs > scan.json
-      - run: |
-          node -e "const s=require('fs').readFileSync('scan.json','utf8');const j=JSON.parse(s.split('COMMONS_SCAN_JSON_START')[1].split('COMMONS_SCAN_JSON_END')[0]);console.log('hits',j.length);console.log(Buffer.from(JSON.stringify(j)).toString('base64').match(/.{1,30000}/g).join('\n'))"
+      - name: Download candidate photos from Wikimedia Commons
+        run: |
+          mkdir -p scripts/commons/candidates
+          while read -r name url; do
+            [ -z "$name" ] && continue
+            curl -fsSL -A "IndiaPropertyTalk-image-scan/1.0 (https://indiapropertytalk.com)" -o "scripts/commons/candidates/$name" "$url" || echo "failed $name"
+            sleep 1
+          done < scripts/commons/download.txt
+          ls -la scripts/commons/candidates
+      - name: Commit them to this branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898299+github-actions[bot]@users.noreply.github.com"
+          git add scripts/commons/candidates
+          git commit -m "chore: Commons candidate photos for review" && git push
