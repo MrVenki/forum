@@ -204,10 +204,10 @@ export async function sendAdminNewCommentAlert(params: {
         <tr>
           <td style="padding:28px 36px;">
             <p style="margin:0 0 4px;color:#888;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">New ${label} Posted</p>
-            <h2 style="margin:0 0 2px;color:#1e3a5f;font-size:20px;font-weight:700;">${propertyName}</h2>
-            <p style="margin:0 0 20px;color:#888;font-size:13px;">${cityName} &nbsp;·&nbsp; by <strong style="color:#555;">${commenterName}</strong></p>
+            <h2 style="margin:0 0 2px;color:#1e3a5f;font-size:20px;font-weight:700;">${esc(propertyName)}</h2>
+            <p style="margin:0 0 20px;color:#888;font-size:13px;">${esc(cityName)} &nbsp;·&nbsp; by <strong style="color:#555;">${esc(commenterName)}</strong></p>
             <div style="background:#f9fafb;border-left:4px solid #ea580c;border-radius:0 8px 8px 0;padding:16px 20px;margin-bottom:24px;">
-              <p style="margin:0;color:#4b5563;font-size:14px;line-height:1.7;">${preview.replace(/\n/g, '<br>')}</p>
+              <p style="margin:0;color:#4b5563;font-size:14px;line-height:1.7;">${esc(preview).replace(/\n/g, '<br>')}</p>
             </div>
             <table width="100%" cellpadding="0" cellspacing="0">
               <tr>
@@ -637,4 +637,123 @@ export async function sendLeadNotification(lead: LeadNotification): Promise<void
   } catch (err) {
     console.error('[Lead notify] failed to send email', err)
   }
+}
+
+// ─── Community posts ──────────────────────────────────────────────────────────
+
+function emailShell(opts: { banner: string; body: string; footer: string }): string {
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f5f5f5;font-family:Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f5;padding:32px 0;">
+    <tr><td align="center">
+      <table width="560" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        <tr><td style="background:#1e3a5f;padding:24px 36px;">
+          <h1 style="margin:0;color:#fff;font-size:18px;font-weight:700;">IndiaPropertyTalk</h1>
+          <p style="margin:4px 0 0;color:#93c5fd;font-size:12px;">${opts.banner}</p>
+        </td></tr>
+        <tr><td style="padding:28px 36px;">${opts.body}</td></tr>
+        <tr><td style="background:#f9fafb;padding:16px 36px;border-top:1px solid #eee;text-align:center;">${opts.footer}</td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`
+}
+
+/** User text as safe HTML: escaped, line breaks kept. */
+function textBlock(text: string): string {
+  return esc(text).replace(/\n/g, '<br>')
+}
+
+function button(href: string, label: string, color = '#ea580c'): string {
+  return `<a href="${esc(href)}" style="display:inline-block;background:${color};color:#fff;font-size:14px;font-weight:600;padding:11px 28px;border-radius:8px;text-decoration:none;">${esc(label)}</a>`
+}
+
+/** Admin email for a new community post or reply, with the full text. */
+export async function sendCommunityAdminAlert(params: {
+  type: 'post' | 'reply'
+  kind: 'QUESTION' | 'EXPERIENCE'
+  postTitle: string
+  content: string
+  authorName: string
+  cityName: string
+  categoryLabel: string
+  url: string
+}): Promise<void> {
+  const { type, kind, postTitle, content, authorName, cityName, categoryLabel, url } = params
+  const kindWord = kind === 'QUESTION' ? 'question' : 'experience'
+  const subject = type === 'post' ? `🗣️ New community ${kindWord}: ${postTitle}` : `💬 New reply: ${postTitle}`
+  const adminEmail = getAdminAlertEmail()
+  const transporter = createTransporter()
+  if (!transporter || !adminEmail) {
+    console.log(`\n[DEV ADMIN ALERT] ${subject}\nBy ${authorName} · ${cityName} · ${categoryLabel}\n${content}\n${url}\n`)
+    return
+  }
+  const from = process.env.SMTP_FROM || process.env.SMTP_USER || 'noreply@indiapropertytalk.com'
+  const heading = type === 'post' ? `New community ${kindWord}` : `New reply on a community ${kindWord}`
+  const html = emailShell({
+    banner: `Admin Alert — ${heading}`,
+    body: `
+      <p style="margin:0 0 4px;color:#888;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">${esc(heading)}</p>
+      <h2 style="margin:0 0 2px;color:#1e3a5f;font-size:20px;font-weight:700;">${esc(postTitle)}</h2>
+      <p style="margin:0 0 20px;color:#888;font-size:13px;">${esc(categoryLabel)} &nbsp;·&nbsp; ${esc(cityName)} &nbsp;·&nbsp; by <strong style="color:#555;">${esc(authorName)}</strong></p>
+      ${content ? `<div style="background:#f9fafb;border-left:4px solid #ea580c;border-radius:0 8px 8px 0;padding:16px 20px;margin-bottom:24px;"><p style="margin:0;color:#4b5563;font-size:14px;line-height:1.7;">${textBlock(content)}</p></div>` : ''}
+      <table width="100%" cellpadding="0" cellspacing="0"><tr>
+        <td>${button(url, type === 'post' ? 'View post →' : 'View reply →')}</td>
+        <td align="right">${button('https://indiapropertytalk.com/admin/community', 'Moderate →', '#1e3a5f')}</td>
+      </tr></table>`,
+    footer: `<p style="margin:0;color:#aaa;font-size:12px;">&copy; ${new Date().getFullYear()} IndiaPropertyTalk Admin Alerts</p>`,
+  })
+  await transporter.sendMail({
+    from: `"IndiaPropertyTalk Alerts" <${from}>`,
+    to: adminEmail,
+    subject,
+    html,
+    text: `${heading}\n\n${postTitle}\n${categoryLabel} · ${cityName} · by ${authorName}\n\n${content}\n\nView: ${url}\nModerate: https://indiapropertytalk.com/admin/community`,
+  })
+}
+
+/** Email to a member who follows a community post, when someone else replies. */
+export async function sendCommunityFollowerEmail(params: {
+  to: string
+  replierName: string
+  content: string
+  postTitle: string
+  url: string
+  unsubscribeUrl: string
+  isReplyToYou: boolean
+}): Promise<void> {
+  const { to, replierName, content, postTitle, url, unsubscribeUrl, isReplyToYou } = params
+  const subject = isReplyToYou ? `${replierName} replied to you: ${postTitle}` : `New reply: ${postTitle}`
+  const transporter = createTransporter()
+  if (!transporter) {
+    console.log(`\n[DEV EMAIL] To: ${to}\nSubject: ${subject}\n${content}\n${url}\nStop: ${unsubscribeUrl}\n`)
+    return
+  }
+  const from = process.env.SMTP_FROM || process.env.SMTP_USER || 'noreply@indiapropertytalk.com'
+  const headline = isReplyToYou ? `${replierName} replied to you` : 'New reply on a post you follow'
+  const html = emailShell({
+    banner: "India's Most Trusted Property Forum",
+    body: `
+      <p style="margin:0 0 6px;color:#666;font-size:13px;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">${esc(headline)}</p>
+      <h2 style="margin:0 0 20px;color:#1e3a5f;font-size:20px;font-weight:700;">${esc(postTitle)}</h2>
+      <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:16px 20px;margin-bottom:24px;">
+        <p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#374151;">${esc(replierName)}</p>
+        <p style="margin:0;font-size:14px;color:#4b5563;line-height:1.6;">${textBlock(content)}</p>
+      </div>
+      <p style="margin:0;text-align:center;">${button(url, 'Reply on IndiaPropertyTalk →')}</p>`,
+    footer: `
+      <p style="margin:0 0 6px;color:#aaa;font-size:12px;">You're following this post on IndiaPropertyTalk.</p>
+      <p style="margin:0;color:#aaa;font-size:12px;"><a href="${esc(unsubscribeUrl)}" style="color:#888;text-decoration:underline;">Stop emails for this post</a></p>`,
+  })
+  await transporter.sendMail({
+    from: `"IndiaPropertyTalk" <${from}>`,
+    to,
+    subject,
+    html,
+    text: `${headline}\n\n${postTitle}\n\n${replierName}:\n${content}\n\nReply: ${url}\n\nStop emails for this post: ${unsubscribeUrl}`,
+    headers: { 'List-Unsubscribe': `<${unsubscribeUrl}>` },
+  })
 }

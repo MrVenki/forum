@@ -145,6 +145,7 @@ model User {
   answers          Answer[]
   communityPosts   CommunityPost[]
   communityReplies CommunityReply[]
+  communityFollows CommunityFollow[]
 
   @@map("users")
 }
@@ -543,9 +544,10 @@ model CommunityPost {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  city    City?            @relation(fields: [cityId], references: [id], onDelete: SetNull)
-  user    User             @relation(fields: [userId], references: [id])
+  city    City?             @relation(fields: [cityId], references: [id], onDelete: SetNull)
+  user    User              @relation(fields: [userId], references: [id])
   replies CommunityReply[]
+  follows CommunityFollow[]
 
   @@index([createdAt(sort: Desc)])
   @@index([cityId, createdAt(sort: Desc)])
@@ -597,4 +599,18 @@ model CommunityReport {
   @@unique([userId, targetType, targetId])
   @@index([isResolved, createdAt(sort: Desc)])
   @@map("community_reports")
+}
+
+/// A member following a community post: they get an email for each new reply.
+model CommunityFollow {
+  id        String   @id @default(cuid())
+  postId    String
+  userId    String
+  createdAt DateTime @default(now())
+
+  post CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@map("community_follows")
 }

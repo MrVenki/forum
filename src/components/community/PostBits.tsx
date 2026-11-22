@@ -21,10 +21,9 @@ export function CategoryChip({ slug }: { slug: string }) {
   return <span className={cn('inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold', c.chip)}>{c.label}</span>
 }
 
-/** "6 answers" for a question, "9 comments" for an experience. */
-export function replyLabel(kind: PostKind, n: number) {
-  const word = kind === 'QUESTION' ? 'answer' : 'comment'
-  return `${n} ${word}${n === 1 ? '' : 's'}`
+/** "1 reply", "6 replies". */
+export function replyLabel(n: number) {
+  return `${n} ${n === 1 ? 'reply' : 'replies'}`
 }
 
 /** One row in a list of community posts. */
@@ -40,10 +39,10 @@ export function PostRow({ post, headingLevel = 'h3' }: { post: PostListItem; hea
       <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-neutral-500">
         {post.replyCount > 0 ? (
           <span className="inline-flex items-center gap-1 font-semibold text-teal-dark">
-            <MessageSquare className="h-3.5 w-3.5" /> {replyLabel(post.kind, post.replyCount)}
+            <MessageSquare className="h-3.5 w-3.5" /> {replyLabel(post.replyCount)}
           </span>
         ) : (
-          <span className="font-semibold text-saffron-600">{post.kind === 'QUESTION' ? 'Be the first to answer' : 'Be the first to comment'}</span>
+          <span className="font-semibold text-saffron-600">Be the first to reply</span>
         )}
         {post.city ? (
           <span className="inline-flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> {post.city.name}</span>

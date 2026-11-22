@@ -4,10 +4,10 @@ import { revalidatePath } from 'next/cache'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { isEmailVerificationEnabled } from '@/lib/features'
-import { sendAdminNewCommentAlert } from '@/lib/email'
+import { sendCommunityAdminAlert } from '@/lib/email'
 import { checkRateLimit, getClientIp } from '@/lib/rateLimit'
 import { verifyTurnstile } from '@/lib/turnstile'
-import { checkContentRules, createPostSchema, uniquePostSlug } from '@/lib/community'
+import { checkContentRules, createPostSchema, getCategory, uniquePostSlug } from '@/lib/community'
 
 /** GET ?q= — up to 3 existing posts with similar titles, shown while someone types a question. */
 export async function GET(req: NextRequest) {
@@ -83,19 +83,24 @@ export async function POST(req: NextRequest) {
     select: { id: true, slug: true },
   })
 
+  // The author follows their own post, so replies reach them by email
+  await prisma.communityFollow.create({ data: { postId: post.id, userId: session.user.id } }).catch(() => {})
+
   revalidatePath('/community')
   revalidatePath('/')
   if (citySlug) revalidatePath(`/${citySlug}`)
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://indiapropertytalk.com'
-  sendAdminNewCommentAlert({
-    commenterName: session.user.name || 'Anonymous',
-    commentContent: `[${kind === 'QUESTION' ? 'Question' : 'Experience'}] ${title}\n\n${text}`,
-    propertyName: 'Community post',
+  sendCommunityAdminAlert({
+    type: 'post',
+    kind,
+    postTitle: title,
+    content: text,
+    authorName: session.user.username ? `@${session.user.username}` : session.user.name || 'A member',
     cityName: city?.name ?? 'All India',
-    topicUrl: `${siteUrl}/community/${post.slug}`,
-    isReply: false,
-  }).catch(() => {})
+    categoryLabel: getCategory(category).label,
+    url: `${siteUrl}/community/${post.slug}`,
+  }).catch((err) => console.error('[community] admin alert failed:', err))
 
   return NextResponse.json(post, { status: 201 })
 }

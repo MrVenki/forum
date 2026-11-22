@@ -165,7 +165,7 @@ export function AskForm({ cities, initialCity = '', initialKind = 'QUESTION' }: 
                 <Link href={`/community/${s.slug}`} className="flex items-start gap-2 text-sm font-medium text-navy-500 hover:underline">
                   <HelpCircle className="mt-0.5 h-4 w-4 shrink-0 text-neutral-400" />
                   <span>
-                    {s.title} <span className="font-normal text-neutral-400">· {s.replyCount} {s.kind === 'QUESTION' ? 'answers' : 'comments'}</span>
+                    {s.title} <span className="font-normal text-neutral-400">· {s.replyCount} {s.replyCount === 1 ? 'reply' : 'replies'}</span>
                   </span>
                 </Link>
               </li>

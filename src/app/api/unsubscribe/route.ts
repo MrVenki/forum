@@ -7,6 +7,17 @@ export async function GET(req: NextRequest) {
   const userId  = searchParams.get('u')
   const topicId = searchParams.get('t')
   const token   = searchParams.get('token')
+  const communityPostId = searchParams.get('c')
+
+  // Community post follow: token is signed over "community:<postId>"
+  if (userId && communityPostId && token) {
+    if (!verifyUnsubscribeToken(token, userId, `community:${communityPostId}`)) {
+      return NextResponse.json({ error: 'Invalid or expired link' }, { status: 403 })
+    }
+    await prisma.communityFollow.deleteMany({ where: { postId: communityPostId, userId } }).catch(() => {})
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://indiapropertytalk.com'
+    return NextResponse.redirect(`${siteUrl}/?unsubscribed=1`)
+  }
 
   if (!userId || !topicId || !token) {
     return NextResponse.json({ error: 'Invalid link' }, { status: 400 })

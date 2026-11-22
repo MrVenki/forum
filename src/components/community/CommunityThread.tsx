@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useSession } from 'next-auth/react'
-import { Building2, Check, CornerDownRight, Flag, MessageSquare, Star, ThumbsUp } from 'lucide-react'
+import { Bell, BellRing, Building2, Check, CornerDownRight, Flag, MessageSquare, Star, ThumbsUp } from 'lucide-react'
 import { TurnstileWidget } from '@/components/shared/TurnstileWidget'
 import { SignInDialog } from '@/components/auth/SignInDialog'
 import { ShareButton } from '@/components/topic/ShareButton'
@@ -87,7 +87,7 @@ function HelpfulButton({
 
   if (big) {
     return (
-      <button type="button" onClick={click} disabled={busy} aria-pressed={voted} className={cn('btn-secondary flex-1 sm:flex-none', voted && 'border-teal bg-teal-light text-teal-dark')}>
+      <button type="button" onClick={click} disabled={busy} aria-pressed={voted} className={cn('btn-secondary flex-1 whitespace-nowrap px-3 sm:flex-none', voted && 'border-teal bg-teal-light text-teal-dark')}>
         <ThumbsUp className="h-4 w-4" /> Helpful · {count}
       </button>
     )
@@ -207,7 +207,8 @@ function Composer({
     if (!res.ok) return toast({ title: data.error || 'Could not post', variant: 'destructive' })
     change('')
     onPosted(data)
-    toast({ title: 'Posted' })
+    window.dispatchEvent(new Event('community:replied'))
+    toast({ title: 'Posted. You will get an email when someone replies.' })
   }
 
   return (
@@ -233,6 +234,56 @@ function Composer({
   )
 }
 
+/* ── Follow (email for each new reply) ─────────────────────────────────────── */
+
+function FollowButton({ postId, onNeedSignIn, compact = false }: { postId: string; onNeedSignIn: () => void; compact?: boolean }) {
+  const { data: session, status } = useSession()
+  const [following, setFollowing] = useState(false)
+  const [busy, setBusy] = useState(false)
+
+  useEffect(() => {
+    if (status !== 'authenticated') return
+    const load = () =>
+      fetch(`/api/community/follow?postId=${postId}`)
+        .then((r) => (r.ok ? r.json() : { following: false }))
+        .then((d) => setFollowing(Boolean(d.following)))
+        .catch(() => {})
+    load()
+    // Posting a reply follows the post automatically
+    window.addEventListener('community:replied', load)
+    return () => window.removeEventListener('community:replied', load)
+  }, [status, postId])
+
+  async function click() {
+    if (!session) return onNeedSignIn()
+    setBusy(true)
+    const res = await fetch('/api/community/follow', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ postId }),
+    })
+    const data = await res.json().catch(() => ({}))
+    setBusy(false)
+    if (!res.ok) return toast({ title: data.error || 'Could not update', variant: 'destructive' })
+    setFollowing(data.following)
+    toast({ title: data.following ? 'Following. You will get an email for each new reply.' : 'Unfollowed. No more emails for this post.' })
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={click}
+      disabled={busy}
+      aria-pressed={following}
+      title={following ? 'You get an email for each new reply' : 'Get an email for each new reply'}
+      className={cn('btn-secondary px-3', following && 'border-saffron-300 bg-saffron-50 text-saffron-700')}
+    >
+      {following ? <BellRing className="h-4 w-4" /> : <Bell className="h-4 w-4" />}
+      <span className={compact ? 'sr-only sm:not-sr-only' : ''}>{following ? 'Following' : 'Follow'}</span>
+    </button>
+  )
+}
+
 /* ── Post action bar (under the post) ─────────────────────────────────────── */
 
 export function PostActions({ post }: { post: PostInfo }) {
@@ -250,7 +301,7 @@ export function PostActions({ post }: { post: PostInfo }) {
     <div className="mt-4 flex gap-2">
       {isQ ? (
         <button type="button" onClick={goToComposer} className="btn-primary flex-1 sm:flex-none">
-          <MessageSquare className="h-4 w-4" /> Write an answer
+          <MessageSquare className="h-4 w-4" /> Reply
         </button>
       ) : (
         <HelpfulButton
@@ -265,10 +316,12 @@ export function PostActions({ post }: { post: PostInfo }) {
       )}
       {!isQ && (
         <button type="button" onClick={goToComposer} className="btn-primary flex-1 sm:flex-none">
-          <MessageSquare className="h-4 w-4" /> Comment
+          <MessageSquare className="h-4 w-4" /> Reply
         </button>
       )}
-      <ShareButton title={post.title} text={post.title} url={post.url} className="btn-secondary px-3" />
+      <FollowButton postId={post.id} onNeedSignIn={() => setSignInOpen(true)} compact={!isQ} />
+      <ShareButton title={post.title} text={post.title} url={post.url} iconOnly className="btn-secondary px-3 sm:hidden" />
+      <ShareButton title={post.title} text={post.title} url={post.url} className="btn-secondary hidden px-3 sm:inline-flex" />
       <SignInDialog
         open={signInOpen}
         onClose={() => setSignInOpen(false)}
@@ -314,7 +367,6 @@ export function CommunityReplies({ post, initialReplies }: { post: PostInfo; ini
 
   const top = replies.filter((r) => !r.parentId)
   const childrenOf = (id: string) => replies.filter((r) => r.parentId === id)
-  const noun = isQ ? 'answer' : 'comment'
 
   function item(r: ThreadReply, nested: boolean) {
     return (
@@ -365,7 +417,7 @@ export function CommunityReplies({ post, initialReplies }: { post: PostInfo; ini
   return (
     <div className="card-base mt-4 p-6">
       <h2 className="font-heading text-lg font-bold text-navy-500">
-        {replies.length === 0 ? (isQ ? 'No answers yet' : 'No comments yet') : `${replies.length} ${noun}${replies.length === 1 ? '' : 's'}`}
+        {replies.length === 0 ? 'No replies yet' : `${replies.length} ${replies.length === 1 ? 'reply' : 'replies'}`}
       </h2>
       {replies.length === 0 && (
         <p className="mt-1 text-sm text-neutral-500">{isQ ? 'Know the answer, or been through this? Help a fellow buyer.' : 'Had a similar experience, or a question for the poster?'}</p>
@@ -374,7 +426,7 @@ export function CommunityReplies({ post, initialReplies }: { post: PostInfo; ini
       <div className="border-t border-neutral-100 pt-4">
         <Composer
           postId={post.id}
-          label={isQ ? 'Your answer' : 'Your comment'}
+          label="Your reply"
           placeholder={isQ ? 'Share what you know or have seen. Mention a project by name to link it.' : 'Had a similar experience, or a question for the poster?'}
           onPosted={(n) => setReplies((list) => [...list, n])}
           onNeedSignIn={needSignIn}

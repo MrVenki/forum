@@ -109,6 +109,18 @@ const COMMUNITY_STATEMENTS = [
   `ALTER TABLE "public"."community_replies" ENABLE ROW LEVEL SECURITY`,
   `ALTER TABLE "public"."community_votes" ENABLE ROW LEVEL SECURITY`,
   `ALTER TABLE "public"."community_reports" ENABLE ROW LEVEL SECURITY`,
+  // Follows (added later the same day): prisma/migrations/20261122020000_add_community_follows
+  `CREATE TABLE IF NOT EXISTS "public"."community_follows" (
+    "id" TEXT NOT NULL,
+    "postId" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "community_follows_pkey" PRIMARY KEY ("id")
+  )`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS "community_follows_postId_userId_key" ON "public"."community_follows"("postId", "userId")`,
+  fk('community_follows', 'community_follows_postId_fkey', 'postId', 'community_posts', 'CASCADE'),
+  fk('community_follows', 'community_follows_userId_fkey', 'userId', 'users', 'CASCADE'),
+  `ALTER TABLE "public"."community_follows" ENABLE ROW LEVEL SECURITY`,
 ]
 
 /** Creates the community tables if any is missing. Safe to run on every start. */
@@ -121,7 +133,8 @@ export async function ensureCommunitySchema(): Promise<void> {
 export async function communityTablesExist(): Promise<boolean> {
   const rows = await prisma.$queryRaw<{ exists: boolean }[]>`SELECT (
     to_regclass('public.community_posts') IS NOT NULL AND to_regclass('public.community_replies') IS NOT NULL AND
-    to_regclass('public.community_votes') IS NOT NULL AND to_regclass('public.community_reports') IS NOT NULL
+    to_regclass('public.community_votes') IS NOT NULL AND to_regclass('public.community_reports') IS NOT NULL AND
+    to_regclass('public.community_follows') IS NOT NULL
   ) AS "exists"`
   return rows[0]?.exists === true
 }
