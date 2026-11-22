@@ -61,6 +61,19 @@ export async function DELETE(req: NextRequest, { params: paramsPromise }: { para
   const isAdmin = session.user.role === 'ADMIN' || session.user.role === 'MODERATOR'
   if (!isOwner && !isAdmin) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
+  // Once other members have taken part, only an admin or moderator can take the topic down
+  if (!isAdmin) {
+    const others = { userId: { not: topic.userId } }
+    const [comments, ratings, questions] = await Promise.all([
+      prisma.comment.count({ where: { topicId: params.topicId, ...others } }),
+      prisma.rating.count({ where: { topicId: params.topicId, ...others } }),
+      prisma.question.count({ where: { topicId: params.topicId, ...others } }),
+    ])
+    if (comments + ratings + questions > 0) {
+      return NextResponse.json({ error: 'Other members have responded to this topic, so it cannot be deleted. Contact us if something needs to change.' }, { status: 409 })
+    }
+  }
+
   await prisma.topic.update({ where: { id: params.topicId }, data: { isPublished: false } })
   return NextResponse.json({ success: true })
 }
