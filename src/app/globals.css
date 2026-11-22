@@ -98,3 +98,31 @@
     font-family: var(--font-tiro-devanagari), serif;
   }
 }
+
+/* Phones: iPhone Safari zooms the page in when a text box under 16px is tapped,
+   and the page then pans sideways. 16px text in form fields prevents that. */
+@media (max-width: 639px) {
+  input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']),
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
+
+/* Phones: cards run edge to edge, like an app, so no width is lost to side
+   margins. The page gutter (.container-forum px-4) is cancelled with a matching
+   negative margin; nested cards and cards in side-by-side grids are left alone. */
+@media (max-width: 639px) {
+  .container-forum .card-base:not(.card-base .card-base):not(.grid-cols-2 > *):not(.grid-cols-3 > *) {
+    margin-left: -1rem;
+    margin-right: -1rem;
+    border-radius: 0;
+    border-left-width: 0;
+    border-right-width: 0;
+    box-shadow: none;
+  }
+  .container-forum .card-base.p-5:not(.card-base .card-base):not(.grid-cols-2 > *):not(.grid-cols-3 > *),
+  .container-forum .card-base.p-6:not(.card-base .card-base):not(.grid-cols-2 > *):not(.grid-cols-3 > *) {
+    padding: 1rem;
+  }
+}
