@@ -139,6 +139,50 @@ export async function communityTablesExist(): Promise<boolean> {
   return rows[0]?.exists === true
 }
 
+/**
+ * Admin edits (Nov 2026): the edit log and old-address redirects for listings moved to another city.
+ * Same SQL as prisma/migrations/20261122040000_add_admin_edits; every statement can run again safely.
+ */
+const ADMIN_EDIT_STATEMENTS = [
+  `CREATE TABLE IF NOT EXISTS "public"."admin_edit_logs" (
+    "id" TEXT NOT NULL,
+    "adminId" TEXT NOT NULL,
+    "adminName" TEXT NOT NULL,
+    "targetType" TEXT NOT NULL,
+    "targetId" TEXT NOT NULL,
+    "targetLabel" TEXT NOT NULL,
+    "targetUrl" TEXT,
+    "field" TEXT NOT NULL,
+    "oldValue" TEXT,
+    "newValue" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "admin_edit_logs_pkey" PRIMARY KEY ("id")
+  )`,
+  `CREATE TABLE IF NOT EXISTS "public"."topic_redirects" (
+    "id" TEXT NOT NULL,
+    "cityId" TEXT NOT NULL,
+    "slug" TEXT NOT NULL,
+    "topicId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "topic_redirects_pkey" PRIMARY KEY ("id")
+  )`,
+  `CREATE INDEX IF NOT EXISTS "admin_edit_logs_targetType_targetId_idx" ON "public"."admin_edit_logs"("targetType", "targetId")`,
+  `CREATE INDEX IF NOT EXISTS "admin_edit_logs_createdAt_idx" ON "public"."admin_edit_logs"("createdAt" DESC)`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS "topic_redirects_cityId_slug_key" ON "public"."topic_redirects"("cityId", "slug")`,
+  `ALTER TABLE "public"."admin_edit_logs" ENABLE ROW LEVEL SECURITY`,
+  `ALTER TABLE "public"."topic_redirects" ENABLE ROW LEVEL SECURITY`,
+]
+
+/** Creates the admin edit tables if either is missing. Safe to run on every start. */
+export async function ensureAdminEditSchema(): Promise<void> {
+  const rows = await prisma.$queryRaw<{ exists: boolean }[]>`SELECT (
+    to_regclass('public.admin_edit_logs') IS NOT NULL AND to_regclass('public.topic_redirects') IS NOT NULL
+  ) AS "exists"`
+  if (rows[0]?.exists === true) return
+  for (const sql of ADMIN_EDIT_STATEMENTS) await prisma.$executeRawUnsafe(sql)
+  console.log('[ensureSchema] created admin edit tables')
+}
+
 /** Adds the TIER2 city tier (Nov 2026). Idempotent; ADD VALUE must run outside a transaction. */
 export async function ensureCityTiers(): Promise<void> {
   await prisma.$executeRawUnsafe(`ALTER TYPE "public"."CityTier" ADD VALUE IF NOT EXISTS 'TIER2'`)

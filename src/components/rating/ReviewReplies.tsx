@@ -8,12 +8,14 @@ import { TurnstileWidget } from '@/components/shared/TurnstileWidget'
 import { SignInDialog, consumeReplyMarker, replyCallbackUrl } from '@/components/auth/SignInDialog'
 import { formatRelativeTime } from '@/lib/utils/format'
 import { toast } from '@/hooks/use-toast'
+import { AdminEditLink, ModeratorEditedNote } from '@/components/admin/AdminEditLink'
 
 export interface ReviewReply {
   id: string
   content: string
   createdAt: string
   user: { name: string | null; username: string | null }
+  moderatorEdited?: boolean
 }
 
 interface Props {
@@ -87,8 +89,10 @@ export function ReviewReplies({ topicId, ratingId, reviewerHandle, initialReplie
                 <time className="text-xs text-neutral-400" dateTime={new Date(r.createdAt).toISOString()}>
                   {formatRelativeTime(new Date(r.createdAt))}
                 </time>
+                <AdminEditLink href={`/admin/reviews?edit=${ratingId}`} className="ml-auto" />
               </div>
               <p className="mt-0.5 whitespace-pre-line text-sm leading-relaxed text-neutral-700">{r.content}</p>
+              {r.moderatorEdited && <ModeratorEditedNote className="mt-0.5" />}
             </li>
           ))}
         </ul>

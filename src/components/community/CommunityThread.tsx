@@ -1,5 +1,6 @@
 'use client'
 
+import { AdminEditLink, ModeratorEditedNote } from '@/components/admin/AdminEditLink'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useSession } from 'next-auth/react'
@@ -21,6 +22,7 @@ export interface ThreadReply {
   user: { id: string; name: string | null; username: string | null }
   mentions: MentionedProject[]
   isMostHelpful: boolean
+  moderatorEdited?: boolean
 }
 
 interface PostInfo {
@@ -383,8 +385,10 @@ export function CommunityReplies({ post, initialReplies }: { post: PostInfo; ini
               <Check className="h-3 w-3" /> Most helpful
             </span>
           )}
+          <AdminEditLink href={`/admin/community?edit=${post.id}&reply=${r.id}`} className="ml-auto" />
         </div>
         <p className="mt-2 whitespace-pre-line text-[15px] leading-relaxed text-neutral-700">{r.content}</p>
+        {r.moderatorEdited && <ModeratorEditedNote />}
         <MentionChips mentions={r.mentions} />
         <div className="mt-3 flex items-center gap-4 text-xs font-medium text-neutral-500">
           <HelpfulButton targetType="REPLY" targetId={r.id} initialCount={r.helpfulCount} voted={voted.has(r.id)} onVoted={onVoted} onNeedSignIn={needSignIn} />

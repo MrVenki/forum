@@ -2,6 +2,8 @@ import { prisma } from '@/lib/prisma'
 import { StarRating } from './StarRating'
 import { formatRelativeTime } from '@/lib/utils/format'
 import { ReviewReplies, type ReviewReply } from './ReviewReplies'
+import { AdminEditLink, ModeratorEditedNote } from '@/components/admin/AdminEditLink'
+import { moderatorEditedIds } from '@/lib/adminEdit'
 
 const DIMENSIONS = [
   { key: 'constructionQuality', label: 'Construction quality' },
@@ -68,6 +70,14 @@ export async function ReviewInsights({ topicId, propertyName }: { topicId: strin
     console.error('ReviewInsights: could not load review replies', err)
   }
 
+  // Reviews and replies whose wording a moderator changed get a small note
+  const allReplies = [...repliesByRating.values()].flat()
+  const [editedReviews, editedReplies] = await Promise.all([
+    moderatorEditedIds('RATING', written.map((r) => ({ id: r.id, values: { review: r.review, pros: r.pros, cons: r.cons } }))),
+    moderatorEditedIds('RATING_REPLY', allReplies.map((r) => ({ id: r.id, values: { content: r.content } }))),
+  ])
+  for (const r of allReplies) if (editedReplies.has(r.id)) r.moderatorEdited = true
+
   return (
     <div className="card-base p-6">
       <h2 className="font-heading font-bold text-lg text-navy-500">
@@ -125,6 +135,7 @@ export async function ReviewInsights({ topicId, propertyName }: { topicId: strin
                 )}
                 <StarRating value={r.score} readonly size="sm" showCount={false} />
                 <time className="text-xs text-neutral-400" dateTime={r.updatedAt.toISOString()}>{formatRelativeTime(r.updatedAt)}</time>
+                <AdminEditLink href={`/admin/reviews?edit=${r.id}`} className="ml-auto" />
               </div>
               {r.review && <p className="mt-1.5 whitespace-pre-line text-sm leading-relaxed text-neutral-700">{r.review}</p>}
               {(r.pros || r.cons) && (
@@ -133,6 +144,7 @@ export async function ReviewInsights({ topicId, propertyName }: { topicId: strin
                   {r.cons && <p className="text-red-700"><span className="font-semibold">Con:</span> <span className="text-neutral-700">{r.cons}</span></p>}
                 </div>
               )}
+              {editedReviews.has(r.id) && <ModeratorEditedNote />}
               <ReviewReplies
                 topicId={topicId}
                 ratingId={r.id}

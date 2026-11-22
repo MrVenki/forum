@@ -1,4 +1,4 @@
-﻿import { notFound } from 'next/navigation'
+﻿import { notFound, permanentRedirect } from 'next/navigation'
 import { cache } from 'react'
 import type { Metadata } from 'next'
 import Image from 'next/image'
@@ -43,6 +43,8 @@ function safeJsonLd(data: unknown): string {
     .replace(/&/g, '\\u0026')
 }
 import { ShareButton } from '@/components/topic/ShareButton'
+import { AdminEditLink } from '@/components/admin/AdminEditLink'
+import { moderatorEditedIds } from '@/lib/adminEdit'
 
 export const revalidate = 60
 
@@ -85,6 +87,21 @@ const getTopic = cache((citySlug: string, topicSlug: string) =>
     },
   })
 )
+
+/** Where a listing an admin moved to another city lives now, or null. */
+async function movedTopicUrl(citySlug: string, topicSlug: string): Promise<string | null> {
+  try {
+    const city = await prisma.city.findUnique({ where: { slug: citySlug }, select: { id: true } })
+    if (!city) return null
+    const r = await prisma.topicRedirect.findUnique({ where: { cityId_slug: { cityId: city.id, slug: topicSlug } }, select: { topicId: true } })
+    if (!r) return null
+    const t = await prisma.topic.findUnique({ where: { id: r.topicId }, select: { slug: true, isPublished: true, city: { select: { slug: true } } } })
+    if (!t || !t.isPublished || (t.city.slug === citySlug && t.slug === topicSlug)) return null
+    return `/${t.city.slug}/${t.slug}`
+  } catch {
+    return null // redirect table not there yet
+  }
+}
 
 /** The root layout's title template already appends the site name; drop a copy typed into metaTitle. */
 function stripSiteName(title: string): string {
@@ -147,7 +164,11 @@ export default async function TopicPage(props: Props) {
 
   const topic = await getTopic(params.citySlug, params.topicSlug)
 
-  if (!topic) notFound()
+  if (!topic) {
+    const moved = await movedTopicUrl(params.citySlug, params.topicSlug)
+    if (moved) permanentRedirect(moved)
+    notFound()
+  }
 
   const isOwner = session?.user.id === topic.user.id
 
@@ -180,6 +201,11 @@ export default async function TopicPage(props: Props) {
     prisma.topicSubscription.count({ where: { topicId: topic.id } }),
     prisma.statusVote.count({ where: { topicId: topic.id } }),
   ])
+
+  // Comments whose wording a moderator changed show a small note
+  const allComments = comments.flatMap((c) => [c, ...(c.replies ?? [])])
+  const editedComments = await moderatorEditedIds('COMMENT', allComments.map((c) => ({ id: c.id, values: { content: c.content } })))
+  for (const c of allComments) if (editedComments.has(c.id)) c.moderatorEdited = true
 
   const avgRating = Number(topic.avgRating)
   // Star ratings plus top-level buyer comments, which the page also presents as reviews
@@ -311,6 +337,7 @@ export default async function TopicPage(props: Props) {
                     Reviews &amp; Ratings — {topic.city.name}, {topic.city.state}
                   </span>
                 </h1>
+                <AdminEditLink href={`/admin/posts?edit=${topic.id}`} label="Edit listing" className="mt-2" />
                 {topic.address && (
                   <p className="mt-1.5 text-sm text-neutral-600 flex items-center gap-1.5">
                     <MapPin className="h-4 w-4 shrink-0 text-neutral-500" /> {topic.address}

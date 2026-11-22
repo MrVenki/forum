@@ -17,6 +17,8 @@ import {
   type PostListItem,
 } from '@/lib/community'
 import { SITE_CONFIG } from '@/lib/constants/config'
+import { moderatorEditedIds } from '@/lib/adminEdit'
+import { AdminEditLink, ModeratorEditedNote } from '@/components/admin/AdminEditLink'
 import { formatRelativeTime } from '@/lib/utils/format'
 
 export const revalidate = 60
@@ -100,6 +102,12 @@ export default async function CommunityPostPage({ params }: Props) {
     }
   }
 
+  // Wording a moderator changed gets a small note
+  const [editedPost, editedReplies] = await Promise.all([
+    moderatorEditedIds('COMMUNITY_POST', [{ id: post.id, values: { title: post.title, body: post.body } }]),
+    moderatorEditedIds('COMMUNITY_REPLY', visible.map((r) => ({ id: r.id, values: { content: r.content } }))),
+  ])
+
   const replies: ThreadReply[] = visible.map((r) => ({
     id: r.id,
     parentId: r.parentId,
@@ -109,6 +117,7 @@ export default async function CommunityPostPage({ params }: Props) {
     user: r.user,
     mentions: findMentionedProjects(r.content, projects, citySlug),
     isMostHelpful: r.id === bestId,
+    moderatorEdited: editedReplies.has(r.id),
   }))
 
   // Projects named in the post or any reply, for the side panel
@@ -185,7 +194,9 @@ export default async function CommunityPostPage({ params }: Props) {
             <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-neutral-500">
               <span>{isQ ? 'Asked' : 'Shared'} by <b className="text-neutral-700">{display(post.user)}</b></span>
               <time dateTime={post.createdAt.toISOString()}>{formatRelativeTime(post.createdAt)}</time>
+              <AdminEditLink href={`/admin/community?edit=${post.id}`} />
             </div>
+            {editedPost.has(post.id) && <ModeratorEditedNote />}
             <PostActions post={{ id: post.id, kind, title: post.title, url, authorId: post.userId, helpfulCount: post.helpfulCount }} />
           </article>
 

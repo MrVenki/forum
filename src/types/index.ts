@@ -16,6 +16,8 @@ export type CommentWithRelations = Comment & {
   reactions: CommentReaction[]
   replies?: CommentWithRelations[]
   _count?: { replies: number }
+  /** A moderator changed the wording; readers see a small note */
+  moderatorEdited?: boolean
 }
 
 export type RatingWithUser = Rating & {

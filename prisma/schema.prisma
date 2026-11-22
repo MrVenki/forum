@@ -614,3 +614,35 @@ model CommunityFollow {
   @@unique([postId, userId])
   @@map("community_follows")
 }
+
+/// One field an admin or moderator changed on member content, with the old and new value.
+/// Created by the app at start-up (src/lib/ensureSchema.ts); prisma/migrations/20261122040000_add_admin_edits.
+model AdminEditLog {
+  id          String   @id @default(cuid())
+  adminId     String
+  adminName   String
+  targetType  String
+  targetId    String
+  targetLabel String
+  targetUrl   String?
+  field       String
+  oldValue    String?  @db.Text
+  newValue    String?  @db.Text
+  createdAt   DateTime @default(now())
+
+  @@index([targetType, targetId])
+  @@index([createdAt(sort: Desc)])
+  @@map("admin_edit_logs")
+}
+
+/// Old address of a listing an admin moved to another city: /{old city}/{slug} redirects to the listing.
+model TopicRedirect {
+  id        String   @id @default(cuid())
+  cityId    String
+  slug      String
+  topicId   String
+  createdAt DateTime @default(now())
+
+  @@unique([cityId, slug])
+  @@map("topic_redirects")
+}

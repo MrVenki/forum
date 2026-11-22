@@ -16,6 +16,13 @@ export async function register() {
     console.error('[ensureSchema] community tables failed:', err)
   }
   try {
+    const { ensureAdminEditSchema } = await import('@/lib/ensureSchema')
+    await ensureAdminEditSchema()
+  } catch (err) {
+    // Never block start-up; admin edits still save, only the edit log and city-move redirects wait
+    console.error('[ensureSchema] admin edit tables failed:', err)
+  }
+  try {
     const { ensureCityTiers } = await import('@/lib/ensureSchema')
     await ensureCityTiers()
     const { seedTier2Cities } = await import('@/lib/tier2Seed')

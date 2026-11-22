@@ -1,5 +1,6 @@
 'use client'
 
+import { ModeratorEditedNote } from '@/components/admin/AdminEditLink'
 import { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { formatRelativeTime, formatAbsoluteDate } from '@/lib/utils/format'
@@ -107,6 +108,7 @@ export function CommentItem({ comment, topicId, topicOwnerId, onReply, isReply =
           <div className="mt-1.5 text-sm text-neutral-700 leading-relaxed whitespace-pre-line">
             {comment.isDeleted ? <em className="text-neutral-400">[Comment removed]</em> : <CommentContent text={comment.content} />}
           </div>
+          {!comment.isDeleted && comment.moderatorEdited && <ModeratorEditedNote />}
 
           {/* Reactions */}
           {!comment.isDeleted && (

@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { revalidatePath } from 'next/cache'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { getAdmin, logEdits } from '@/lib/adminEdit'
 
 function isAdmin(session: Awaited<ReturnType<typeof getServerSession<typeof authOptions>>>) {
   const role = session?.user?.role
@@ -40,6 +41,10 @@ export async function PATCH(
   }
 
   await prisma.comment.update({ where: { id: params.commentId }, data })
+  const admin = await getAdmin()
+  if (admin) {
+    await logEdits(admin, { type: 'COMMENT', id: comment.id, label: `Comment on ${comment.topic.propertyName}`, url: `/${comment.topic.city.slug}/${comment.topic.slug}#discussion` }, comment, data)
+  }
 
   revalidatePath(`/${comment.topic.city.slug}/${comment.topic.slug}`)
 
