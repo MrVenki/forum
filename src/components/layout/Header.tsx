@@ -4,11 +4,11 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useSession, signOut } from 'next-auth/react'
 import { useState, useEffect, useRef } from 'react'
-import { Home, Building2, PlusCircle, LogIn, LogOut, User, Menu, X, Search, ChevronDown, Shield, Bookmark, Calculator, IndianRupee, FileText, TrendingUp } from 'lucide-react'
+import { Home, Building2, HelpCircle, Star, Users, LogIn, LogOut, User, Menu, X, Search, ChevronDown, Shield, Bookmark, Calculator, IndianRupee, FileText, TrendingUp } from 'lucide-react'
 import { METRO_CITIES, TIER1_CITIES, TIER2_CITIES } from '@/lib/constants/cities'
 import { cn } from '@/lib/utils/cn'
 
-export function Header({ newTopicEnabled = false }: { newTopicEnabled?: boolean }) {
+export function Header() {
   const { data: session } = useSession()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [citiesOpen, setCitiesOpen] = useState(false)
@@ -40,8 +40,8 @@ export function Header({ newTopicEnabled = false }: { newTopicEnabled?: boolean 
           </Link>
 
           {/* Desktop Nav */}
-          <nav aria-label="primary" className="hidden md:flex items-center gap-1">
-            <Link href="/" className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 transition-colors">
+          <nav aria-label="primary" className="hidden lg:flex items-center gap-1">
+            <Link href="/" className="hidden 2xl:flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 transition-colors">
               <Home className="h-4 w-4" /> Home
             </Link>
 
@@ -143,26 +143,30 @@ export function Header({ newTopicEnabled = false }: { newTopicEnabled?: boolean 
               )}
             </div>
 
-            <Link href="/search" className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 transition-colors">
-              <Search className="h-4 w-4" /> Search
+            <Link href="/community" className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 transition-colors">
+              <Users className="h-4 w-4" /> Community
+            </Link>
+            <Link href="/search" aria-label="Search" className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 transition-colors">
+              <Search className="h-4 w-4" /> <span className="hidden 2xl:inline">Search</span>
             </Link>
             <Link href="/developers" className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 transition-colors">
               <Building2 className="h-4 w-4" /> Developers
             </Link>
-            <Link href="/about" className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 transition-colors">
+            <Link href="/about" className="hidden 2xl:flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 transition-colors">
               About
             </Link>
           </nav>
 
           {/* Desktop Auth */}
-          <div className="hidden md:flex items-center gap-2">
+          <div className="hidden lg:flex items-center gap-2">
             {session ? (
               <>
-                {newTopicEnabled && (
-                  <Link href="/new-topic" className="btn-primary text-sm">
-                    <PlusCircle className="h-4 w-4" /> New Topic
-                  </Link>
-                )}
+                <Link href="/review" className="btn-secondary hidden text-sm px-3.5 xl:inline-flex">
+                  <Star className="h-4 w-4" /> Review a project
+                </Link>
+                <Link href="/community/ask" className="btn-primary text-sm px-3.5">
+                  <HelpCircle className="h-4 w-4" /> <span className="xl:hidden">Ask</span><span className="hidden xl:inline">Ask the community</span>
+                </Link>
                 <div className="relative" ref={userMenuRef}>
                   <button
                     onClick={() => setUserMenuOpen(!userMenuOpen)}
@@ -171,7 +175,7 @@ export function Header({ newTopicEnabled = false }: { newTopicEnabled?: boolean 
                     <div className="h-7 w-7 rounded-full bg-saffron-100 flex items-center justify-center text-saffron-700 text-xs font-bold">
                       {(session.user.username ?? session.user.name)?.charAt(0).toUpperCase()}
                     </div>
-                    <span className="max-w-[100px] truncate">
+                    <span className="hidden max-w-[100px] truncate 2xl:inline">
                       {session.user.username ? `@${session.user.username}` : session.user.name?.split(' ')[0]}
                     </span>
                     <ChevronDown className={`h-3.5 w-3.5 transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} />
@@ -211,7 +215,7 @@ export function Header({ newTopicEnabled = false }: { newTopicEnabled?: boolean 
 
           {/* Mobile Menu Button */}
           <button
-            className="md:hidden rounded-lg p-2 text-neutral-600 hover:bg-neutral-100 transition-colors"
+            className="lg:hidden rounded-lg p-2 text-neutral-600 hover:bg-neutral-100 transition-colors"
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label="Toggle menu"
           >
@@ -222,13 +226,16 @@ export function Header({ newTopicEnabled = false }: { newTopicEnabled?: boolean 
 
       {/* Mobile Menu */}
       {mobileOpen && (
-        <div className="md:hidden border-t border-neutral-200 bg-white">
+        <div className="lg:hidden border-t border-neutral-200 bg-white">
           <div className="container-forum py-4 space-y-1">
             <Link href="/" onClick={() => setMobileOpen(false)} className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-neutral-700 hover:bg-neutral-100">
               <Home className="h-4 w-4" /> Home
             </Link>
             <Link href="/cities" onClick={() => setMobileOpen(false)} className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-neutral-700 hover:bg-neutral-100">
               <Building2 className="h-4 w-4" /> All Cities
+            </Link>
+            <Link href="/community" onClick={() => setMobileOpen(false)} className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-neutral-700 hover:bg-neutral-100">
+              <Users className="h-4 w-4" /> Community
             </Link>
             <Link href="/search" onClick={() => setMobileOpen(false)} className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-neutral-700 hover:bg-neutral-100">
               <Search className="h-4 w-4" /> Search
@@ -254,11 +261,12 @@ export function Header({ newTopicEnabled = false }: { newTopicEnabled?: boolean 
             <div className="pt-2 border-t border-neutral-100">
               {session ? (
                 <>
-                  {newTopicEnabled && (
-                    <Link href="/new-topic" onClick={() => setMobileOpen(false)} className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-saffron-600 hover:bg-saffron-50">
-                      <PlusCircle className="h-4 w-4" /> New Topic
-                    </Link>
-                  )}
+                  <Link href="/review" onClick={() => setMobileOpen(false)} className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-saffron-600 hover:bg-saffron-50">
+                    <Star className="h-4 w-4" /> Review a project
+                  </Link>
+                  <Link href="/community/ask" onClick={() => setMobileOpen(false)} className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-saffron-600 hover:bg-saffron-50">
+                    <HelpCircle className="h-4 w-4" /> Ask the community
+                  </Link>
                   <Link href="/profile" onClick={() => setMobileOpen(false)} className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-neutral-700 hover:bg-neutral-100">
                     <User className="h-4 w-4" /> Profile
                   </Link>

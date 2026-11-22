@@ -10,7 +10,9 @@ import { Pagination } from '@/components/shared/Pagination'
 import { EmptyState } from '@/components/shared/EmptyState'
 import { CityPropertySearch } from '@/components/city/CityPropertySearch'
 import { Badge } from '@/components/ui/badge'
-import { MapPin, TrendingUp, MessageSquare, Clock, PlusCircle } from 'lucide-react'
+import { MapPin, TrendingUp, MessageSquare, Clock, HelpCircle, Star, ArrowRight } from 'lucide-react'
+import { getLatestPosts } from '@/lib/community'
+import { PostRow } from '@/components/community/PostBits'
 import type { TopicWithRelations } from '@/types'
 import { getCityAreas } from '@/lib/areaPrices'
 
@@ -108,6 +110,7 @@ export default async function CityPage(props: Props) {
   ])
 
   const totalPages = Math.ceil(total / limit)
+  const cityPosts = page === 1 && !type ? await getLatestPosts({ take: 5, cityId: city.id }) : []
   const priceAreas = (await getCityAreas(city.slug))?.areas.length ?? 0
 
   const itemListSchema = {
@@ -154,10 +157,14 @@ export default async function CityPage(props: Props) {
                 </Link>
               )}
             </div>
-            <Link href="/new-topic" className="btn-primary shrink-0">
-              <PlusCircle className="h-4 w-4" />
-              Start a Discussion
-            </Link>
+            <div className="grid shrink-0 grid-cols-1 gap-2 sm:flex">
+              <Link href="/review" className="btn-primary">
+                <Star className="h-4 w-4" /> Review a project
+              </Link>
+              <Link href={`/community/ask?city=${city.slug}`} className="btn-secondary border-white/30 bg-white/10 text-white hover:bg-white/20">
+                <HelpCircle className="h-4 w-4" /> Ask the community
+              </Link>
+            </div>
           </div>
         </div>
       </div>
@@ -221,7 +228,7 @@ export default async function CityPage(props: Props) {
           <EmptyState
             title={`No discussions in ${city.name} yet`}
             description="Be the first to start a property discussion. Share your experience and help other buyers."
-            action={{ label: 'Start a Discussion', href: '/new-topic' }}
+            action={{ label: 'Add a project', href: '/new-topic' }}
           />
         ) : (
           <>
@@ -236,6 +243,24 @@ export default async function CityPage(props: Props) {
             </div>
             <Pagination page={page} totalPages={totalPages} basePath={`/${city.slug}`} preserveParams={{ sort, ...(type ? { type } : {}) }} />
           </>
+        )}
+
+        {cityPosts.length > 0 && (
+          <section className="mt-10">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="flex items-center gap-2 font-heading text-xl font-bold text-navy-500">
+                <HelpCircle className="h-5 w-5 text-saffron-500" /> {city.name}: from the community
+              </h2>
+              <Link href={`/community/ask?city=${city.slug}`} className="flex items-center gap-1 text-sm font-medium text-saffron-500 hover:text-saffron-600">
+                Ask <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+            <div className="card-base overflow-hidden">
+              <div className="divide-y divide-neutral-100">
+                {cityPosts.map((p) => <PostRow key={p.id} post={p} />)}
+              </div>
+            </div>
+          </section>
         )}
       </div>
     </>

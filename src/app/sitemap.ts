@@ -4,6 +4,7 @@ import { SITE_CONFIG } from '@/lib/constants/config'
 import { INDIAN_CITIES } from '@/lib/constants/cities'
 import { getCityAreas } from '@/lib/areaPrices'
 import { getComparePairs } from '@/lib/compare'
+import { INDEX_MIN_REPLIES } from '@/lib/community'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 3600
@@ -106,5 +107,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // DB not connected during build — skip dynamic pages
   }
 
-  return [...staticPages, ...cityPages, ...pricePages, ...comparePages, ...developerPages, ...topicPages]
+  // Community posts: only the ones that have left noindex (replies from members other than the author)
+  let communityPages: MetadataRoute.Sitemap = []
+  try {
+    const rows = await prisma.$queryRaw<{ slug: string; updatedAt: Date }[]>`
+      SELECT p."slug", p."updatedAt" FROM "public"."community_posts" p
+      WHERE p."isHidden" = false AND p."isDeleted" = false
+        AND (SELECT count(*) FROM "public"."community_replies" r
+             WHERE r."postId" = p."id" AND r."isDeleted" = false AND r."isHidden" = false AND r."userId" <> p."userId") >= ${INDEX_MIN_REPLIES}
+      ORDER BY p."updatedAt" DESC LIMIT 5000`
+    communityPages = rows.map((r) => ({ url: `${baseUrl}/community/${r.slug}`, lastModified: r.updatedAt, changeFrequency: 'weekly' as const, priority: 0.6 }))
+    const visible = await prisma.communityPost.count({ where: { isHidden: false, isDeleted: false } })
+    if (visible >= 3) communityPages.unshift({ url: `${baseUrl}/community`, changeFrequency: 'daily' as const, priority: 0.7 })
+  } catch {
+    // Community tables not created yet — skip
+  }
+
+  return [...staticPages, ...cityPages, ...pricePages, ...comparePages, ...developerPages, ...topicPages, ...communityPages]
 }

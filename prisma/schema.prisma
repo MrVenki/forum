@@ -143,6 +143,8 @@ model User {
   priceLogs        PriceLog[]
   questions        Question[]
   answers          Answer[]
+  communityPosts   CommunityPost[]
+  communityReplies CommunityReply[]
 
   @@map("users")
 }
@@ -156,8 +158,9 @@ model City {
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
 
-  topics    Topic[]
-  questions Question[]
+  topics         Topic[]
+  questions      Question[]
+  communityPosts CommunityPost[]
 
   @@map("cities")
 }
@@ -518,4 +521,80 @@ model LoanLead {
   @@index([createdAt(sort: Desc)])
   @@index([status])
   @@map("loan_leads")
+}
+
+// ─── Community posts (questions and experiences not tied to one project) ─────
+// Tables are created at start-up by src/lib/ensureSchema.ts (the deploy does not run migrations).
+
+/// A community post: kind is QUESTION or EXPERIENCE; category is a slug from src/lib/community.ts
+model CommunityPost {
+  id           String   @id @default(cuid())
+  kind         String
+  title        String
+  slug         String   @unique
+  body         String   @db.Text
+  category     String
+  cityId       String?
+  userId       String
+  replyCount   Int      @default(0)
+  helpfulCount Int      @default(0)
+  isHidden     Boolean  @default(false)
+  isDeleted    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  city    City?            @relation(fields: [cityId], references: [id], onDelete: SetNull)
+  user    User             @relation(fields: [userId], references: [id])
+  replies CommunityReply[]
+
+  @@index([createdAt(sort: Desc)])
+  @@index([cityId, createdAt(sort: Desc)])
+  @@map("community_posts")
+}
+
+/// An answer (on a question) or comment (on an experience). parentId is set for a reply to a reply.
+model CommunityReply {
+  id           String   @id @default(cuid())
+  postId       String
+  userId       String
+  parentId     String?
+  content      String   @db.Text
+  helpfulCount Int      @default(0)
+  isHidden     Boolean  @default(false)
+  isDeleted    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  post CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User          @relation(fields: [userId], references: [id])
+
+  @@index([postId, createdAt])
+  @@map("community_replies")
+}
+
+/// One "Helpful" vote per member per post or reply. targetType is POST or REPLY.
+model CommunityVote {
+  id         String   @id @default(cuid())
+  userId     String
+  targetType String
+  targetId   String
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, targetType, targetId])
+  @@map("community_votes")
+}
+
+/// A member's report of a post or reply. Three open reports hide the item until an admin reviews it.
+model CommunityReport {
+  id         String   @id @default(cuid())
+  userId     String
+  targetType String
+  targetId   String
+  reason     String
+  isResolved Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, targetType, targetId])
+  @@index([isResolved, createdAt(sort: Desc)])
+  @@map("community_reports")
 }

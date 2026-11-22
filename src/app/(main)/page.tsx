@@ -4,8 +4,9 @@ import { TopicCard } from '@/components/topic/TopicCard'
 import { SITE_CONFIG } from '@/lib/constants/config'
 import { METRO_CITIES, TIER1_CITIES, TIER2_CITIES } from '@/lib/constants/cities'
 import { Badge } from '@/components/ui/badge'
-import { Building2, TrendingUp, Star, MapPin, ArrowRight, PlusCircle } from 'lucide-react'
-import { isNewTopicEnabled } from '@/lib/features'
+import { Building2, TrendingUp, Star, MapPin, ArrowRight, HelpCircle } from 'lucide-react'
+import { getLatestPosts } from '@/lib/community'
+import { PostRow } from '@/components/community/PostBits'
 import type { Metadata } from 'next'
 import type { TopicWithRelations } from '@/types'
 
@@ -51,8 +52,7 @@ async function getHomeData() {
 }
 
 export default async function HomePage() {
-  const { latestTopics, topRatedTopics, cityCounts } = await getHomeData()
-  const newTopicEnabled = isNewTopicEnabled()
+  const [{ latestTopics, topRatedTopics, cityCounts }, communityPosts] = await Promise.all([getHomeData(), getLatestPosts({ take: 5 })])
 
   const cityCountMap = Object.fromEntries(cityCounts.map((c) => [c.slug, c._count.topics]))
 
@@ -70,15 +70,19 @@ export default async function HomePage() {
             <p className="mt-4 text-lg text-navy-200 leading-relaxed max-w-xl">
               Real discussions, honest reviews and authentic ratings from actual buyers and residents across {cityCounts.length} Indian cities.
             </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link href="/cities" className="btn-primary text-base px-6 py-3">
-                <Building2 className="h-5 w-5" /> Browse Cities
-              </Link>
-              {newTopicEnabled && (
-                <Link href="/new-topic" className="btn-secondary text-base px-6 py-3 bg-white/10 border-white/30 text-white hover:bg-white/20">
-                  <PlusCircle className="h-5 w-5" /> Start a Discussion
+            <div className="mt-8 grid grid-cols-1 gap-3 sm:flex sm:flex-wrap">
+              <div className="flex flex-col">
+                <Link href="/review" className="btn-primary w-full text-base px-6 py-3 sm:w-auto">
+                  <Star className="h-5 w-5" /> Review a project
                 </Link>
-              )}
+                <span className="mt-1.5 text-xs text-navy-200">Rate a project you own, rent or visited</span>
+              </div>
+              <div className="flex flex-col">
+                <Link href="/community/ask" className="btn-secondary w-full text-base px-6 py-3 bg-white/10 border-white/30 text-white hover:bg-white/20 sm:w-auto">
+                  <HelpCircle className="h-5 w-5" /> Ask the community
+                </Link>
+                <span className="mt-1.5 text-xs text-navy-200">Ask a question or share an experience</span>
+              </div>
             </div>
           </div>
 
@@ -118,6 +122,36 @@ export default async function HomePage() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* From the community */}
+      <section className="container-forum pt-10">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <HelpCircle className="h-5 w-5 text-saffron-500" />
+            <h2 className="font-heading text-xl sm:text-2xl font-bold text-navy-500">From the community</h2>
+          </div>
+          {communityPosts.length > 0 && (
+            <Link href="/community" className="text-sm font-medium text-saffron-500 hover:text-saffron-600 flex items-center gap-1">
+              View all <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          )}
+        </div>
+        <div className="card-base overflow-hidden">
+          {communityPosts.length > 0 ? (
+            <div className="divide-y divide-neutral-100">
+              {communityPosts.map((p) => <PostRow key={p.id} post={p} />)}
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3 px-5 py-6 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="font-heading font-bold text-navy-500">Questions about builders, areas, loans or legal steps?</p>
+                <p className="text-sm text-neutral-500">Ask members who live there or have been through it, or share what happened to you.</p>
+              </div>
+              <Link href="/community/ask" className="btn-primary shrink-0">Ask the community</Link>
+            </div>
+          )}
         </div>
       </section>
 

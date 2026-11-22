@@ -9,6 +9,13 @@ export async function register() {
     console.error('[ensureSchema] failed:', err)
   }
   try {
+    const { ensureCommunitySchema } = await import('@/lib/ensureSchema')
+    await ensureCommunitySchema()
+  } catch (err) {
+    // Never block start-up; community pages show an empty list until this succeeds
+    console.error('[ensureSchema] community tables failed:', err)
+  }
+  try {
     const { ensureCityTiers } = await import('@/lib/ensureSchema')
     await ensureCityTiers()
     const { seedTier2Cities } = await import('@/lib/tier2Seed')
