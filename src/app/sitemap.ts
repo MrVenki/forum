@@ -5,6 +5,7 @@ import { INDIAN_CITIES } from '@/lib/constants/cities'
 import { getCityAreas } from '@/lib/areaPrices'
 import { getComparePairs } from '@/lib/compare'
 import { INDEX_MIN_REPLIES } from '@/lib/community'
+import { getDuplicateMap } from '@/lib/duplicateTopics'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 3600
@@ -48,7 +49,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       orderBy: { updatedAt: 'desc' },
       take: 5000,
     })
-    topicPages = topics.map((t) => ({
+    // Second listings of the same project name the main one as canonical, so only the main one is listed here
+    const duplicates = await getDuplicateMap().catch(() => ({} as Record<string, string>))
+    topicPages = topics.filter((t) => !duplicates[`/${t.city.slug}/${t.slug}`]).map((t) => ({
       url: `${baseUrl}/${t.city.slug}/${t.slug}`,
       lastModified: t.updatedAt,
       changeFrequency: 'daily' as const,

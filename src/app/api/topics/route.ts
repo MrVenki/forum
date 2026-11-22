@@ -10,6 +10,7 @@ import { sendAdminNewPostAlert } from '@/lib/email'
 import { pingIndexNow } from '@/lib/indexnow'
 import { checkRateLimit, getClientIp } from '@/lib/rateLimit'
 import { verifyTurnstile } from '@/lib/turnstile'
+import { sameProjectKey, developerNameKeys } from '@/lib/duplicateTopics'
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
@@ -31,7 +32,7 @@ export async function GET(req: NextRequest) {
   if (check && name) {
     const topics = await prisma.topic.findMany({
       where: { ...where, propertyName: { equals: name, mode: 'insensitive' } },
-      select: { id: true, propertyName: true },
+      select: { id: true, propertyName: true, slug: true },
       take: 1,
     })
     return NextResponse.json({ topics })
@@ -137,6 +138,27 @@ export async function POST(req: NextRequest) {
       }
       // Always use the canonical name from DB so it cannot be spoofed
       d.developerName = dev.name
+    }
+
+    // One page per project per city: a second listing splits its reviews and Google treats it as a duplicate
+    const city = await prisma.city.findUnique({ where: { id: d.cityId }, select: { slug: true, name: true } })
+    const developerNames = city ? await developerNameKeys() : new Set<string>()
+    const key = city ? sameProjectKey(d.propertyName, d.propertyType, city, developerNames) : null
+    if (city && key) {
+      const cityTopics = await prisma.topic.findMany({
+        where: { cityId: d.cityId, isPublished: true, propertyType: d.propertyType },
+        select: { slug: true, propertyName: true, propertyType: true },
+      })
+      const existing = cityTopics.find((t) => sameProjectKey(t.propertyName, t.propertyType, city, developerNames) === key)
+      if (existing) {
+        return NextResponse.json(
+          {
+            error: `${existing.propertyName} is already listed in ${city.name}. Please add your review on its page.`,
+            existingUrl: `/${city.slug}/${existing.slug}`,
+          },
+          { status: 409 }
+        )
+      }
     }
 
     const baseSlug = generateTopicSlug(d.propertyName)

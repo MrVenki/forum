@@ -45,6 +45,7 @@ function safeJsonLd(data: unknown): string {
 import { ShareButton } from '@/components/topic/ShareButton'
 import { AdminEditLink } from '@/components/admin/AdminEditLink'
 import { moderatorEditedIds } from '@/lib/adminEdit'
+import { mainListingFor } from '@/lib/duplicateTopics'
 
 export const revalidate = 60
 
@@ -130,6 +131,8 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   const title = topic.metaTitle ? stripSiteName(topic.metaTitle) : seo.title
   const description = topic.metaDesc || seo.description
   const url = `${SITE_CONFIG.url}/${params.citySlug}/${params.topicSlug}`
+  // A second listing of the same project points Google at the main one
+  const mainListing = await mainListingFor(`/${topic.city.slug}/${topic.slug}`)
   const ogImage = topic.image1PubId
     ? getOgImageUrl(topic.image1PubId)
     : `${SITE_CONFIG.url}${SITE_CONFIG.ogImage}`
@@ -137,7 +140,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   return {
     title,
     description,
-    alternates: { canonical: url },
+    alternates: { canonical: mainListing ? `${SITE_CONFIG.url}${mainListing}` : url },
     openGraph: {
       title,
       description,
@@ -175,7 +178,7 @@ export default async function TopicPage(props: Props) {
   // Increment view count (fire and forget)
   recordTopicView(topic.id)
 
-  const [comments, relatedTopics, subscriberCount, statusVoteCount] = await Promise.all([
+  const [comments, relatedTopics, subscriberCount, statusVoteCount, mainListing] = await Promise.all([
     prisma.comment.findMany({
       where: { topicId: topic.id, parentId: null, isDeleted: false },
       orderBy: { createdAt: 'asc' },
@@ -200,6 +203,7 @@ export default async function TopicPage(props: Props) {
     }),
     prisma.topicSubscription.count({ where: { topicId: topic.id } }),
     prisma.statusVote.count({ where: { topicId: topic.id } }),
+    mainListingFor(`/${topic.city.slug}/${topic.slug}`),
   ])
 
   // Comments whose wording a moderator changed show a small note
@@ -301,6 +305,14 @@ export default async function TopicPage(props: Props) {
             { label: topic.propertyName },
           ]}
         />
+        {mainListing && (
+          <p className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+            {topic.propertyName} is listed more than once.{' '}
+            <Link href={mainListing} className="font-semibold underline">
+              See the main page for this project
+            </Link>
+          </p>
+        )}
       </div>
 
       <div className="container-forum pb-12">

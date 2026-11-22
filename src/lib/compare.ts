@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { getCityAreas } from '@/lib/areaPrices'
+import { getDuplicateMap } from '@/lib/duplicateTopics'
 
 export interface CompareProject {
   id: string
@@ -149,6 +150,10 @@ export async function getComparePairs(limit = 1500): Promise<{ city: string; pai
     select: { slug: true, propertyType: true, priceMin: true, priceMax: true, city: { select: { slug: true } } },
   })
 
+  // A project and its own second listing are not worth comparing
+  const duplicates = await getDuplicateMap().catch(() => ({} as Record<string, string>))
+  const mainOf = (city: string, slug: string) => duplicates[`/${city}/${slug}`] ?? `/${city}/${slug}`
+
   const groups = new Map<string, typeof rows>()
   for (const r of rows) {
     const key = `${r.city.slug}|${r.propertyType}`
@@ -162,7 +167,7 @@ export async function getComparePairs(limit = 1500): Promise<{ city: string; pai
     const midOf = (r: (typeof rows)[number]) => (r.priceMax ? (Number(r.priceMin) + Number(r.priceMax)) / 2 : Number(r.priceMin))
     for (const t of list) {
       const peers = list
-        .filter((p) => p.slug !== t.slug)
+        .filter((p) => p.slug !== t.slug && mainOf(city, p.slug) !== mainOf(city, t.slug))
         .sort((x, y) => Math.abs(midOf(x) - midOf(t)) - Math.abs(midOf(y) - midOf(t)))
         .slice(0, 2)
       for (const p of peers) {

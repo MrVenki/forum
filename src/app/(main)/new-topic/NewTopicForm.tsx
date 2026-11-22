@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { useForm, Controller } from 'react-hook-form'
@@ -32,6 +33,7 @@ export default function NewTopicForm() {
   const [developer, setDeveloper] = useState<DeveloperValue | null>(null)
   const [loading, setLoading] = useState(false)
   const [duplicateWarning, setDuplicateWarning] = useState('')
+  const [duplicateUrl, setDuplicateUrl] = useState('')
   const [checkingDuplicate, setCheckingDuplicate] = useState(false)
   const [cfToken, setCfToken] = useState('')
 
@@ -57,8 +59,10 @@ export default function NewTopicForm() {
       if (data.topics?.length > 0) {
         const existing = data.topics[0]
         setDuplicateWarning(`A discussion for this property already exists in ${city?.name}.`)
+        setDuplicateUrl(city && existing.slug ? `/${city.slug}/${existing.slug}` : '')
       } else {
         setDuplicateWarning('')
+        setDuplicateUrl('')
       }
     } catch {}
     setCheckingDuplicate(false)
@@ -91,6 +95,9 @@ export default function NewTopicForm() {
     if (res.ok) {
       toast({ title: 'Discussion started!', description: 'Your topic has been published.' })
       router.push(result.slug)
+    } else if (res.status === 409 && result.existingUrl) {
+      toast({ title: result.error })
+      router.push(result.existingUrl)
     } else {
       toast({ title: result.error || 'Failed to create topic', variant: 'destructive' })
     }
@@ -162,7 +169,14 @@ export default function NewTopicForm() {
                 {duplicateWarning && (
                   <div className="flex items-start gap-1.5 text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
                     <AlertCircle className="h-3.5 w-3.5 shrink-0 mt-0.5" />
-                    {duplicateWarning} You can still post if this is a different discussion.
+                    <span>
+                      {duplicateWarning}{' '}
+                      {duplicateUrl ? (
+                        <Link href={duplicateUrl} className="font-semibold underline">If it is the same project, add your review there.</Link>
+                      ) : (
+                        'If it is the same project, please add your review there.'
+                      )}
+                    </span>
                   </div>
                 )}
               </div>
